@@ -1,0 +1,12 @@
+{
+  "_fv": 66,
+  "_type": "gamerule",
+  "definition": {
+    "type": "Logic",
+    "displayName": "ádasdasd",
+    "description": "asđâs",
+    "category": "PLAYER",
+    "defaultValueLogic": false,
+    "defaultValueNumber": 2
+  }
+}

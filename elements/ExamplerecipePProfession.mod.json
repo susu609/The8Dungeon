@@ -1,0 +1,16 @@
+{
+  "_fv": 66,
+  "_type": "villagerprofession",
+  "definition": {
+    "displayName": "Examplerecipe P Profession",
+    "pointOfInterest": {
+      "value": "Blocks.POLISHED_GRANITE_SLAB"
+    },
+    "actionSound": {
+      "value": "ambient.soul_sand_valley.additions"
+    },
+    "hat": "None",
+    "professionTextureFile": "sans_background.png",
+    "zombifiedProfessionTextureFile": "sans_background.png"
+  }
+}

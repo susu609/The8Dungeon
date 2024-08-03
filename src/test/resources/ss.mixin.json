@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8.5",
+  "package": "net.ss.sudungeon",
+  "compatibilityLevel": "JAVA_17",
+
+  "mixins": [
+  ],
+  "refmap": "ss.refmap.json",
+  "client": [
+
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

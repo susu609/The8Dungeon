@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "variant=normal": { "model": "minecraft:block/stone" },
+    "variant=cracked": { "model": "ss:block/cracked_stone" },
+    "variant=mossy": { "model": "ss:block/mossy_stone" }
+  }
+}

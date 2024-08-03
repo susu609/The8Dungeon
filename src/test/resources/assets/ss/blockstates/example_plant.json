@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "ss:block/example_plant"
+    }
+  }
+}

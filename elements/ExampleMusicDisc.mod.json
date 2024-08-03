@@ -1,0 +1,22 @@
+{
+  "_fv": 66,
+  "_type": "musicdisc",
+  "definition": {
+    "name": "Example Music Disc",
+    "rarity": "COMMON",
+    "texture": "minecraft:music_disc_13",
+    "description": "Example_",
+    "creativeTabs": [],
+    "specialInformation": {
+      "fixedValue": []
+    },
+    "glowCondition": {
+      "fixedValue": false
+    },
+    "music": {
+      "value": "ambient.cave"
+    },
+    "lengthInTicks": 100,
+    "analogOutput": 0
+  }
+}

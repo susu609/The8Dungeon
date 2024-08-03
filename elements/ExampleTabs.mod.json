@@ -1,0 +1,11 @@
+{
+  "_fv": 66,
+  "_type": "tab",
+  "definition": {
+    "name": "Example Tabs",
+    "icon": {
+      "value": "CUSTOM:Example"
+    },
+    "showSearch": true
+  }
+}

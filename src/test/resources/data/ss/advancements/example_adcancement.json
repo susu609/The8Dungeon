@@ -1,0 +1,31 @@
+{
+  "display": {
+    "background": "minecraft:textures/block/stone.png",
+    "icon": {
+      "item": "ss:example_entity_spawn_egg"
+    },
+    "title": {
+      "translate": "advancements.example_adcancement.title"
+    },
+    "description": {
+      "translate": "advancements.example_adcancement.descr"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "example_adcancement_0": {
+      "trigger": "minecraft:placed_block",
+      "conditions": {
+        "location": [
+          {
+            "condition": "minecraft:block_state_property",
+            "block": "ss:example_block"
+          }
+        ]
+      }
+    }
+  }
+}

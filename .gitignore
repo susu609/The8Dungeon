@@ -1,0 +1,23 @@
+# Gradle build directories
+.gradle/
+build/
+build/classes/java/main/
+
+# IntelliJ IDEA specific files
+.idea/
+*.iml
+
+# Logs and temporary files
+*.log
+
+# Minecraft-specific files
+*.class
+*.jar
+
+# Ignore user-specific files
+*.sublime-workspace
+*.sublime-project
+
+# Operating system specific files
+.DS_Store
+Thumbs.db

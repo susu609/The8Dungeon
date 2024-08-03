@@ -1,0 +1,515 @@
+{
+  "mod_elements": [
+    {
+      "name": "Example",
+      "type": "block",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_block",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/ss/models/block/example_block.json",
+          "src/main/resources/data/ss/loot_tables/blocks/example_block.json",
+          "src/main/resources/assets/ss/models/item/example_block.json",
+          "src/main/java/net/ss/sudungeon/block/ExampleBlock.java",
+          "src/main/resources/assets/ss/blockstates/example_block.json"
+        ]
+      }
+    },
+    {
+      "name": "ExampleTabs",
+      "type": "tab",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_tabs",
+      "metadata": {
+        "files": []
+      }
+    },
+    {
+      "name": "ExampleOverlay",
+      "type": "overlay",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_overlay",
+      "metadata": {
+        "files": [
+          "src/main/java/net/ss/sudungeon/client/screens/ExampleOverlayOverlay.java"
+        ]
+      }
+    },
+    {
+      "name": "ExampleEntity",
+      "type": "livingentity",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_entity",
+      "metadata": {
+        "files": [
+          "src/main/java/net/ss/sudungeon/entity/ExampleEntityEntity.java",
+          "src/main/resources/assets/ss/models/item/example_entity_spawn_egg.json",
+          "src/main/java/net/ss/sudungeon/client/renderer/ExampleEntityRenderer.java"
+        ]
+      }
+    },
+    {
+      "name": "ExampleGameRule",
+      "type": "gamerule",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_game_rule",
+      "metadata": {
+        "files": [],
+        "type": "logic"
+      }
+    },
+    {
+      "name": "ExampleBiome",
+      "type": "biome",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_biome",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/ss/worldgen/biome/example_biome.json",
+          "src/main/resources/data/ss/worldgen/configured_feature/example_biome_tree.json",
+          "src/main/resources/data/ss/worldgen/placed_feature/example_biome_tree.json"
+        ]
+      }
+    },
+    {
+      "name": "ExampleGui",
+      "type": "gui",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_gui",
+      "metadata": {
+        "files": [
+          "src/main/java/net/ss/sudungeon/world/inventory/ExampleGuiMenu.java",
+          "src/main/java/net/ss/sudungeon/client/gui/ExampleGuiScreen.java"
+        ]
+      }
+    },
+    {
+      "name": "ExampleFluid",
+      "type": "fluid",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_fluid",
+      "metadata": {
+        "files": [
+          "src/main/java/net/ss/sudungeon/fluid/types/ExampleFluidFluidType.java",
+          "src/main/resources/assets/ss/blockstates/example_fluid.json",
+          "src/main/resources/assets/ss/models/block/example_fluid.json",
+          "src/main/java/net/ss/sudungeon/fluid/ExampleFluidFluid.java",
+          "src/main/resources/assets/ss/models/item/example_fluid_bucket.json",
+          "src/main/java/net/ss/sudungeon/item/ExampleFluidItem.java",
+          "src/main/java/net/ss/sudungeon/block/ExampleFluidBlock.java"
+        ]
+      }
+    },
+    {
+      "name": "ExampleStructure",
+      "type": "structure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_structure",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/ss/worldgen/structure_set/example_structure.json",
+          "src/main/resources/data/ss/worldgen/structure/example_structure.json",
+          "src/main/resources/data/ss/worldgen/template_pool/example_structure.json"
+        ]
+      }
+    },
+    {
+      "name": "ExampleAdcancement",
+      "type": "achievement",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_adcancement",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/ss/advancements/example_adcancement.json"
+        ]
+      }
+    },
+    {
+      "name": "ExampleMusicDisc",
+      "type": "musicdisc",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_music_disc",
+      "metadata": {
+        "files": [
+          "src/main/java/net/ss/sudungeon/item/ExampleMusicDiscItem.java",
+          "src/main/resources/assets/ss/models/item/example_music_disc.json"
+        ]
+      }
+    },
+    {
+      "name": "ExamplePainting",
+      "type": "painting",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_painting",
+      "metadata": {
+        "files": []
+      }
+    },
+    {
+      "name": "ExampleDimension",
+      "type": "dimension",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_dimension",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/ss/dimension_type/example_dimension.json",
+          "src/main/java/net/ss/sudungeon/world/dimension/ExampleDimensionDimension.java",
+          "src/main/resources/data/ss/dimension/example_dimension.json"
+        ]
+      }
+    },
+    {
+      "name": "Exampleitem",
+      "type": "item",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "exampleitem",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/ss/models/item/exampleitem.json",
+          "src/main/java/net/ss/sudungeon/item/ExampleitemItem.java"
+        ]
+      }
+    },
+    {
+      "name": "ExampleTool",
+      "type": "tool",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_tool",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/ss/models/item/example_tool.json",
+          "src/main/java/net/ss/sudungeon/item/ExampleToolItem.java"
+        ]
+      }
+    },
+    {
+      "name": "ExampleArmor",
+      "type": "armor",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_armor",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/ss/models/item/example_armor_helmet.json",
+          "src/main/resources/assets/ss/models/item/example_armor_leggings.json",
+          "src/main/resources/assets/ss/models/item/example_armor_boots.json",
+          "src/main/resources/assets/ss/models/item/example_armor_chestplate.json",
+          "src/main/java/net/ss/sudungeon/item/ExampleArmorItem.java"
+        ]
+      }
+    },
+    {
+      "name": "Exampleprocedure",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "exampleprocedure",
+      "metadata": {
+        "files": [
+          "src/main/java/net/ss/sudungeon/procedures/ExampleprocedureProcedure.java"
+        ],
+        "dependencies": []
+      }
+    },
+    {
+      "name": "ExampleCommand",
+      "type": "command",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_command",
+      "metadata": {
+        "files": [
+          "src/main/java/net/ss/sudungeon/command/ExampleCommandCommand.java"
+        ]
+      }
+    },
+    {
+      "name": "ExampleEnchantment",
+      "type": "enchantment",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_enchantment",
+      "metadata": {
+        "files": [
+          "src/main/java/net/ss/sudungeon/enchantment/ExampleEnchantmentEnchantment.java"
+        ]
+      }
+    },
+    {
+      "name": "ExampleKeyBinding",
+      "type": "keybind",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_key_binding",
+      "metadata": {
+        "files": [
+          "src/main/java/net/ss/sudungeon/network/ExampleKeyBindingMessage.java"
+        ]
+      }
+    },
+    {
+      "name": "ExampleLootTable",
+      "type": "loottable",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_loot_table",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/ss/loot_tables/blocks/example_loot_table.json"
+        ]
+      }
+    },
+    {
+      "name": "ExampleDamageType",
+      "type": "damagetype",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_damage_type",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/ss/damage_type/example_damage_type.json"
+        ]
+      }
+    },
+    {
+      "name": "ExampleFeature",
+      "type": "feature",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_feature",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/ss/forge/biome_modifier/example_feature_biome_modifier.json",
+          "src/main/resources/data/ss/worldgen/configured_feature/example_feature.json",
+          "src/main/resources/data/ss/worldgen/placed_feature/example_feature.json"
+        ]
+      }
+    },
+    {
+      "name": "ExampleFunction",
+      "type": "function",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_function",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/ss/functions/example_function.mcfunction"
+        ]
+      }
+    },
+    {
+      "name": "ExampleItemExtension",
+      "type": "itemextension",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_item_extension",
+      "metadata": {
+        "files": []
+      }
+    },
+    {
+      "name": "ExampleParticles",
+      "type": "particle",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_particles",
+      "metadata": {
+        "files": [
+          "src/main/java/net/ss/sudungeon/client/particle/ExampleParticlesParticle.java",
+          "src/main/resources/assets/ss/particles/example_particles.json"
+        ]
+      }
+    },
+    {
+      "name": "ExamplePlant",
+      "type": "plant",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_plant",
+      "metadata": {
+        "files": [
+          "src/main/java/net/ss/sudungeon/block/ExamplePlantBlock.java",
+          "src/main/resources/assets/ss/models/block/example_plant.json",
+          "src/main/resources/data/ss/loot_tables/blocks/example_plant.json",
+          "src/main/resources/assets/ss/models/item/example_plant.json",
+          "src/main/resources/assets/ss/blockstates/example_plant.json"
+        ]
+      }
+    },
+    {
+      "name": "ExampleEffect",
+      "type": "potioneffect",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_effect",
+      "metadata": {
+        "files": [
+          "src/main/java/net/ss/sudungeon/potion/ExampleEffectMobEffect.java"
+        ]
+      }
+    },
+    {
+      "name": "ExamplePotion",
+      "type": "potion",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_potion",
+      "metadata": {
+        "files": []
+      }
+    },
+    {
+      "name": "ExampleProjectile",
+      "type": "projectile",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_projectile",
+      "metadata": {
+        "files": [
+          "src/main/java/net/ss/sudungeon/entity/ExampleProjectileEntity.java"
+        ]
+      }
+    },
+    {
+      "name": "ExampleRecipe",
+      "type": "recipe",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_recipe",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/ss/recipes/example_recipe.json"
+        ]
+      }
+    },
+    {
+      "name": "ExamplerecipePProfession",
+      "type": "villagerprofession",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "examplerecipe_p_profession",
+      "metadata": {
+        "files": []
+      }
+    },
+    {
+      "name": "ExampleVillagerTrade",
+      "type": "villagertrade",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "example_villager_trade",
+      "metadata": {
+        "files": []
+      }
+    },
+    {
+      "name": "ExampleCustomElement",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "example_custom_element",
+      "metadata": {
+        "files": [
+          "src/main/java/net/ss/sudungeon/ExampleCustomElement.java"
+        ]
+      }
+    }
+  ],
+  "variable_elements": [
+    {
+      "name": "Example_",
+      "type": "number",
+      "scope": "global",
+      "value": "0"
+    }
+  ],
+  "sound_elements": [],
+  "tag_elements": {
+    "BLOCKS:minecraft:replaceable": [
+      "~CUSTOM:ExampleFluid"
+    ],
+    "ITEMS:minecraft:pickaxes": [
+      "~CUSTOM:ExampleTool"
+    ],
+    "ITEMS:minecraft:music_discs": [
+      "~CUSTOM:ExampleMusicDisc"
+    ],
+    "BLOCKS:minecraft:overworld_carver_replaceables": [
+      "~Blocks.AIR"
+    ]
+  },
+  "tab_element_order": {},
+  "language_map": {
+    "en_us": {
+      "painting.ss.example_painting.author": "Example_",
+      "entity.ss.example_entity": "Example Entity",
+      "item.ss.exampleitem": "Exampleitem",
+      "enchantment.ss.example_enchantment": "Example Enchantment",
+      "item.ss.example_armor_chestplate": "Example Armor Chestplate",
+      "death.attack.example_damage_type": "%1$s died",
+      "entity.minecraft.villager.ss.examplerecipe_p_profession": "Examplerecipe P Profession",
+      "item.minecraft.splash_potion.effect.example_potion": "Splash Potion of Example Potion",
+      "biome.ss.example_biome": "Example Biome",
+      "item.ss.example_armor_boots": "Example Armor Boots",
+      "block.ss.example_plant": "Example Plant",
+      "death.attack.example_damage_type.player": "%1$s died whilst trying to escape %2$s",
+      "item.ss.example_armor_helmet": "Example Armor Helmet",
+      "item.ss.example_entity_spawn_egg": "Example Entity Spawn Egg",
+      "item_group.ss.example_tabs": "Example Tabs",
+      "item.ss.example_tool": "Example Tool",
+      "key.ss.example_key_binding": "Example Key Binding",
+      "item.minecraft.lingering_potion.effect.example_potion": "Lingering Potion of Example Potion",
+      "gamerule.exampleGameRule.description": "asđâs",
+      "block.ss.example_fluid": "Example Fluid",
+      "item.ss.example_music_disc.desc": "Example_",
+      "item.minecraft.tipped_arrow.effect.example_potion": "Arrow of Example Potion",
+      "painting.ss.example_painting.title": "Example Painting",
+      "gamerule.exampleGameRule": "ádasdasd",
+      "advancements.example_adcancement.title": "Example Adcancement",
+      "item.ss.example_armor_leggings": "Example Armor Leggings",
+      "item.minecraft.potion.effect.example_potion": "Potion of Example Potion",
+      "death.attack.example_damage_type.item": "%1$s was killed by %2$s using %3$s",
+      "fluid.ss.example_fluid": "Example Fluid",
+      "item.ss.example_music_disc": "Example Music Disc",
+      "effect.ss.example_effect": "Example Effect",
+      "item.ss.example_fluid_bucket": "Example Fluid Bucket",
+      "block.ss.example_block": "Example",
+      "advancements.example_adcancement.descr": "ádasdasdasdádasd"
+    }
+  },
+  "foldersRoot": {
+    "name": "~",
+    "children": []
+  },
+  "workspaceSettings": {
+    "modid": "ss",
+    "modName": "SuDungeon",
+    "version": "1.0.0",
+    "author": "SS, MCreator",
+    "websiteURL": "https://mcreator.net",
+    "license": "Not specified",
+    "serverSideOnly": false,
+    "requiredMods": [],
+    "dependencies": [],
+    "dependants": [],
+    "mcreatorDependencies": [],
+    "currentGenerator": "forge-1.20.1",
+    "modElementsPackage": "net.ss.sudungeon"
+  },
+  "mcreatorVersion": 202400228714
+}

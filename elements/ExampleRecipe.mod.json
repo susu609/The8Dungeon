@@ -1,0 +1,48 @@
+{
+  "_fv": 66,
+  "_type": "recipe",
+  "definition": {
+    "recipeType": "Crafting",
+    "recipeRetstackSize": 1,
+    "group": "example_recipe",
+    "cookingBookCategory": "MISC",
+    "xpReward": 0.0,
+    "cookingTime": 200,
+    "craftingBookCategory": "MISC",
+    "recipeShapeless": false,
+    "recipeSlots": [
+      {
+        "value": "CUSTOM:Exampleitem"
+      },
+      {
+        "value": "CUSTOM:Exampleitem"
+      },
+      {
+        "value": ""
+      },
+      {
+        "value": ""
+      },
+      {
+        "value": "CUSTOM:Exampleitem"
+      },
+      {
+        "value": ""
+      },
+      {
+        "value": ""
+      },
+      {
+        "value": "CUSTOM:Exampleitem"
+      },
+      {
+        "value": "CUSTOM:Exampleitem"
+      }
+    ],
+    "recipeReturnStack": {
+      "value": "Blocks.MUD_BRICKS"
+    },
+    "name": "example_recipe",
+    "namespace": "mod"
+  }
+}

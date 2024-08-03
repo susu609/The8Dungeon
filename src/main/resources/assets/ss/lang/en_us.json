@@ -1,0 +1,8 @@
+{
+  "commands.create.dungeon.seed.tooltip": "Click to copy Seed",
+  "commands.create.dungeon.success": "Create Dungeon successfully",
+  "entity.ss.room_marker": "Room Marker",
+  "item.ss.room_marker_spawn_egg": "Room Marker Spawn Egg",
+  "item_group.ss.su_dungeon": "Mod Item",
+  "menu.character.steve": "Steve"
+}

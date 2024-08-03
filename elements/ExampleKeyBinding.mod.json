@@ -1,0 +1,9 @@
+{
+  "_fv": 66,
+  "_type": "keybind",
+  "definition": {
+    "triggerKey": "NONE",
+    "keyBindingName": "Example Key Binding",
+    "keyBindingCategoryKey": "misc"
+  }
+}

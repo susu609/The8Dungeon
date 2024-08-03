@@ -1,0 +1,8 @@
+{
+  "parent": "block/cube_all",
+  "textures": {
+    "all": "minecraft:block/target_top",
+    "particle": "minecraft:block/target_top"
+  },
+  "render_type": "solid"
+}
