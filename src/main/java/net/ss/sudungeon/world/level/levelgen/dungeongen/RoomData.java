@@ -13,63 +13,64 @@ import java.util.EnumSet;
 import java.util.List;
 
 public class RoomData {
-    private static final String TAG_ROOM_DATA_LIST = "RoomData";
-    private static final String TAG_ROOM_TYPE = "RoomType"; // Khởi tạo giá trị
+    private static final String TAG_POS = "Pos";
+    private static final String TAG_TYPE = "Type";
+    private static final String TAG_CONNECTIONS = "Connections";
+    private static final String TAG_SPAWNED = "Spawned";
 
     public BlockPos pos;
-
     public RoomType type;
     public List<Entity> entities = new ArrayList<>();
-    public EnumSet<Direction> connections; // Lưu trữ các hướng có lối đi
-    public boolean spawned; // Biến để đánh dấu đã spawn quái vật hay chưa
+    public EnumSet<Direction> connections;
+    public boolean spawned;
 
-    public RoomData (BlockPos pos, RoomType type, EnumSet<Direction> connections) {
-        this(pos, type, connections, false); // Gọi constructor với 4 tham số
-    }
-
-    public RoomData (BlockPos pos, RoomType type, EnumSet<Direction> connections, boolean spawned) {
+    // Constructor with all parameters
+    public RoomData(BlockPos pos, RoomType type, EnumSet<Direction> connections, boolean spawned) {
         this.pos = pos;
         this.type = type;
-        this.connections = connections;
+        this.connections = connections != null ? connections : EnumSet.noneOf(Direction.class);
         this.spawned = spawned;
     }
 
-    public CompoundTag writeToNBT (@NotNull CompoundTag tag) {
-        tag.put("Pos", NbtUtils.writeBlockPos(pos));
-        tag.putString("Type", type.name());
+    // Method to write data to NBT
+    public CompoundTag writeToNBT(@NotNull CompoundTag tag) {
+        tag.put(TAG_POS, NbtUtils.writeBlockPos(pos));
+        tag.putString(TAG_TYPE, type.name());
         int[] connectionsArray = connections.stream().mapToInt(Direction::get3DDataValue).toArray();
-        tag.putIntArray("Connections", connectionsArray);
-        tag.putBoolean("Spawned", spawned); // Lưu trạng thái spawned vào NBT tag
-        tag.putString(TAG_ROOM_TYPE, type.name()); // Lưu loại phòng
+        tag.putIntArray(TAG_CONNECTIONS, connectionsArray);
+        tag.putBoolean(TAG_SPAWNED, spawned);
         return tag;
     }
 
-    public static RoomData readFromNBT (@NotNull CompoundTag tag) {
-        BlockPos pos = NbtUtils.readBlockPos(tag.getCompound("Pos"));
-        RoomType type = RoomType.valueOf(tag.getString(TAG_ROOM_TYPE)); // Đọc loại phòng
+    // Method to read data from NBT
+    public static RoomData readFromNBT(@NotNull CompoundTag tag) {
+        BlockPos pos = NbtUtils.readBlockPos(tag.getCompound(TAG_POS));
+        RoomType type = RoomType.valueOf(tag.getString(TAG_TYPE));
 
-        int[] connectionsArray = tag.contains("Connections") ? tag.getIntArray("Connections") : new int[0];
-        EnumSet<Direction> connections = connectionsArray.length > 0 ?
-                EnumSet.copyOf(Arrays.stream(connectionsArray).mapToObj(Direction::from3DDataValue).toList()) :
-                EnumSet.noneOf(Direction.class);
+        int[] connectionsArray = tag.contains(TAG_CONNECTIONS) ? tag.getIntArray(TAG_CONNECTIONS) : new int[0];
+        EnumSet<Direction> connections = connectionsArray.length > 0
+                ? EnumSet.copyOf(Arrays.stream(connectionsArray).mapToObj(Direction::from3DDataValue).toList())
+                : EnumSet.noneOf(Direction.class);
 
-        boolean spawned = tag.getBoolean("Spawned"); // Đọc trạng thái spawned từ NBT tag
+        boolean spawned = tag.getBoolean(TAG_SPAWNED);
 
-        
         return new RoomData(pos, type, connections, spawned);
     }
 
-    public boolean isSpawned () {
+    // Check if the room has been spawned
+    public boolean isSpawned() {
         return spawned;
     }
 
-    public void setSpawned (boolean spawned) {
+    // Set the spawned state
+    public void setSpawned(boolean spawned) {
         this.spawned = spawned;
     }
 
+    // Check if a position is inside the room
     public boolean isInside(BlockPos blockPos) {
         int minX = pos.getX();
-        int maxX = pos.getX() + DrunkardWalk.ROOM_SIZE - 1; // Kích thước phòng trừ đi 1 vì tọa độ bắt đầu từ 0
+        int maxX = pos.getX() + DrunkardWalk.ROOM_SIZE - 1;
         int minY = pos.getY();
         int maxY = pos.getY() + DrunkardWalk.ROOM_SIZE - 1;
         int minZ = pos.getZ();
@@ -78,5 +79,10 @@ public class RoomData {
         return blockPos.getX() >= minX && blockPos.getX() <= maxX &&
                 blockPos.getY() >= minY && blockPos.getY() <= maxY &&
                 blockPos.getZ() >= minZ && blockPos.getZ() <= maxZ;
+    }
+
+    // Get the position of the room
+    public BlockPos getPosition() {
+        return pos;
     }
 }

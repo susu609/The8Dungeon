@@ -10,10 +10,9 @@ public class GameModeSelectionScreen extends Screen {
     private final MainMenuScreen mainMenuScreen;
 
     public GameModeSelectionScreen (MainMenuScreen mainMenuScreen) {
-        super(Component.translatable("menu.select_gamemode"));
+        super(Component.translatable("menu.select_game_mode"));
         this.mainMenuScreen = mainMenuScreen;
     }
-
     @Override
     protected void init () {
         super.init();
@@ -51,8 +50,14 @@ public class GameModeSelectionScreen extends Screen {
     }
 
     @Override
+    public boolean shouldCloseOnEsc () {
+        return false;
+    }
+
+    @Override
     public void render (@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(guiGraphics);
+        this.renderDirtBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, partialTicks);
+
     }
 }

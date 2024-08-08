@@ -94,7 +94,6 @@ public class CreateDungeonCommand {
             CommandSourceStack source = context.getSource();
 
             DungeonSavedData dungeonSavedData = DungeonSavedData.get(world);
-            List<RoomData> rooms;
 
             if (dungeonSavedData.isGenerating()) {
                 source.sendFailure(Component.literal("Dungeon đang được tạo. Vui lòng đợi."));
@@ -130,6 +129,7 @@ public class CreateDungeonCommand {
                     BlockPos startRoomPos = room.pos.offset(8, 1, 8);
                     player.teleportTo(world, startRoomPos.getX() + 0.5, startRoomPos.getY() + 1.5, startRoomPos.getZ() + 0.5, 0, 0);
                     BlackScreenOverlay.showOverlay(); // Hiển thị overlay
+
                 });
             }
 

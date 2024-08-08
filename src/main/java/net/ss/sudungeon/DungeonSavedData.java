@@ -1,6 +1,5 @@
 package net.ss.sudungeon;
 
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -114,5 +113,13 @@ public class DungeonSavedData extends SavedData {
     public void setDungeonGenerator (DrunkardWalk dungeonGenerator) {
         this.dungeonGenerator = dungeonGenerator;
         this.setDirty();
+    }
+
+    public void clearRooms () {
+        // Clear the list of rooms
+        roomDataList.clear();
+
+        // Mark the data as dirty to ensure it gets saved
+        setDirty();
     }
 }

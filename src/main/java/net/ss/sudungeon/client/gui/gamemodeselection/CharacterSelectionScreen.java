@@ -3,7 +3,10 @@ package net.ss.sudungeon.client.gui.gamemodeselection;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.ss.sudungeon.client.resources.SkinManager;
 import org.jetbrains.annotations.NotNull;
 
 public class CharacterSelectionScreen extends Screen {
@@ -40,17 +43,29 @@ public class CharacterSelectionScreen extends Screen {
     }
 
     private void onCharacterSelected (String character) {
-        // Chuyển đổi tên nhân vật về chữ thường
         String characterLowerCase = character.toLowerCase();
-        mainMenuScreen.setSelectedCharacter(characterLowerCase);
+        ResourceLocation skinLocation = new ResourceLocation("ss", "textures/entity/player/" + characterLowerCase + ".png");
+
+        // Lấy tên người chơi hiện tại
         assert this.minecraft != null;
+        LocalPlayer player = this.minecraft.player;
+        if (player != null) {
+            String playerName = player.getName().getString();
+            SkinManager.addCustomSkin(playerName, skinLocation);
+        }
+
+        mainMenuScreen.setSelectedCharacter(characterLowerCase);
         this.minecraft.setScreen(mainMenuScreen);
     }
 
+    @Override
+    public boolean shouldCloseOnEsc () {
+        return false;
+    }
 
     @Override
     public void render (@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(guiGraphics);
+        this.renderDirtBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, partialTicks);
     }
 }
