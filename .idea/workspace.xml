@@ -4,125 +4,25 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="03c3ced8-64e0-427b-af18-e63124b63b3d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-08-04_00.40.48-fml.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-08-04_00.45.30-fml.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-08-04_04.27.08-client.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-08-04_19.48.51-client.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-08-05_19.16.09-fml.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-08-03-16.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-08-03-17.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-08-04-10.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-08-04-11.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-08-04-12.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-08-04-2.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-08-04-3.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-08-04-4.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-08-04-5.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-08-04-6.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-08-04-7.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-08-04-8.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-08-04-9.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/screenshots/2024-08-04_03.02.18.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/ClassicPlayerRenderer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/ExternalPlayerRenderer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/InternalPlayerRenderer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/KleidersEntityRenderer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/gamemodeselection/LoadingScreen.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/player/AbstractClientPlayerMixin.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/renderer/entity/player/CustomPlayerRenderer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/command/SkinCommands.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/network/packet/ShowMainMenuScreenPacket.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/utils/PlayerSkinManager.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/textures/entity/player/slim/alex.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/textures/entity/player/slim/ari.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/textures/entity/player/slim/efe.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/textures/entity/player/slim/kai.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/textures/entity/player/slim/makena.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/textures/entity/player/slim/noor.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/textures/entity/player/slim/steve.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/textures/entity/player/slim/sunny.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/textures/entity/player/slim/zuri.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/textures/entity/player/wide/alex.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/textures/entity/player/wide/ari.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/textures/entity/player/wide/efe.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/textures/entity/player/wide/kai.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/textures/entity/player/wide/makena.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/textures/entity/player/wide/noor.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/textures/entity/player/wide/steve.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/textures/entity/player/wide/sunny.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/textures/entity/player/wide/zuri.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mcreator.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/mcreator.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/logs/2024-08-03-1.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/2024-08-03-1.log.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/logs/2024-08-03-10.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/2024-08-03-10.log.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/logs/2024-08-03-11.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/2024-08-03-11.log.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/logs/2024-08-03-12.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/2024-08-03-12.log.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/logs/2024-08-03-13.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/2024-08-03-13.log.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/logs/2024-08-03-14.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/2024-08-03-14.log.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/logs/2024-08-03-15.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/2024-08-03-15.log.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/logs/2024-08-03-2.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/2024-08-03-2.log.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/logs/2024-08-03-3.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/2024-08-03-3.log.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/logs/2024-08-03-4.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/2024-08-03-4.log.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/logs/2024-08-03-5.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/2024-08-03-5.log.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/logs/2024-08-03-6.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/2024-08-03-6.log.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/logs/2024-08-03-7.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/2024-08-03-7.log.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/logs/2024-08-03-8.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/2024-08-03-8.log.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/logs/2024-08-03-9.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/2024-08-03-9.log.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/logs/debug-1.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/debug-1.log.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/logs/debug-2.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/debug-2.log.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/logs/debug-3.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/debug-3.log.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/logs/debug-4.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/debug-4.log.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/logs/debug-5.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/debug-5.log.gz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/logs/debug.log" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/debug.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/logs/latest.log" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/latest.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/DIM-1/data/raids.dat" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/DIM-1/data/raids.dat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/DIM1/data/raids_end.dat" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/DIM1/data/raids_end.dat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/advancements/380df991-f603-344c-a090-369bad2a924a.json" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/advancements/380df991-f603-344c-a090-369bad2a924a.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/data/raids.dat" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/data/raids.dat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/level.dat" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/level.dat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/level.dat_old" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/level.dat_old" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/playerdata/380df991-f603-344c-a090-369bad2a924a.dat" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/playerdata/380df991-f603-344c-a090-369bad2a924a.dat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/playerdata/380df991-f603-344c-a090-369bad2a924a.dat_old" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/playerdata/380df991-f603-344c-a090-369bad2a924a.dat_old" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/poi/r.-1.-1.mca" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/poi/r.-1.0.mca" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/poi/r.0.-1.mca" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/poi/r.0.0.mca" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/region/r.-1.-1.mca" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/region/r.-1.-1.mca" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/region/r.-1.0.mca" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/region/r.-1.0.mca" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/region/r.0.-1.mca" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/region/r.0.-1.mca" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/region/r.0.0.mca" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/region/r.0.0.mca" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/session.lock" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/session.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/stats/380df991-f603-344c-a090-369bad2a924a.json" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/stats/380df991-f603-344c-a090-369bad2a924a.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/usercache.json" beforeDir="false" afterPath="$PROJECT_DIR$/run/usercache.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/DungeonSavedData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/DungeonSavedData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/SsMod.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/SsMod.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/BlackScreenOverlay.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/BlackScreenOverlay.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/gamemodeselection/CharacterSelectionScreen.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/gamemodeselection/CharacterSelectionScreen.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/gamemodeselection/GameModeSelectionScreen.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/gamemodeselection/GameModeSelectionScreen.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/gamemodeselection/MainMenuScreen.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/gamemodeselection/MainMenuScreen.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/resources/DefaultSkinProvider.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/resources/ISkinProvider.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/resources/ModelType.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/resources/PlayerSkin.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/resources/PlayerSkinHandler.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/resources/PlayerSkinProvider.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/resources/PlayerSkins.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/resources/ServerSkinUpdater.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/resources/SkinManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/resources/SkinManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/resources/SkinSelectionHandler.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/resources/SkinType.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/resources/SkinUpdater.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/command/CreateDungeonCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/command/CreateDungeonCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/event/DungeonEventHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/event/DungeonEventHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/level/levelgen/dungeongen/DrunkardWalk.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/level/levelgen/dungeongen/DrunkardWalk.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/level/levelgen/dungeongen/RoomData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/level/levelgen/dungeongen/RoomData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/level/levelgen/dungeongen/RoomType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/level/levelgen/dungeongen/RoomType.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/assets/ss/lang/en_us.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/lang/en_us.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/ss.mixin.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/ss.mixin.json" afterDir="false" />
+    <list default="true" id="03c3ced8-64e0-427b-af18-e63124b63b3d" name="Changes" comment="update">
+      <change afterPath="$PROJECT_DIR$/run/backups/Save Game.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-08-08_20.02.32-client.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-08-08_20.22.59-client.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/logs/2024-08-05-2.log.gz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/logs/2024-08-08-1.log.gz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/logs/2024-08-08-2.log.gz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/logs/2024-08-08-3.log.gz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/logs/2024-08-08-4.log.gz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/logs/2024-08-08-5.log.gz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/logs/2024-08-08-6.log.gz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/logs/2024-08-08-7.log.gz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/data/sudungeon_data.dat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/icon.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/screenshots/2024-08-08_22.01.50.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/screenshots/2024-08-08_22.22.44.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/screenshots/2024-08-08_23.23.05.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/screenshots/2024-08-08_23.23.53.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/screenshots/2024-08-08_23.23.56.png" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -578,6 +478,15 @@
       <option name="presentableId" value="Default" />
       <updated>1720089086914</updated>
     </task>
+    <task id="LOCAL-00001" summary="update">
+      <option name="closed" value="true" />
+      <created>1723127658454</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1723127658454</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -593,5 +502,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <MESSAGE value="update" />
+    <option name="LAST_COMMIT_MESSAGE" value="update" />
   </component>
 </project>
