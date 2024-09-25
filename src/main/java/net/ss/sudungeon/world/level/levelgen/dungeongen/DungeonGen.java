@@ -15,4 +15,6 @@ import java.util.List;
 
 public interface DungeonGen {
     void generate (@NotNull ServerLevel world, @NotNull BlockPos startPos, long seed);
+
+    void clearDungeon (ServerLevel level);
 }

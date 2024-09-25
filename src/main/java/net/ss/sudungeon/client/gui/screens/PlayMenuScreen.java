@@ -8,6 +8,7 @@ import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.multiplayer.SafetyScreen;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
@@ -21,16 +22,20 @@ public class PlayMenuScreen extends Screen {
     private static final int BUTTON_WIDTH = 300;
     private static final int BUTTON_HEIGHT = 30;
     private static final int BUTTON_SPACING = 10; // Tăng khoảng cách giữa các nút
+    protected final Screen lastScreen;
 
-    public PlayMenuScreen () {
+    public PlayMenuScreen (Screen lastScreen) {
         super(Component.translatable("gui.ss.play_menu")); // Tên màn hình có thể dịch được
+        this.lastScreen = lastScreen;
     }
 
     @Override
     protected void init () {
-        int numButtons = 2; // Số lượng nút
+        int numButtons = 3; // Số lượng nút
         int totalHeight = numButtons * BUTTON_HEIGHT + (numButtons - 1) * BUTTON_SPACING;
         int startY = (this.height - totalHeight) / 2; // Tính toán vị trí y bắt đầu
+
+        // Nút Singleplayer
         this.addRenderableWidget(Button.builder(
                         Component.translatable("menu.singleplayer"),
                         (button) -> {
@@ -40,6 +45,7 @@ public class PlayMenuScreen extends Screen {
                 .bounds(this.width / 2 - BUTTON_WIDTH / 2, startY, BUTTON_WIDTH, BUTTON_HEIGHT)
                 .build());
 
+        // Nút Multiplayer
         this.addRenderableWidget(Button.builder(
                         Component.translatable("menu.multiplayer"),
                         (button) -> {
@@ -51,18 +57,16 @@ public class PlayMenuScreen extends Screen {
                 .bounds(this.width / 2 - BUTTON_WIDTH / 2, startY + BUTTON_HEIGHT + BUTTON_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT)
                 .build());
 
-/*
-        // Thêm nút Custom
+        // Nút Cancel căn giữa với kích thước nhỏ hơn
+        int cancelButtonWidth = 200; // Đặt kích thước nhỏ hơn cho nút "Cancel"
         this.addRenderableWidget(Button.builder(
-                        Component.translatable("gui.ss.custom_dungeon"), // Tên nút Custom
+                        CommonComponents.GUI_CANCEL,
                         (button) -> {
-                            // Mở màn hình tùy chỉnh hầm ngục ở đây
+                            assert this.minecraft != null;
+                            this.minecraft.setScreen(this.lastScreen);
                         })
-                .bounds(this.width / 2 - BUTTON_WIDTH / 2, startY + 2 * (BUTTON_HEIGHT + BUTTON_SPACING), BUTTON_WIDTH, BUTTON_HEIGHT)
+                .bounds(this.width / 2 - cancelButtonWidth / 2, startY + 2 * (BUTTON_HEIGHT + BUTTON_SPACING), cancelButtonWidth, BUTTON_HEIGHT)
                 .build());
-
-*/
-
     }
 
     @Override
@@ -75,6 +79,4 @@ public class PlayMenuScreen extends Screen {
         // Vẽ các nút bấm
         super.render(guiGraphics, mouseX, mouseY, partialTicks);
     }
-
-
 }

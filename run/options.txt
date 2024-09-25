@@ -31,8 +31,8 @@ glintStrength:0.75
 damageTiltStrength:1.0
 highContrast:false
 gamma:0.5
-renderDistance:10
-simulationDistance:16
+renderDistance:5
+simulationDistance:5
 entityDistanceScaling:1.0
 guiScale:0
 particles:0
@@ -118,6 +118,8 @@ key_key.hotbar.6:key.keyboard.6
 key_key.hotbar.7:key.keyboard.7
 key_key.hotbar.8:key.keyboard.8
 key_key.hotbar.9:key.keyboard.9
+key_key.ss.open_stats:key.keyboard.p
+key_key.ss.open_map:key.keyboard.m
 soundCategory_master:1.0
 soundCategory_music:0.0
 soundCategory_record:1.0

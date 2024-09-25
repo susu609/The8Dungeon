@@ -22,7 +22,7 @@ public enum RoomType {
     }
 
     public RoomTypeConfig getConfig() {
-        return config;
+        return this.config;
     }
 
     public static RoomType fromString(String name) {
@@ -32,5 +32,13 @@ public enum RoomType {
             }
         }
         throw new IllegalArgumentException("Invalid RoomType name: " + name);
+    }
+
+    /**
+     * Xác định xem RoomType có phải là phòng đặc biệt hay không.
+     * Các phòng đặc biệt là BOSS, TREASURE, SHOP, NORMAL, EVENT.
+     */
+    public boolean isSpecial() {
+        return this == BOSS || this == TREASURE || this == SHOP || this == EVENT || this == ELITE;
     }
 }

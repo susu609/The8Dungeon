@@ -5,7 +5,14 @@ repositories {
 }
 
 dependencies {
-    implementation fg.deobf("curse.maven:kleidersplayerrenderer-682065:5083323")
+//    implementation fg.deobf("curse.maven:kleidersplayerrenderer-682065:5083323")
+//    implementation fg.deobf("curse.maven:more-player-models-221939:5255834")
+//    implementation fg.deobf("curse.maven:skinchanger-378549:4590242")
+//    implementation fg.deobf("curse.maven:better-third-person-435044:4596768")
+//    implementation fg.deobf("curse.maven:kleidersplayerrenderer-682065:5654821")
+//    implementation fg.deobf("curse.maven:bookshelf-228525:5423987")
+//    implementation fg.deobf("curse.maven:sophisticated-core-618298:5729525")
 }
+
 
 

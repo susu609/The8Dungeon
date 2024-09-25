@@ -1,3 +1,4 @@
+/*
 package net.ss.sudungeon.client.gui.screens;
 
 import net.minecraft.client.gui.GuiGraphics;
@@ -33,7 +34,7 @@ public class DungeonReportScreen extends Screen {
         if (rooms != null && !rooms.isEmpty()) {
             // Hiển thị thông tin của từng phòng
             for (RoomData room : rooms) {
-                String roomInfo = String.format("Phòng %s tại %s", room.type, room.pos);
+                String roomInfo = String.format("Phòng %s tại %s", room.getType(), room.getPos());
                 guiGraphics.drawString(this.font, roomInfo, 20, y, 0xFFFFFF);
                 y += 15;
             }
@@ -45,3 +46,4 @@ public class DungeonReportScreen extends Screen {
         super.render(guiGraphics, mouseX, mouseY, partialTicks);
     }
 }
+*/

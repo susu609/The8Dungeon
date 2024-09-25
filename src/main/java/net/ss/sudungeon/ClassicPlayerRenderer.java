@@ -1,67 +1,72 @@
 /*
-package net.ss.sudungeon;
+package net.mcreator.sfsdfsddsfsdfsdfsdfsdfsd.procedures;
+
+*/
+/* imports omitted *//*
+
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.model.HumanoidArmorModel;
-import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.client.renderer.entity.layers.*;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.player.PlayerModelPart;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.UseAnim;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.RenderLivingEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
-public class ClassicPlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
-    private final ResourceLocation PLAYER_SKIN;
-
-    public ClassicPlayerRenderer(EntityRendererProvider.Context context, boolean useSmallArms, ResourceLocation skin) {
-        super(context, new PlayerModel<>(context.bakeLayer(PlayerModel.createMesh(useSmallArms)), useSmallArms), 0.5F);
-        this.addLayer(new HumanoidArmorLayer<>(this, new HumanoidArmorModel<>(context.bakeLayer(useSmallArms ? ModelLayers.PLAYER_ARMOR_OUTER : ModelLayers.PLAYER_ARMOR_INNER)), new HumanoidArmorModel<>(context.bakeLayer(useSmallArms ? ModelLayers.PLAYER_ARMOR_OUTER : ModelLayers.PLAYER_ARMOR_INNER))));
-        this.addLayer(new PlayerItemInHandLayer<>(this, context.getItemInHandRenderer()));
-        this.addLayer(new ArrowLayer<>(this));
-        this.addLayer(new Deadmau5EarsLayer<>(this));
-        this.addLayer(new CapeLayer<>(this));
-        this.addLayer(new CustomHeadLayer<>(this, context.getModelSet()));
-        this.addLayer(new ElytraLayer<>(this, context.getModelSet()));
-        this.addLayer(new ParrotOnShoulderLayer<>(this, context.getModelSet()));
-        this.addLayer(new SpinAttackEffectLayer<>(this, context.getModelSet()));
-        this.addLayer(new BeeStingerLayer<>(this));
-        this.PLAYER_SKIN = skin;
+@Mod.EventBusSubscriber(value = {Dist.CLIENT})
+public class PlayerrenderProcedure {
+    @OnlyIn(Dist.CLIENT)
+    @SubscribeEvent
+    public static void onRenderArm(RenderLivingEvent event) {
+        execute(event, event.getEntity());
     }
 
-    @Override
-    public void render(AbstractClientPlayer entity, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
-        super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
+    public static void execute(Entity entity) {
+        execute(null, entity);
     }
 
-    @Override
-    protected void scale(AbstractClientPlayer entity, PoseStack poseStack, float partialTicks) {
-        poseStack.scale(0.9375F, 0.9375F, 0.9375F);
+    private static void execute(@Nullable Event event, Entity entity) {
+        if (entity == null)
+            return;
+        String skin = "";
+        boolean boolean1 = false;
+        if (entity instanceof Player || entity instanceof ServerPlayer) {
+            RenderLivingEvent _evt = (RenderLivingEvent) event;
+            Minecraft mc = Minecraft.getInstance();
+            EntityRenderDispatcher dis = Minecraft.getInstance().getEntityRenderDispatcher();
+            EntityRendererProvider.Context context = new EntityRendererProvider.Context(dis, mc.getItemRenderer(), mc.getBlockRenderer(), dis.getItemInHandRenderer(), mc.getResourceManager(), mc.getEntityModels(), mc.font);
+            Entity _evtEntity = _evt.getEntity();
+            PlayerRenderer _pr = null;
+            PoseStack poseStack = _evt.getPoseStack();
+            if (_evt.getRenderer() instanceof PlayerRenderer && !(_evt.getRenderer() instanceof com.kleiders.kleidersplayerrenderer.KleidersIgnoreCancel)) {
+                ResourceLocation _texture = new ResourceLocation("kleiders_custom_renderer:textures/entities/empty.png");
+                com.kleiders.kleidersplayerrenderer.KleidersSkinRenderer emptyRenderer = new com.kleiders.kleidersplayerrenderer.KleidersSkinRenderer(context,
+                        (_evtEntity instanceof AbstractClientPlayer ? ((AbstractClientPlayer) _evtEntity).getModelName().equals("slim") : false), _texture);
+                _pr = emptyRenderer;
+                emptyRenderer.clearLayers();
+                emptyRenderer.render((AbstractClientPlayer) _evt.getEntity(), _evt.getEntity().getYRot(), _evt.getPartialTick(), _evt.getPoseStack(), _evt.getMultiBufferSource(), _evt.getPackedLight());
+            }
+            if (_evt.getRenderer() instanceof PlayerRenderer && !(_evt.getRenderer() instanceof com.kleiders.kleidersplayerrenderer.KleidersIgnoreCancel)) {
+                ResourceLocation _texture = new ResourceLocation("kleiders_custom_renderer:textures/entities/default.png");
+                if (ResourceLocation.tryParse("sfsdfsddsfsdfsdfsdfsdfsd:textures/entities/duong404.png") != null) {
+                    _texture = new ResourceLocation("sfsdfsddsfsdfsdfsdfsdfsd:textures/entities/duong404.png");
+                }
+                new com.kleiders.kleidersplayerrenderer.KleidersSkinRenderer(context, false, _texture).render((AbstractClientPlayer) _evt.getEntity(), _evt.getEntity().getYRot(), _evt.getPartialTick(), _evt.getPoseStack(),
+                        _evt.getMultiBufferSource(), _evt.getPackedLight());
+            }
+            if (_evt.getRenderer() instanceof LivingEntityRenderer && !(_evt.getRenderer() instanceof com.kleiders.kleidersplayerrenderer.KleidersIgnoreCancel)) {
+                if (_evt instanceof RenderLivingEvent.Pre _pre) {
+                    _pre.setCanceled(true);
+                }
+            }
+        }
     }
-
-    @Override
-    public Vec3 getRenderOffset(AbstractClientPlayer entity, float partialTicks) {
-        return entity.isCrouching() ? new Vec3(0.0, -0.125, 0.0) : super.getRenderOffset(entity, partialTicks);
-    }
-
-    @Override
-    protected void renderNameTag(AbstractClientPlayer entity, Component name, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
-        super.renderNameTag(entity, name, poseStack, buffer, packedLight);
-    }
-
-    @Override
-    public ResourceLocation getTextureLocation(AbstractClientPlayer entity) {
-        return PLAYER_SKIN;
-    }
-}
-*/
+}*/

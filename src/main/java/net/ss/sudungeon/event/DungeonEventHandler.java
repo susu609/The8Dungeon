@@ -7,10 +7,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.network.NetworkDirection;
 import net.ss.sudungeon.DungeonSavedData;
 import net.ss.sudungeon.SsMod;
-import net.ss.sudungeon.network.packet.ShowMainMenuScreenPacket;
 
 @Mod.EventBusSubscriber(modid = SsMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class DungeonEventHandler {
@@ -37,13 +35,14 @@ public class DungeonEventHandler {
             }
 
         }
+
     }
 
     private static void handleNoRoomsCondition (ServerPlayer player) {
         // Placeholder for any specific logic to handle the no rooms condition
         // For instance, you could send a packet to the player to open a GUI, display a message, etc.
-        SsMod.PACKET_HANDLER.sendTo(new ShowMainMenuScreenPacket(), player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
-        SsMod.LOGGER.info("Sent MainMenuScreen packet to " + player.getName().getString());
+//        SsMod.PACKET_HANDLER.sendTo(new ShowMainMenuScreenPacket(), player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+//        SsMod.LOGGER.info("Sent MainMenuScreen packet to " + player.getName().getString());
     }
 
     @SubscribeEvent

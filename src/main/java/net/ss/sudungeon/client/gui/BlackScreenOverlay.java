@@ -11,7 +11,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.ss.sudungeon.SsMod;
 import net.ss.sudungeon.client.gui.gamemodeselection.MainMenuScreen;
 
-@Mod.EventBusSubscriber(modid = SsMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(value = {Dist.CLIENT})
 public class BlackScreenOverlay {
     private static final int FADE_IN_DURATION = 1000; // Duration for fade-in (in ticks)
     private static final int HOLD_DURATION = 1000;    // Duration to hold the black screen (in ticks)

@@ -10,12 +10,16 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -32,68 +36,60 @@ import java.util.Optional;
 
 @Mod.EventBusSubscriber
 public class CreateDungeonCommand {
+
+    public static final ResourceKey<Level> DUNGEON_LEVEL_KEY = ResourceKey.create(Registries.DIMENSION, new ResourceLocation("ss", "dungeon_dimension"));
+
     @SubscribeEvent
-    public static void register (RegisterCommandsEvent event) {
+    public static void register(RegisterCommandsEvent event) {
         CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
         LiteralArgumentBuilder<CommandSourceStack> createDungeonCommand = Commands.literal("create_dungeon")
                 .requires(cs -> cs.hasPermission(2))
                 .executes(CreateDungeonCommand::executeWithRandomSeed);
 
-        // Thêm tùy chọn "random"
         createDungeonCommand.then(Commands.literal("random")
                 .then(Commands.argument("teleport", BoolArgumentType.bool())
                         .executes(CreateDungeonCommand::executeWithRandomSeedAndTeleport)));
 
-        // Giữ nguyên các tùy chọn khác (seed và teleport)
         createDungeonCommand.then(Commands.argument("seed", LongArgumentType.longArg())
                 .executes(CreateDungeonCommand::executeWithSeed)
                 .then(Commands.argument("teleport", BoolArgumentType.bool())
                         .executes(CreateDungeonCommand::executeWithSeedAndTeleport)));
 
         dispatcher.register(createDungeonCommand);
-
     }
 
-    private static int executeWithSeedAndTeleport (CommandContext<CommandSourceStack> commandSourceStackCommandContext) {
-        return 1;
+    private static int executeWithSeedAndTeleport(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        boolean teleport = BoolArgumentType.getBool(context, "teleport");
+        return execute(context, LongArgumentType.getLong(context, "seed"), teleport);
     }
 
-    private static int executeWithRandomSeedAndTeleport (CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-        boolean teleport = BoolArgumentType.getBool(context, "teleport"); // Lấy giá trị của tùy chọn teleport
-        return execute(context, context.getSource().getLevel().getRandom().nextLong(), teleport); // Gọi execute với seed ngẫu nhiên và tùy chọn teleport
+    private static int executeWithRandomSeedAndTeleport(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        boolean teleport = BoolArgumentType.getBool(context, "teleport");
+        return execute(context, context.getSource().getLevel().getRandom().nextLong(), teleport);
     }
 
-
-    private static int executeWithTeleport (CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-        boolean teleport = BoolArgumentType.getBool(context, "teleport"); // Lấy giá trị của tùy chọn teleport
-        long seed = context.getSource().getLevel().getRandom().nextLong(); // Hoặc lấy seed từ argument nếu có
-        return execute(context, seed, teleport); // Gọi execute với cả seed và tùy chọn teleport
-    }
-
-
-    static void handleError (CommandSourceStack source, Exception e) {
-        SsMod.LOGGER.error("Error executing /create_dungeon command: {}", e);
-        source.sendFailure(Component.literal("An error occurred while creating the dungeon."));
-    }
-
-    private static int executeWithSeed (CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+    private static int executeWithSeed(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         return execute(context, LongArgumentType.getLong(context, "seed"), false);
     }
 
-    private static int executeWithRandomSeed (CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+    private static int executeWithRandomSeed(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         return execute(context, context.getSource().getLevel().getRandom().nextLong(), false);
     }
 
-
-    private static int execute (CommandContext<CommandSourceStack> context, long seed, boolean teleport) throws CommandSyntaxException {
+    private static int execute(CommandContext<CommandSourceStack> context, long seed, boolean teleport) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
-        ServerLevel world = (ServerLevel) player.getCommandSenderWorld();
+        CommandSourceStack source = context.getSource();
+        ServerLevel level = source.getLevel();
+
+        // Lấy dimension mới
+        ServerLevel dungeonDimensionLevel = player.server.getLevel(DUNGEON_LEVEL_KEY);
+        if (dungeonDimensionLevel == null) {
+            SsMod.LOGGER.error("Dungeon dimension not loaded or does not exist.");
+            return 0;
+        }
 
         try {
-
-            CommandSourceStack source = context.getSource();
-
-            DungeonSavedData dungeonSavedData = DungeonSavedData.get(world);
+            DungeonSavedData dungeonSavedData = DungeonSavedData.get(dungeonDimensionLevel);
 
             if (dungeonSavedData.isGenerating()) {
                 source.sendFailure(Component.literal("Dungeon đang được tạo. Vui lòng đợi."));
@@ -108,40 +104,48 @@ public class CreateDungeonCommand {
             dungeonSavedData.getRooms().clear();
             dungeonSavedData.setDungeonSeed(seed);
             dungeonSavedData.setDirty();
-            BlockPos startPos = new BlockPos(0, 1, 0);
 
+            // Tạo dungeon mới trong dimension khác
+            // Giả định bạn có `level`
+            DungeonSavedData data = DungeonSavedData.get(level); // Giả định bạn có `level`
+            List<RoomData> roomDataList = data.getRooms();
             DrunkardWalk drunkardWalk = new DrunkardWalk(RoomType.START);
-            drunkardWalk.generate(world, startPos, seed); // Tạo dungeon bình thường
 
-            if (dungeonSavedData.getRooms().isEmpty()) {
+            drunkardWalk.generate(dungeonDimensionLevel, new BlockPos(0, 64, 0), seed);
+
+            if (drunkardWalk.rooms.isEmpty()) {
+                SsMod.LOGGER.error("Dungeon creation failed. No rooms were generated.");
                 throw new DungeonCreationException("Dungeon creation failed");
             } else {
-                dungeonSavedData.setRoomDataList(drunkardWalk.rooms); // Cập nhật rooms
+                dungeonSavedData.setRooms(drunkardWalk.rooms);
                 dungeonSavedData.setDirty();
             }
 
             if (teleport) {
                 Optional<RoomData> startRoom = drunkardWalk.rooms.stream()
-                        .filter(room -> room.type == RoomType.START)
+                        .filter(room -> room.getType() == RoomType.START)
                         .findFirst();
-
                 startRoom.ifPresent(room -> {
-                    BlockPos startRoomPos = room.pos.offset(8, 1, 8);
-                    player.teleportTo(world, startRoomPos.getX() + 0.5, startRoomPos.getY() + 1.5, startRoomPos.getZ() + 0.5, 0, 0);
-                    BlackScreenOverlay.showOverlay(); // Hiển thị overlay
-
+                    BlockPos startRoomPos = room.getPosition().offset(8, 1, 8);
+                    player.teleportTo(dungeonDimensionLevel, startRoomPos.getX() + 0.5, startRoomPos.getY() + 1.5, startRoomPos.getZ() + 0.5, 0, 0);
+                    BlackScreenOverlay.showOverlay();
                 });
             }
 
             player.sendSystemMessage(createSeedMessage(seed));
             return 1;
         } catch (DungeonCreationException e) {
-            handleError(context.getSource(), e);
+            handleError(source, e);
             return 0;
         }
     }
 
-    private static Component createSeedMessage (long seed) {
+    static void handleError (CommandSourceStack source, Exception e) {
+        SsMod.LOGGER.error("Error executing /create_dungeon command: {}", e);
+        source.sendFailure(Component.literal("An error occurred while creating the dungeon."));
+    }
+
+    private static Component createSeedMessage(long seed) {
         String seedString = String.valueOf(seed);
         Style style = Style.EMPTY
                 .withColor(ChatFormatting.DARK_GREEN)

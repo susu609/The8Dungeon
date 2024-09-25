@@ -37,7 +37,7 @@ public class DespawnCommand {
         DungeonSavedData dungeonSavedData = DungeonSavedData.get(level);
         List<RoomData> rooms = dungeonSavedData.getRooms();
 
-        int despawnedCount = rooms.stream().mapToInt(room -> despawnDungeonEntities(context.getSource(), room.entities)).sum();
+        int despawnedCount = rooms.stream().mapToInt(room -> despawnDungeonEntities(context.getSource(), room.getEntities())).sum();
         context.getSource().sendSuccess(() -> Component.literal("Despawned " + despawnedCount + " entities in the dungeon."), true);
         return despawnedCount;
     }

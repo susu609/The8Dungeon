@@ -1,41 +1,35 @@
 package net.ss.sudungeon.command;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.ss.sudungeon.DungeonSavedData;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Supplier;
+import net.ss.sudungeon.utils.DungeonUtils;
+import net.ss.sudungeon.world.level.levelgen.dungeongen.DrunkardWalk;
 
 @Mod.EventBusSubscriber
 public class ClearDungeonCommand {
 
     @SubscribeEvent
-    public static void register (RegisterCommandsEvent event) {
+    public static void register(RegisterCommandsEvent event) {
         CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
-        LiteralArgumentBuilder<CommandSourceStack> clearDungeonCommand = Commands.literal("clear_dungeon")
-                .requires(cs -> cs.hasPermission(2))
-                .executes(ClearDungeonCommand::execute); // Loại bỏ phần then(Commands.argument("all", BoolArgumentType.bool())
-        dispatcher.register(clearDungeonCommand);
+        dispatcher.register(
+                Commands.literal("clear_dungeon")
+                        .requires(cs -> cs.hasPermission(2)) // Yêu cầu quyền hạn 2
+                        .executes(ClearDungeonCommand::execute)
+        );
     }
 
-    private static int execute (CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+    private static int execute(CommandContext<CommandSourceStack> context) {
         ServerLevel level = context.getSource().getLevel();
-        CommandSourceStack source = context.getSource().withPermission(4);
+        CommandSourceStack source = context.getSource();
 
         DungeonSavedData dungeonData = DungeonSavedData.get(level);
         if (dungeonData.getRooms().isEmpty()) {
@@ -43,17 +37,19 @@ public class ClearDungeonCommand {
             return 0;
         }
 
-        // Sử dụng Optional và đưa ra thông báo lỗi chi tiết hơn
-        Optional.ofNullable(dungeonData.getDungeonGenerator())
-                .ifPresentOrElse(
-                        dungeonGen -> dungeonGen.clearDungeon(level),
-                        () -> {
-                            source.sendFailure(Component.literal("Lỗi: Không tìm thấy dungeon generator cho chiều không gian này!"));
-                            throw new IllegalStateException("Không tìm thấy dungeon generator cho chiều không gian này"); // Ném ra một exception để dừng việc thực thi
-                        });
+        DrunkardWalk dungeonGen = dungeonData.getDungeonGenerator();
+        if (dungeonGen != null) {
+            // Xóa tất cả các cấu trúc phòng trong thế giới
+            DungeonUtils.clearDungeon(level, dungeonGen.getRooms());
 
-        source.sendSuccess((Supplier<Component>) Component.literal("Dungeon đã được xóa!").withStyle(ChatFormatting.GREEN), true);
-        return 1;
+            // Sau khi xóa cấu trúc, tiến hành xóa dữ liệu phòng khỏi DungeonSavedData
+            dungeonData.clearRooms();
+
+            source.sendSuccess(() -> Component.literal("Dungeon đã được xóa!").withStyle(ChatFormatting.GREEN), true);
+            return 1;
+        } else {
+            source.sendFailure(Component.literal("Lỗi: Không tìm thấy dungeon generator cho chiều không gian này!"));
+            return 0;
+        }
     }
-
 }

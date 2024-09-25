@@ -44,7 +44,7 @@ public class MobSpawnEventHandler {
         List<RoomData> rooms = dungeonSavedData.getRooms();
 
         for (RoomData room : rooms) {
-            if (room.isInside(monster.blockPosition())) { // Kiểm tra xem quái vật có trong dungeon không
+            if (room.isBlockInsideRoom(monster.blockPosition())) { // Kiểm tra xem quái vật có trong dungeon không
                 applySpawnEffects(monster); // Áp dụng hiệu ứng spawn
                 break; // Thoát khỏi vòng lặp nếu đã tìm thấy phòng chứa quái vật
             }

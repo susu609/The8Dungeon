@@ -37,7 +37,6 @@ public class ModTitleScreen extends TitleScreen {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void eventHandler (ScreenEvent.Opening event) {
         if (event.getScreen() instanceof TitleScreen) {
-
             event.setNewScreen(new ModTitleScreen(true));
         }
     }
@@ -46,54 +45,105 @@ public class ModTitleScreen extends TitleScreen {
     protected void init () {
         super.init();
         this.clearWidgets();
-        // Thêm các nút khác của bạn ở đây
+
+        // Kích thước và vị trí cơ bản
+        int buttonWidth1 = 200; // Kích thước cho các nút lớn hơn
+        int buttonWidth2 = 98;  // Kích thước cho các nút nhỏ hơn
+        int buttonHeight = 20;
+        int spacing = 4; // Khoảng cách giữa các nút
+        int centerX = this.width / 2;
+        int startY = this.height / 4 + 48; // Vị trí y bắt đầu
+
+        // Nút "Play"
+        this.addRenderableWidget(Button.builder(
+                        Component.literal("Play"),
+                        button -> {
+                            assert this.minecraft != null;
+                            this.minecraft.setScreen(new PlayMenuScreen(this));
+                        })
+                .bounds(centerX - buttonWidth1 / 2, startY + (buttonHeight + spacing), buttonWidth1, buttonHeight)
+                .build());
+
+        // Nút "Options"
+        this.addRenderableWidget(Button.builder(
+                        Component.translatable("menu.options"),
+                        button -> {
+                            assert this.minecraft != null;
+                            this.minecraft.setScreen(new OptionsScreen(this, this.minecraft.options));
+                        })
+                .bounds(centerX + 2, startY + 2 * (buttonHeight + spacing), buttonWidth2, buttonHeight)
+                .build());
+
+        // Nút "Mods"
+        this.addRenderableWidget(Button.builder(
+                        Component.translatable("fml.menu.mods"),
+                        button -> {
+                            assert this.minecraft != null;
+                            this.minecraft.setScreen(new ModListScreen(this));
+                        })
+                .bounds(centerX - 100, startY + 2 * (buttonHeight + spacing), buttonWidth2, buttonHeight)
+                .build());
+
+        // Nút "Quit"
+        this.addRenderableWidget(Button.builder(
+                        Component.translatable("menu.quit"),
+                        button -> {
+                            assert this.minecraft != null;
+                            this.minecraft.stop();
+                        })
+                .bounds(centerX - buttonWidth1 / 2, startY + 3 * (buttonHeight + spacing), buttonWidth1, buttonHeight)
+                .build());
+
+        // Nút "Language" (ImageButton)
+        this.addRenderableWidget(new ImageButton(
+                centerX - buttonWidth1 / 2 - 24, // Đặt bên trái của nút chính
+                startY + 3 * (buttonHeight + spacing),
+                20, 20, 0, 106, 20,
+                Button.WIDGETS_LOCATION,
+                256, 256,
+                button -> {
+                    assert this.minecraft != null;
+                    this.minecraft.setScreen(new LanguageSelectScreen(this, this.minecraft.options, this.minecraft.getLanguageManager()));
+                },
+                Component.translatable("narrator.button.language")));
+
+        // Nút "Accessibility" (ImageButton)
+        this.addRenderableWidget(new ImageButton(
+                centerX + buttonWidth1 / 2 + 4, // Đặt bên phải của nút chính
+                startY + 3 * (buttonHeight + spacing),
+                20, 20, 0, 0, 20,
+                Button.ACCESSIBILITY_TEXTURE,
+                32, 64,
+                button -> {
+                    assert this.minecraft != null;
+                    this.minecraft.setScreen(new AccessibilityOptionsScreen(this, this.minecraft.options));
+                },
+                Component.translatable("narrator.button.accessibility")));
+
+        // Nút Bản quyền
         int copyrightWidth = this.font.width(COPYRIGHT_TEXT);
+        PlainTextButton copyrightButton = getCopyrightButton(copyrightWidth);
+        this.addRenderableWidget(copyrightButton);
+    }
+
+    @NotNull
+    private PlainTextButton getCopyrightButton (int copyrightWidth) {
         int copyrightX = (this.width - copyrightWidth) / 2;
         int copyrightY = this.height - 20;
-        int buttonWidth = 200;
-        int buttonHeight = 20;
-        int spacing = 4;
-        int startY = this.height / 4 + 48; // Vị trí y bắt đầu
-        Button modButton = this.addRenderableWidget(Button.builder(
-                        Component.translatable("fml.menu.mods"), button -> {
-                            assert this.minecraft != null;
-                            this.minecraft.setScreen(new
-                                    ModListScreen(this));
-                        })
-                .pos(this.width / 2 - 100, startY + 24 * 2)
-                .size(98, 20)
-                .build());
-        net.minecraftforge.client.gui.TitleScreenModUpdateIndicator.init(this, modButton);
 
-        this.addRenderableWidget(new ImageButton(this.width / 2 - 124, startY + 72 + 12, 20, 20, 0, 106, 20, Button.WIDGETS_LOCATION, 256, 256, (p_280830_) -> {
-            assert this.minecraft != null;
-            this.minecraft.setScreen(new LanguageSelectScreen(this, this.minecraft.options, this.minecraft.getLanguageManager()));
-        }, Component.translatable("narrator.button.language")));
-        this.addRenderableWidget(Button.builder(Component.translatable("menu.options"), (p_280838_) -> {
-            assert this.minecraft != null;
-            this.minecraft.setScreen(new OptionsScreen(this, this.minecraft.options));
-        }).bounds(this.width / 2 - 100, startY + 72 + 12, 98, 20).build());
-        this.addRenderableWidget(Button.builder(Component.translatable("menu.quit"), (p_280831_) -> {
-            assert this.minecraft != null;
-            this.minecraft.stop();
-        }).bounds(this.width / 2 + 2, startY + 72 + 12, 98, 20).build());
-        this.addRenderableWidget(new ImageButton(this.width / 2 + 104, startY + 72 + 12, 20, 20, 0, 0, 20, Button.ACCESSIBILITY_TEXTURE, 32, 64, (p_280835_) -> {
-            assert this.minecraft != null;
-            this.minecraft.setScreen(new AccessibilityOptionsScreen(this, this.minecraft.options));
-        }, Component.translatable("narrator.button.accessibility")));
-        PlainTextButton copyrightButton = new PlainTextButton(copyrightX, copyrightY, copyrightWidth, 10, COPYRIGHT_TEXT, (p_280834_) -> {
-            assert this.minecraft != null;
-            this.minecraft.setScreen(new CreditsAndAttributionScreen(this));
-        }, this.font);
-        copyrightButton.setAlpha(0.75f);
-        this.addRenderableWidget(copyrightButton);
-        // Nút "Singleplayer" tùy chỉnh thành "New Game" (ví dụ)
-        this.addRenderableWidget(Button.builder(Component.literal("Play"), (button) -> {
+        PlainTextButton copyrightButton = new PlainTextButton(
+                copyrightX,
+                copyrightY,
+                copyrightWidth,
+                10,
+                COPYRIGHT_TEXT,
+                button -> {
                     assert this.minecraft != null;
-                    this.minecraft.setScreen(new PlayMenuScreen());
-                }
-        ).bounds((this.width - buttonWidth) / 2, startY + (buttonHeight + spacing), buttonWidth, buttonHeight).build());
-
+                    this.minecraft.setScreen(new CreditsAndAttributionScreen(this));
+                },
+                this.font);
+        copyrightButton.setAlpha(0.75f);
+        return copyrightButton;
     }
 
     @Override

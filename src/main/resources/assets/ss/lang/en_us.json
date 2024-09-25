@@ -1,16 +1,15 @@
 {
   "commands.create.dungeon.seed.tooltip": "Click to copy Seed",
   "commands.create.dungeon.success": "Create Dungeon successfully",
-  "entity.ss.room_marker": "Room Marker",
   "item.ss.room_marker_spawn_egg": "Room Marker Spawn Egg",
   "item_group.ss.su_dungeon": "Mod Item",
-  "menu.character.steve": "Steve",
   "menu.select_character": "Select Character",
   "menu.select_game_mode": "Select Game Mode",
-  "menu.start_selected_mode": "Start Selected Mode",
   "menu.standard_mode": "Standard Mode",
+  "menu.start_selected_mode": "Start Selected Mode",
   "menu.custom_mode": "Custom Mode",
   "menu.back_to_main_menu": "Back to Main Menu",
+  "menu.character.steve": "Steve",
   "menu.character.alex": "Alex",
   "message.new_skin_unlocked": "New skin unlocked!"
 }
