@@ -1,3 +1,4 @@
+/*
 package net.ss.sudungeon.command;
 
 import com.mojang.brigadier.CommandDispatcher;
@@ -47,4 +48,4 @@ public class EntityScoreCommand {
 
         return 1;
     }
-}
+}*/

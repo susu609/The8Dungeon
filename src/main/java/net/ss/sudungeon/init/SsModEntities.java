@@ -14,6 +14,7 @@ import net.minecraftforge.registries.RegistryObject;
 import net.ss.sudungeon.SsMod;
 import net.ss.sudungeon.world.entity.ColossalZombie;
 import net.ss.sudungeon.world.entity.ModZombie;
+import net.ss.sudungeon.world.entity.TargetDummy;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class SsModEntities {
@@ -21,11 +22,12 @@ public class SsModEntities {
 
     // Đăng ký thực thể ModZombie
     public static final RegistryObject<EntityType<ModZombie>> MOD_ZOMBIE = register("mod_zombie",
-            EntityType.Builder.of(ModZombie::new, MobCategory.MONSTER)
-                    .sized(0.6f, 1.95f)  // Kích thước của zombie thường
-                    .setTrackingRange(64) // Phạm vi theo dõi
+            EntityType.Builder.<ModZombie>of(ModZombie::new, MobCategory.MONSTER)
+                    .setShouldReceiveVelocityUpdates(true)
+                    .setTrackingRange(64)
                     .setUpdateInterval(3)
-                    .setShouldReceiveVelocityUpdates(true));
+                    .setCustomClientFactory(ModZombie::new)
+                    .sized(0.6f, 1.95f));  // Kích thước của zombie thường
 
     // Đăng ký thực thể ColossalZombie
     public static final RegistryObject<EntityType<ColossalZombie>> COLOSSAL_ZOMBIE = REGISTRY.register("colossal_zombie",
@@ -33,6 +35,15 @@ public class SsModEntities {
                     .sized(0.6F * 2, 1.95F * 2) // Kích thước x2 của zombie
                     .build(new ResourceLocation(SsMod.MODID, "colossal_zombie").toString())
     );
+
+    public static final RegistryObject<EntityType<TargetDummy>> TARGET_DUMMY = register("target_dummy",
+            EntityType.Builder.<TargetDummy>of(TargetDummy::new, MobCategory.MONSTER)
+                    .setShouldReceiveVelocityUpdates(true)
+                    .setTrackingRange(64)
+                    .setUpdateInterval(3)
+                    .setCustomClientFactory(TargetDummy::new)
+                    .sized(0.6f, 1.8f));
+
 
     // Phương thức đăng ký thực thể
     private static <T extends Entity> RegistryObject<EntityType<T>> register (String registryName, EntityType.Builder<T> entityTypeBuilder) {
@@ -51,7 +62,7 @@ public class SsModEntities {
 
         // Đăng ký các thuộc tính cho ColossalZombie (mạnh hơn và có thuộc tính đặc biệt)
         event.put(COLOSSAL_ZOMBIE.get(), ColossalZombie.createAttributes().build());
+        event.put(TARGET_DUMMY.get(), TargetDummy.createAttributes().build());
 
-        // ModItemEntity không cần thuộc tính đặc biệt, do đó không cần đăng ký thêm ở đây
     }
 }

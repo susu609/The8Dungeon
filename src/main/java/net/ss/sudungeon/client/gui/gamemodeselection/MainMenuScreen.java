@@ -98,6 +98,7 @@ public class MainMenuScreen extends Screen {
                 playerVars.mana = characterStats.getMana();
                 playerVars.stamina = characterStats.getStamina();
                 playerVars.defense = characterStats.getDefense();
+                playerVars.strength = characterStats.getStrength();
                 playerVars.level = characterStats.getLevel();
 
                 // Đồng bộ dữ liệu này với client/server nếu cần thiết

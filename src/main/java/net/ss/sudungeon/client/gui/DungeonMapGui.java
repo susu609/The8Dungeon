@@ -6,7 +6,10 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.common.Mod;
 import net.ss.sudungeon.DungeonSavedData;
@@ -211,29 +214,38 @@ public class DungeonMapGui extends Screen {
     }
 
     // Render the player's face on the map
-    private void renderPlayerFace (GuiGraphics guiGraphics) {
-        // Lấy vị trí người chơi
-        BlockPos playerPos = player.blockPosition();
+    private void renderPlayerFace(GuiGraphics guiGraphics) {
+        // Lấy vị trí chunk của người chơi
+        ChunkPos playerChunkPos = player.chunkPosition();
 
-        // Tính toán kích thước của khuôn mặt người chơi dựa trên scale
+        // Tính toán kích thước khuôn mặt người chơi dựa trên scale
         int faceSize = Math.round(((float) ROOM_SIZE / 2) * scale);
 
-        // Tinh chỉnh giá trị `centeredX` để khắc phục lỗi lệch sang trái
-        int centeredX = calculateMapX(playerPos) - (faceSize / 2) + Math.round(ROOM_SIZE * scale) / 2;
-        int centeredY = calculateMapY(playerPos) - (faceSize / 2) + Math.round(ROOM_SIZE * scale) / 2 - Math.round(16 * scale);
+        // Tính toán tọa độ trung tâm của chunk trên bản đồ
+        int centeredX = (int) (calculateMapX(playerChunkPos.getWorldPosition()) + (ROOM_SIZE * scale / 2) - (faceSize / 2));
+        int centeredY = (int) (calculateMapY(playerChunkPos.getWorldPosition()) + (ROOM_SIZE * scale / 2) - (faceSize / 2));
 
-        // Vẽ khung viền cho khuôn mặt
+        // Vẽ khung viền cho khuôn mặt người chơi
         guiGraphics.fill(centeredX - 1, centeredY - 1, centeredX + faceSize + 1, centeredY + faceSize + 1, 0xBFFFFFFF);
 
-        // Lấy đường dẫn skin người chơi từ biến WorldVariables
-        player.getCapability(SsModVariables.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(playerVars -> {
-            // Sử dụng playerVars như trước
-            ResourceLocation playerSkin = new ResourceLocation(playerVars.skinUrl);
+        // Gọi phương thức getPlayerSkinUrl để lấy skinUrl
+        String skinUrl = getPlayerSkinUrl(player);
 
-            // Vẽ khuôn mặt người chơi trên bản đồ
-            guiGraphics.blit(playerSkin, centeredX, centeredY, faceSize, faceSize, 8, 8, 8, 8, 64, 64);
-        });
+        // Vẽ khuôn mặt người chơi ở trung tâm ô chunk
+        ResourceLocation playerSkin = new ResourceLocation(skinUrl);
+        guiGraphics.blit(playerSkin, centeredX, centeredY, faceSize, faceSize, 8, 8, 8, 8, 64, 64);
     }
+
+
+    private String getPlayerSkinUrl(Player player) {
+        // Lấy skin từ capability của người chơi
+        return player.getCapability(SsModVariables.PLAYER_VARIABLES_CAPABILITY, null)
+                .map(playerVars -> playerVars.skinUrl != null && !playerVars.skinUrl.isEmpty()
+                        ? playerVars.skinUrl
+                        : "ss:textures/entity/player/wide/steve.png")  // Skin mặc định
+                .orElse("ss:textures/entity/player/wide/steve.png"); // Trường hợp không có capability
+    }
+
 
 
     // Render different room icons based on their type

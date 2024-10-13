@@ -1,3 +1,4 @@
+/*
 package net.ss.sudungeon.world.entity;
 
 import net.minecraft.world.effect.MobEffects;
@@ -94,3 +95,4 @@ public class EntityScoring {
     }
 
 }
+*/

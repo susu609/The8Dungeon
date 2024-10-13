@@ -1,0 +1,18 @@
+{
+  "zombie_attack": {
+    "sounds": [
+      {
+        "name": "ss:sfx_mob_zombiepre-001_soundwave",
+        "stream": false
+      },
+      {
+        "name": "ss:sfx_mob_zombiepre-002_soundwave",
+        "stream": false
+      },
+      {
+        "name": "ss:sfx_mob_zombiepre-003_soundwave",
+        "stream": false
+      }
+    ]
+  }
+}

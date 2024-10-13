@@ -1,6 +1,7 @@
 package net.ss.sudungeon.client.player;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -45,13 +46,8 @@ public class PlayerRenderProcedure {
             return;
         }
 
-        // Lấy thông tin từ WorldVariables
-        ((Player) entity).getCapability(SsModVariables.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(playerVariables -> {
-            // Sử dụng playerVariables như trước
-
-
-            String skinUrl = getSkinUrl(playerVariables);
-            boolean isSlim = playerVariables.isSlim;
+        String skinUrl = (entity.getCapability(SsModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new SsModVariables.PlayerVariables())).skinUrl;
+        boolean isSlim = (entity.getCapability(SsModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new SsModVariables.PlayerVariables())).isSlim;
 
             RenderPlayerEvent _evt = (RenderPlayerEvent) event;
             Minecraft mc = Minecraft.getInstance();
@@ -78,7 +74,7 @@ public class PlayerRenderProcedure {
                     _pre.setCanceled(true);
                 }
             }
-        });
+
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -93,13 +89,8 @@ public class PlayerRenderProcedure {
             return;
         }
 
-        // Lấy thông tin từ WorldVariables
-        ((Player) entity).getCapability(SsModVariables.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(playerVariables -> {
-            // Sử dụng playerVariables như trước
-
-
-            String skinUrl = getSkinUrl(playerVariables);
-            boolean isSlim = playerVariables.isSlim;
+        String skinUrl = (entity.getCapability(SsModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new SsModVariables.PlayerVariables())).skinUrl;
+        boolean isSlim = (entity.getCapability(SsModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new SsModVariables.PlayerVariables())).isSlim;
 
             RenderArmEvent _evt = (RenderArmEvent) event;
             Minecraft mc = Minecraft.getInstance();
@@ -140,7 +131,7 @@ public class PlayerRenderProcedure {
 
             // Cancel the default rendering to apply the custom one
             _evt.setCanceled(true);
-        });
+
     }
 
 
@@ -159,14 +150,10 @@ public class PlayerRenderProcedure {
     @SubscribeEvent
     public static void onRenderPlayerPost (RenderPlayerEvent.Post event) {
     }
-
-    // Get skin URL
-    private static String getSkinUrl (SsModVariables.PlayerVariables playervariables) {
-        if (playervariables.skinUrl == null || playervariables.skinUrl.isEmpty()) {
-            return "ss:textures/entity/player/wide/steve.png";  // Trả về skin mặc định
-        }
-        return playervariables.skinUrl;
+    private static Pair<String, Boolean> getSkinInfo(Entity entity) {
+        SsModVariables.PlayerVariables vars = entity.getCapability(SsModVariables.PLAYER_VARIABLES_CAPABILITY, null)
+                .orElse(new SsModVariables.PlayerVariables());
+        return Pair.of(vars.skinUrl, vars.isSlim);
     }
-
 
 }

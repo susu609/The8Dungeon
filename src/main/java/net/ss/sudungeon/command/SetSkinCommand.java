@@ -1,13 +1,14 @@
 package net.ss.sudungeon.command;
 
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -17,41 +18,41 @@ import net.ss.sudungeon.network.SsModVariables;
 public class SetSkinCommand {
 
     @SubscribeEvent
-    public static void register (RegisterCommandsEvent event) {
-        CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
-
-        dispatcher.register(
-                Commands.literal("setSkin")
-                        .then(Commands.argument("target", EntityArgument.player())  // Thêm đối số cho mục tiêu người chơi
-                                .then(Commands.argument("skinName", StringArgumentType.string())
-                                        .executes(context -> setSkin(context.getSource(), EntityArgument.getPlayer(context, "target"), StringArgumentType.getString(context, "skinName"), "wide")))  // Sử dụng 'wide' làm mặc định
-                                .then(Commands.literal("slim")  // Tùy chọn cho slim
-                                        .then(Commands.argument("skinName", StringArgumentType.string())
-                                                .executes(context -> setSkin(context.getSource(), EntityArgument.getPlayer(context, "target"), StringArgumentType.getString(context, "skinName"), "slim"))))
-                                .then(Commands.literal("wide")  // Tùy chọn cho wide
-                                        .then(Commands.argument("skinName", StringArgumentType.string())
-                                                .executes(context -> setSkin(context.getSource(), EntityArgument.getPlayer(context, "target"), StringArgumentType.getString(context, "skinName"), "wide"))))
-                        ));
+    public static void registerCommand (RegisterCommandsEvent event) {
+        event.getDispatcher().register(Commands.literal("setSkin")
+                .then(Commands.argument("name", EntityArgument.players()).then(Commands.literal("steve").executes(arguments -> {
+                    executeSkinChange(arguments, "steve");
+                    return 0;
+                })).then(Commands.literal("alex").executes(arguments -> {
+                    executeSkinChange(arguments, "alex");
+                    return 0;
+                }))));
     }
 
-    // Phương thức để thiết lập skin và điều khiển việc ẩn mô hình vanilla
-    private static int setSkin (CommandSourceStack source, ServerPlayer targetPlayer, String skinName, String skinType) {
-        Level world = targetPlayer.level();
+    private static void executeSkinChange (CommandContext<CommandSourceStack> arguments, String skin) {
+        Level world = arguments.getSource().getUnsidedLevel();
+        Entity entity = arguments.getSource().getEntity();
+        if (entity == null && world instanceof ServerLevel _servLevel) {
+            entity = FakePlayerFactory.getMinecraft(_servLevel);
+        }
 
-        // Cập nhật biến skinUrl trong PlayerVariables của người chơi mục tiêu
-        targetPlayer.getCapability(SsModVariables.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(playerVariables -> {
-            // Đồng bộ hóa dữ liệu
-
-
-            playerVariables.skinUrl = "ss:textures/entity/player/" + skinType + "/" + skinName + ".png";
-            playerVariables.isSlim = skinType.equalsIgnoreCase("slim");  // Kiểm tra nếu skin là kiểu "slim"
-
-            // Gửi thông báo đến người dùng
-            source.sendSuccess(() -> Component.literal("Skin của " + targetPlayer.getName().getString() + " đã thay đổi thành: " + skinName + " với kiểu: " + skinType), true);
-
-
-            playerVariables.syncPlayerVariables(targetPlayer);
+        // Custom logic for skin change
+        Entity finalEntity = entity;
+        assert entity != null;
+        entity.getCapability(SsModVariables.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
+            switch (skin) {
+                case "alex":
+                    capability.skinUrl = "ss:textures/entity/player/slim/alex.png";
+                    capability.isSlim = true;
+                    break;
+                case "steve":
+                default:
+                    capability.skinUrl = "ss:textures/entity/player/wide/steve.png";
+                    capability.isSlim = false;
+                    break;
+            }
+            capability.syncPlayerVariables(finalEntity);
         });
-        return 1;
     }
+
 }

@@ -1,3 +1,4 @@
+/*
 package net.ss.sudungeon.world.entity;
 
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -56,3 +57,4 @@ public class PlayerAttributeHandler {
         }
     }
 }
+*/

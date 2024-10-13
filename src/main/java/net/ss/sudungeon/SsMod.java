@@ -63,8 +63,9 @@ public class SsMod {
         SsModBlocks.REGISTRY.register(bus);
         SsModEntities.REGISTRY.register(bus);
         SsModItems.REGISTRY.register(bus);
+        SsModParticleTypes.REGISTRY.register(bus);
         SsModTabs.REGISTRY.register(bus);
-
+        SsModSounds.REGISTRY.register(bus);
 
         // Đăng ký gói tin mạng
         registerPackets();  // Gọi phương thức đăng ký gói tin mạng

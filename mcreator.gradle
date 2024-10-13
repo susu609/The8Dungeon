@@ -12,6 +12,11 @@ dependencies {
 //    implementation fg.deobf("curse.maven:kleidersplayerrenderer-682065:5654821")
 //    implementation fg.deobf("curse.maven:bookshelf-228525:5423987")
 //    implementation fg.deobf("curse.maven:sophisticated-core-618298:5729525")
+//    implementation fg.deobf("curse.maven:torohealth-unofficial-931345:4831219")
+//    implementation fg.deobf("curse.maven:mmmmmmmmmmmm-225738:5737040")
+//    implementation fg.deobf("curse.maven:fancymenu-367706:5340225")
+//    implementation fg.deobf("curse.maven:melody-938643:5109692")
+//    implementation fg.deobf("curse.maven:konkrete-410295:5028413")
 }
 
 

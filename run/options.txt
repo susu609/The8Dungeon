@@ -31,7 +31,7 @@ glintStrength:0.75
 damageTiltStrength:1.0
 highContrast:false
 gamma:0.5
-renderDistance:5
+renderDistance:2
 simulationDistance:5
 entityDistanceScaling:1.0
 guiScale:0
@@ -40,7 +40,7 @@ maxFps:60
 graphicsMode:0
 ao:true
 prioritizeChunkUpdates:0
-biomeBlendRadius:2
+biomeBlendRadius:0
 renderClouds:"false"
 resourcePacks:["vanilla","mod_resources"]
 incompatibleResourcePacks:[]

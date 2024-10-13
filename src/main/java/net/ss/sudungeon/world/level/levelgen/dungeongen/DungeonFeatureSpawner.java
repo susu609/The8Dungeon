@@ -5,10 +5,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.ss.sudungeon.init.SsModEntities;
 import net.ss.sudungeon.world.entity.ModZombie;
 
 import java.util.List;
@@ -52,14 +54,15 @@ public class DungeonFeatureSpawner {
     }
 
     private void spawnModZombie(ServerLevel world, BlockPos spawnPos, RandomSource random) {
-        ModZombie modZombie = new ModZombie(EntityType.ZOMBIE, world);
+        // Sử dụng đúng thực thể ModZombie từ SsModEntities
+        ModZombie modZombie = new ModZombie(SsModEntities.MOD_ZOMBIE.get(), world);
         modZombie.setPos(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5);
         modZombie.finalizeSpawn(world, world.getCurrentDifficultyAt(spawnPos), MobSpawnType.STRUCTURE, null, null);
         modZombie.setPersistenceRequired();
         world.addFreshEntity(modZombie);
     }
 
-    // Phương thức thả ModItemEntity thay thế RandomItemDropper
+
     private void spawnCustomItemEntity(ServerLevel world, BlockPos spawnPos, RandomSource random) {
         // Tạo ra một danh sách các vật phẩm có thể thả
         List<ItemStack> possibleItems = List.of(
@@ -71,6 +74,9 @@ public class DungeonFeatureSpawner {
         // Chọn ngẫu nhiên một item từ danh sách
         ItemStack selectedItem = possibleItems.get(random.nextInt(possibleItems.size()));
 
+        // Tạo thực thể ItemEntity và thả xuống thế giới
+        ItemEntity itemEntity = new ItemEntity(world, spawnPos.getX() + 0.5, spawnPos.getY() + 0.5, spawnPos.getZ() + 0.5, selectedItem);
+        world.addFreshEntity(itemEntity);
     }
 
     private Block chooseDecorationBlock(RandomSource random, RoomType roomType) {

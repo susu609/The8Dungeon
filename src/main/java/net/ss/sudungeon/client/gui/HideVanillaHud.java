@@ -25,7 +25,7 @@ public class HideVanillaHud {
         return /*overlayId.equals(VanillaGuiOverlay.HOTBAR.id())
                 ||*/ overlayId.equals(VanillaGuiOverlay.AIR_LEVEL.id())
                 || overlayId.equals(VanillaGuiOverlay.ARMOR_LEVEL.id())
-                || overlayId.equals(VanillaGuiOverlay.CROSSHAIR.id())
+                /*|| overlayId.equals(VanillaGuiOverlay.CROSSHAIR.id())*/
                 || overlayId.equals(VanillaGuiOverlay.EXPERIENCE_BAR.id())
                 || overlayId.equals(VanillaGuiOverlay.FOOD_LEVEL.id())
                 || overlayId.equals(VanillaGuiOverlay.PLAYER_HEALTH.id());

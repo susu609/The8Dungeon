@@ -1,239 +1,123 @@
-[26thg 92024 03:41:26.054] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgeclientuserdev, --version, MOD_DEV, --assetIndex, 5, --assetsDir, D:\IdeaProjects\SuDungeon\caches\forge_gradle\assets, --gameDir, ., --fml.forgeVersion, 47.3.0, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412]
-[26thg 92024 03:41:26.068] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.11 by Eclipse Adoptium; OS Windows 10 arch amd64 version 10.0
-[26thg 92024 03:41:26.439] [main/INFO] [net.minecraftforge.fml.loading.ImmediateWindowHandler/]: Loading ImmediateWindowProvider fmlearlywindow
-[26thg 92024 03:41:26.617] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.6
-[26thg 92024 03:41:27.130] [main/INFO] [EARLYDISPLAY/]: Requested GL version 4.6 got version 4.6
-[26thg 92024 03:41:27.408] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=union:/D:/IdeaProjects/SuDungeon/caches/modules-2/files-2.1/org.spongepowered/mixin/0.8.5/9d1c0c3a304ae6697ecd477218fa61b850bf57fc/mixin-0.8.5.jar%23128!/ Service=ModLauncher Env=CLIENT
-[26thg 92024 03:41:28.755] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file D:\IdeaProjects\SuDungeon\caches\modules-2\files-2.1\net.minecraftforge\javafmllanguage\1.20.1-47.3.0\d7ebc62120f202109e300e084ca1a31a7b946a62\javafmllanguage-1.20.1-47.3.0.jar is missing mods.toml file
-[26thg 92024 03:41:28.768] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file D:\IdeaProjects\SuDungeon\caches\modules-2\files-2.1\net.minecraftforge\lowcodelanguage\1.20.1-47.3.0\1bf3e845ea0ce750096da8c71c8364b188ab74d4\lowcodelanguage-1.20.1-47.3.0.jar is missing mods.toml file
-[26thg 92024 03:41:28.786] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file D:\IdeaProjects\SuDungeon\caches\modules-2\files-2.1\net.minecraftforge\mclanguage\1.20.1-47.3.0\6093682e943ddccbabf70539319d7f2fe64db2e7\mclanguage-1.20.1-47.3.0.jar is missing mods.toml file
-[26thg 92024 03:41:28.809] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file D:\IdeaProjects\SuDungeon\caches\modules-2\files-2.1\net.minecraftforge\fmlcore\1.20.1-47.3.0\3b6be96aba3e323f3c918e8ef6a96312d82d76ad\fmlcore-1.20.1-47.3.0.jar is missing mods.toml file
-[26thg 92024 03:41:29.119] [pool-2-thread-1/INFO] [EARLYDISPLAY/]: GL info: NVIDIA GeForce GTX 750 Ti/PCIe/SSE2 GL version 4.6.0 NVIDIA 536.23, NVIDIA Corporation
-[26thg 92024 03:41:29.321] [main/INFO] [net.minecraftforge.fml.loading.moddiscovery.JarInJarDependencyLocator/]: No dependencies to load found. Skipping!
-[26thg 92024 03:41:35.717] [main/INFO] [cpw.mods.modlauncher.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgeclientuserdev' with arguments [--version, MOD_DEV, --gameDir, ., --assetsDir, D:\IdeaProjects\SuDungeon\caches\forge_gradle\assets, --assetIndex, 5]
-[26thg 92024 03:41:50.245] [Datafixer Bootstrap/INFO] [com.mojang.datafixers.DataFixerBuilder/]: 188 Datafixer optimizations took 724 milliseconds
-[26thg 92024 03:41:55.256] [Render thread/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/D:/IdeaProjects/SuDungeon/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.3.0_mapped_official_1.20.1/forge-1.20.1-47.3.0_mapped_official_1.20.1-recomp.jar%23191!/assets/.mcassetsroot' uses unexpected schema
-[26thg 92024 03:41:55.260] [Render thread/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/D:/IdeaProjects/SuDungeon/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.3.0_mapped_official_1.20.1/forge-1.20.1-47.3.0_mapped_official_1.20.1-recomp.jar%23191!/data/.mcassetsroot' uses unexpected schema
-[26thg 92024 03:41:55.298] [Render thread/INFO] [com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService/]: Environment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
-[26thg 92024 03:41:55.316] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Setting user: Dev
-[26thg 92024 03:41:55.685] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Backend library: LWJGL version 3.3.1 build 7
-[26thg 92024 03:41:56.775] [modloading-worker-0/INFO] [net.minecraftforge.common.ForgeMod/FORGEMOD]: Forge mod loading, version 47.3.0, for MC 1.20.1 with MCP 20230612.114412
-[26thg 92024 03:41:56.782] [modloading-worker-0/INFO] [net.minecraftforge.common.MinecraftForge/FORGE]: MinecraftForge v47.3.0 Initialized
-[26thg 92024 03:41:56.913] [modloading-worker-0/INFO] [net.ss.sudungeon.SsMod/]: Initializing SsMod...
-[26thg 92024 03:42:03.840] [Render thread/INFO] [net.minecraftforge.gametest.ForgeGameTestHooks/]: Enabled Gametest Namespaces: []
-[26thg 92024 03:42:04.196] [Render thread/INFO] [net.ss.sudungeon.SsMod/]: Registering Dimension Special Effects for Dungeon Dimension
-[26thg 92024 03:42:04.608] [Render thread/INFO] [net.minecraft.server.packs.resources.ReloadableResourceManager/]: Reloading ResourceManager: vanilla, mod_resources
-[26thg 92024 03:42:05.495] [Worker-Main-3/INFO] [net.minecraft.client.gui.font.providers.UnihexProvider/]: Found unifont_all_no_pua-15.0.06.hex, loading
-[26thg 92024 03:42:07.990] [Worker-Main-1/INFO] [net.ss.sudungeon.SsMod/]: Common setup complete.
-[26thg 92024 03:42:08.222] [Worker-Main-3/INFO] [net.ss.sudungeon.SsMod/]: Client setup complete.
-[26thg 92024 03:42:08.812] [Forge Version Check/INFO] [net.minecraftforge.fml.VersionChecker/]: [forge] Starting version check at https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json
-[26thg 92024 03:42:10.662] [Forge Version Check/INFO] [net.minecraftforge.fml.VersionChecker/]: [forge] Found status: UP_TO_DATE Current: 47.3.0 Target: null
-[26thg 92024 03:42:15.424] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: minecraft:item.goat_horn.play
-[26thg 92024 03:42:15.424] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: minecraft:entity.goat.screaming.horn_break
-[26thg 92024 03:42:15.561] [Render thread/INFO] [com.mojang.blaze3d.audio.Library/]: OpenAL initialized on device OpenAL Soft on ??? (Realtek High Definition Audio)
-[26thg 92024 03:42:15.563] [Render thread/INFO] [net.minecraft.client.sounds.SoundEngine/SOUNDS]: Sound engine started
-[26thg 92024 03:42:15.722] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x512x2 minecraft:textures/atlas/blocks.png-atlas
-[26thg 92024 03:42:15.740] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x256x2 minecraft:textures/atlas/signs.png-atlas
-[26thg 92024 03:42:15.746] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x512x2 minecraft:textures/atlas/shield_patterns.png-atlas
-[26thg 92024 03:42:15.747] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x512x2 minecraft:textures/atlas/banner_patterns.png-atlas
-[26thg 92024 03:42:15.749] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x1024x2 minecraft:textures/atlas/armor_trims.png-atlas
-[26thg 92024 03:42:15.790] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x256x2 minecraft:textures/atlas/chest.png-atlas
-[26thg 92024 03:42:15.875] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 128x64x2 minecraft:textures/atlas/decorated_pot.png-atlas
-[26thg 92024 03:42:15.875] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x2 minecraft:textures/atlas/shulker_boxes.png-atlas
-[26thg 92024 03:42:15.875] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x2 minecraft:textures/atlas/beds.png-atlas
-[26thg 92024 03:42:16.517] [Render thread/WARN] [net.minecraft.client.renderer.ShaderInstance/]: Shader rendertype_entity_translucent_emissive could not find sampler named Sampler2 in the specified shader program.
-[26thg 92024 03:42:16.712] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x256x0 minecraft:textures/atlas/particles.png-atlas
-[26thg 92024 03:42:16.716] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x256x0 minecraft:textures/atlas/paintings.png-atlas
-[26thg 92024 03:42:16.718] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 128x128x0 minecraft:textures/atlas/mob_effects.png-atlas
-[26thg 92024 03:42:17.487] [Realms Notification Availability checker #1/INFO] [com.mojang.realmsclient.client.RealmsClient/]: Could not authorize you against Realms server: Invalid session id
-[26thg 92024 03:43:54.639] [Render thread/INFO] [net.minecraftforge.registries.GameData/REGISTRIES]: Injecting existing registry data into this CLIENT instance
-[26thg 92024 03:43:56.900] [Worker-Main-2/ERROR] [net.minecraft.tags.TagLoader/]: Couldn't load tag ss:boss as it is missing following references: ss:boss_skeleton (from main)
-[26thg 92024 03:43:56.903] [Worker-Main-2/ERROR] [net.minecraft.tags.TagLoader/]: Couldn't load tag ss:elite as it is missing following references: ss:elite_zombie (from main), 
+[14thg 102024 01:26:18.395] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgeclientuserdev, --version, MOD_DEV, --assetIndex, 5, --assetsDir, D:\IdeaProjects\SuDungeon\caches\forge_gradle\assets, --gameDir, ., --fml.forgeVersion, 47.3.0, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412]
+[14thg 102024 01:26:18.456] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.11 by Eclipse Adoptium; OS Windows 10 arch amd64 version 10.0
+[14thg 102024 01:26:18.859] [main/INFO] [net.minecraftforge.fml.loading.ImmediateWindowHandler/]: Loading ImmediateWindowProvider fmlearlywindow
+[14thg 102024 01:26:19.079] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.6
+[14thg 102024 01:26:20.048] [main/INFO] [EARLYDISPLAY/]: Requested GL version 4.6 got version 4.6
+[14thg 102024 01:26:20.711] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=union:/D:/IdeaProjects/SuDungeon/caches/modules-2/files-2.1/org.spongepowered/mixin/0.8.5/9d1c0c3a304ae6697ecd477218fa61b850bf57fc/mixin-0.8.5.jar%23128!/ Service=ModLauncher Env=CLIENT
+[14thg 102024 01:26:20.874] [pool-2-thread-1/INFO] [EARLYDISPLAY/]: GL info: NVIDIA GeForce GTX 750 Ti/PCIe/SSE2 GL version 4.6.0 NVIDIA 560.94, NVIDIA Corporation
+[14thg 102024 01:26:22.088] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file D:\IdeaProjects\SuDungeon\caches\modules-2\files-2.1\net.minecraftforge\javafmllanguage\1.20.1-47.3.0\d7ebc62120f202109e300e084ca1a31a7b946a62\javafmllanguage-1.20.1-47.3.0.jar is missing mods.toml file
+[14thg 102024 01:26:22.098] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file D:\IdeaProjects\SuDungeon\caches\modules-2\files-2.1\net.minecraftforge\lowcodelanguage\1.20.1-47.3.0\1bf3e845ea0ce750096da8c71c8364b188ab74d4\lowcodelanguage-1.20.1-47.3.0.jar is missing mods.toml file
+[14thg 102024 01:26:22.110] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file D:\IdeaProjects\SuDungeon\caches\modules-2\files-2.1\net.minecraftforge\mclanguage\1.20.1-47.3.0\6093682e943ddccbabf70539319d7f2fe64db2e7\mclanguage-1.20.1-47.3.0.jar is missing mods.toml file
+[14thg 102024 01:26:22.123] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file D:\IdeaProjects\SuDungeon\caches\modules-2\files-2.1\net.minecraftforge\fmlcore\1.20.1-47.3.0\3b6be96aba3e323f3c918e8ef6a96312d82d76ad\fmlcore-1.20.1-47.3.0.jar is missing mods.toml file
+[14thg 102024 01:26:22.328] [main/INFO] [net.minecraftforge.fml.loading.moddiscovery.JarInJarDependencyLocator/]: No dependencies to load found. Skipping!
+[14thg 102024 01:26:26.239] [main/INFO] [cpw.mods.modlauncher.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgeclientuserdev' with arguments [--version, MOD_DEV, --gameDir, ., --assetsDir, D:\IdeaProjects\SuDungeon\caches\forge_gradle\assets, --assetIndex, 5]
+[14thg 102024 01:26:44.301] [Datafixer Bootstrap/INFO] [com.mojang.datafixers.DataFixerBuilder/]: 188 Datafixer optimizations took 1636 milliseconds
+[14thg 102024 01:26:48.848] [Render thread/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/D:/IdeaProjects/SuDungeon/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.3.0_mapped_official_1.20.1/forge-1.20.1-47.3.0_mapped_official_1.20.1-recomp.jar%23191!/assets/.mcassetsroot' uses unexpected schema
+[14thg 102024 01:26:48.849] [Render thread/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/D:/IdeaProjects/SuDungeon/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.3.0_mapped_official_1.20.1/forge-1.20.1-47.3.0_mapped_official_1.20.1-recomp.jar%23191!/data/.mcassetsroot' uses unexpected schema
+[14thg 102024 01:26:48.877] [Render thread/INFO] [com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService/]: Environment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
+[14thg 102024 01:26:48.889] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Setting user: Dev
+[14thg 102024 01:26:49.084] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Backend library: LWJGL version 3.3.1 build 7
+[14thg 102024 01:26:49.677] [modloading-worker-0/INFO] [net.minecraftforge.common.ForgeMod/FORGEMOD]: Forge mod loading, version 47.3.0, for MC 1.20.1 with MCP 20230612.114412
+[14thg 102024 01:26:49.684] [modloading-worker-0/INFO] [net.minecraftforge.common.MinecraftForge/FORGE]: MinecraftForge v47.3.0 Initialized
+[14thg 102024 01:26:49.739] [modloading-worker-0/INFO] [net.ss.sudungeon.SsMod/]: Initializing SsMod...
+[14thg 102024 01:26:52.348] [Render thread/INFO] [net.ss.sudungeon.SsMod/]: Registering particle providers...
+[14thg 102024 01:26:52.450] [Render thread/INFO] [net.minecraftforge.gametest.ForgeGameTestHooks/]: Enabled Gametest Namespaces: []
+[14thg 102024 01:26:52.799] [Render thread/INFO] [net.ss.sudungeon.SsMod/]: Registering Dimension Special Effects for Dungeon Dimension
+[14thg 102024 01:26:53.162] [Render thread/INFO] [net.minecraft.server.packs.resources.ReloadableResourceManager/]: Reloading ResourceManager: vanilla, mod_resources
+[14thg 102024 01:26:53.769] [Worker-Main-1/INFO] [net.minecraft.client.gui.font.providers.UnihexProvider/]: Found unifont_all_no_pua-15.0.06.hex, loading
+[14thg 102024 01:26:55.587] [Worker-Main-3/INFO] [net.ss.sudungeon.SsMod/]: Common setup complete.
+[14thg 102024 01:26:55.649] [Worker-Main-3/INFO] [net.ss.sudungeon.SsMod/]: Client setup complete.
+[14thg 102024 01:26:55.824] [Forge Version Check/INFO] [net.minecraftforge.fml.VersionChecker/]: [forge] Starting version check at https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json
+[14thg 102024 01:26:57.569] [Forge Version Check/INFO] [net.minecraftforge.fml.VersionChecker/]: [forge] Found status: UP_TO_DATE Current: 47.3.0 Target: null
+[14thg 102024 01:27:00.919] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: minecraft:item.goat_horn.play
+[14thg 102024 01:27:00.920] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: minecraft:entity.goat.screaming.horn_break
+[14thg 102024 01:27:01.637] [Render thread/INFO] [com.mojang.blaze3d.audio.Library/]: OpenAL initialized on device OpenAL Soft on ??? (Realtek High Definition Audio)
+[14thg 102024 01:27:01.640] [Render thread/INFO] [net.minecraft.client.sounds.SoundEngine/SOUNDS]: Sound engine started
+[14thg 102024 01:27:01.770] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x512x2 minecraft:textures/atlas/blocks.png-atlas
+[14thg 102024 01:27:01.780] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x256x2 minecraft:textures/atlas/signs.png-atlas
+[14thg 102024 01:27:01.789] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x512x2 minecraft:textures/atlas/shield_patterns.png-atlas
+[14thg 102024 01:27:01.790] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x512x2 minecraft:textures/atlas/banner_patterns.png-atlas
+[14thg 102024 01:27:01.796] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x1024x2 minecraft:textures/atlas/armor_trims.png-atlas
+[14thg 102024 01:27:01.823] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 128x64x2 minecraft:textures/atlas/decorated_pot.png-atlas
+[14thg 102024 01:27:01.831] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x256x2 minecraft:textures/atlas/chest.png-atlas
+[14thg 102024 01:27:01.832] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x2 minecraft:textures/atlas/shulker_boxes.png-atlas
+[14thg 102024 01:27:01.833] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x2 minecraft:textures/atlas/beds.png-atlas
+[14thg 102024 01:27:02.210] [Render thread/WARN] [net.minecraft.client.renderer.ShaderInstance/]: Shader rendertype_entity_translucent_emissive could not find sampler named Sampler2 in the specified shader program.
+[14thg 102024 01:27:02.473] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x256x0 minecraft:textures/atlas/particles.png-atlas
+[14thg 102024 01:27:02.475] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x256x0 minecraft:textures/atlas/paintings.png-atlas
+[14thg 102024 01:27:02.475] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 128x128x0 minecraft:textures/atlas/mob_effects.png-atlas
+[14thg 102024 01:27:02.958] [Realms Notification Availability checker #1/INFO] [com.mojang.realmsclient.client.RealmsClient/]: Could not authorize you against Realms server: Invalid session id
+[14thg 102024 01:28:51.623] [Render thread/INFO] [net.minecraftforge.registries.GameData/REGISTRIES]: Injecting existing registry data into this CLIENT instance
+[14thg 102024 01:28:54.798] [Worker-Main-1/ERROR] [net.minecraft.tags.TagLoader/]: Couldn't load tag ss:boss as it is missing following references: ss:boss_skeleton (from main)
+[14thg 102024 01:28:54.799] [Worker-Main-1/ERROR] [net.minecraft.tags.TagLoader/]: Couldn't load tag ss:elite as it is missing following references: ss:elite_zombie (from main), 
 	ss:elite_skeleton (from main)
-[26thg 92024 03:43:57.856] [Render thread/INFO] [net.minecraft.world.item.crafting.RecipeManager/]: Loaded 7 recipes
-[26thg 92024 03:43:58.149] [Render thread/INFO] [net.minecraft.advancements.AdvancementList/]: Loaded 1271 advancements
-[26thg 92024 03:43:59.279] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Starting integrated minecraft server version 1.20.1
-[26thg 92024 03:43:59.280] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Generating keypair
-[26thg 92024 03:44:03.704] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Preparing start region for dimension minecraft:overworld
-[26thg 92024 03:44:10.908] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[26thg 92024 03:44:10.910] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[26thg 92024 03:44:10.910] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[26thg 92024 03:44:10.910] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[26thg 92024 03:44:10.911] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[26thg 92024 03:44:10.911] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[26thg 92024 03:44:10.921] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[26thg 92024 03:44:10.921] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[26thg 92024 03:44:10.922] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[26thg 92024 03:44:10.925] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[26thg 92024 03:44:10.926] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[26thg 92024 03:44:10.926] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[26thg 92024 03:44:10.927] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[26thg 92024 03:44:10.969] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[26thg 92024 03:44:10.970] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[26thg 92024 03:44:11.227] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[26thg 92024 03:44:11.759] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[26thg 92024 03:44:12.270] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 4%
-[26thg 92024 03:44:12.733] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 10%
-[26thg 92024 03:44:13.285] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 68%
-[26thg 92024 03:44:13.475] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Time elapsed: 9758 ms
-[26thg 92024 03:44:14.326] [Server thread/INFO] [net.minecraftforge.server.permission.PermissionAPI/]: Successfully initialized permission handler forge:default_handler
-[26thg 92024 03:44:14.922] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing view distance to 5, from 10
-[26thg 92024 03:44:14.927] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing simulation distance to 5, from 0
-[26thg 92024 03:44:15.778] [Render thread/WARN] [io.netty.util.internal.SystemPropertyUtil/]: Unable to parse the boolean system property 'java.net.preferIPv6Addresses':system - using the default value: false
-[26thg 92024 03:44:20.335] [Netty Local Client IO #0/INFO] [net.minecraftforge.network.NetworkHooks/]: Connected to a modded server.
-[26thg 92024 03:44:20.680] [Server thread/INFO] [net.minecraft.server.players.PlayerList/]: Dev[local:E:588dcb59] logged in with entity id 1 at (25.294312588590827, 2.0, -6.404242662971367)
-[26thg 92024 03:44:20.854] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev joined the game
-[26thg 92024 03:44:20.963] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Player is already in the Dungeon Dimension.
-[26thg 92024 03:44:24.013] [Render thread/INFO] [net.minecraft.advancements.AdvancementList/]: Loaded 83 advancements
-[26thg 92024 03:44:24.100] [Server thread/WARN] [net.minecraft.server.MinecraftServer/]: Can't keep up! Is the server overloaded? Running 3673ms or 73 ticks behind
-[26thg 92024 03:45:05.028] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Saving and pausing game...
-[26thg 92024 03:45:05.071] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:overworld
-[26thg 92024 03:45:05.084] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/ss:dungeon_dimension
-[26thg 92024 03:45:05.093] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:the_end
-[26thg 92024 03:45:05.097] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:the_nether
-[26thg 92024 03:45:06.939] [Server thread/INFO] [net.minecraft.server.network.ServerGamePacketListenerImpl/]: Dev lost connection: Disconnected
-[26thg 92024 03:45:06.939] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev left the game
-[26thg 92024 03:45:06.958] [Server thread/INFO] [net.minecraft.server.network.ServerGamePacketListenerImpl/]: Stopping singleplayer server as player logged out
-[26thg 92024 03:45:06.998] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server
-[26thg 92024 03:45:06.999] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving players
-[26thg 92024 03:45:06.999] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving worlds
-[26thg 92024 03:45:09.673] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:overworld
-[26thg 92024 03:45:12.342] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/ss:dungeon_dimension
-[26thg 92024 03:45:12.783] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:the_end
-[26thg 92024 03:45:12.784] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:the_nether
-[26thg 92024 03:45:12.869] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (Save Game (1)): All chunks are saved
-[26thg 92024 03:45:12.872] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (dungeon_dimension): All chunks are saved
-[26thg 92024 03:45:12.873] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
-[26thg 92024 03:45:12.873] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
-[26thg 92024 03:45:12.874] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage: All dimensions are saved
-[26thg 92024 03:45:25.296] [Render thread/INFO] [net.minecraft.world.level.storage.LevelStorageSource/]: Deleting level Save Game (1)
-[26thg 92024 03:45:25.296] [Render thread/INFO] [net.minecraft.world.level.storage.LevelStorageSource/]: Attempt 1...
-[26thg 92024 03:45:26.875] [Render thread/WARN] [net.minecraft.server.MinecraftServer/]: Missing data pack mod:geckolib
-[26thg 92024 03:45:26.875] [Render thread/WARN] [net.minecraft.server.MinecraftServer/]: Missing data pack mod:kleiders_custom_renderer
-[26thg 92024 03:45:27.462] [Worker-Main-2/ERROR] [net.minecraft.tags.TagLoader/]: Couldn't load tag ss:boss as it is missing following references: ss:boss_skeleton (from main)
-[26thg 92024 03:45:27.466] [Worker-Main-2/ERROR] [net.minecraft.tags.TagLoader/]: Couldn't load tag ss:elite as it is missing following references: ss:elite_zombie (from main), 
-	ss:elite_skeleton (from main)
-[26thg 92024 03:45:27.784] [Render thread/INFO] [net.minecraft.world.item.crafting.RecipeManager/]: Loaded 7 recipes
-[26thg 92024 03:45:27.923] [Render thread/INFO] [net.minecraft.advancements.AdvancementList/]: Loaded 1271 advancements
-[26thg 92024 03:45:37.645] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Starting integrated minecraft server version 1.20.1
-[26thg 92024 03:45:37.646] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Generating keypair
-[26thg 92024 03:45:37.720] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Configuration file .\saves\Save Game (1)\serverconfig\forge-server.toml is not correct. Correcting
-[26thg 92024 03:45:37.722] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server was corrected from null to its default, SimpleCommentedConfig:{}. 
-[26thg 92024 03:45:37.723] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringBlockEntities was corrected from null to its default, false. 
-[26thg 92024 03:45:37.724] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringEntities was corrected from null to its default, false. 
-[26thg 92024 03:45:37.724] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.fullBoundingBoxLadders was corrected from null to its default, false. 
-[26thg 92024 03:45:37.724] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.zombieBaseSummonChance was corrected from null to its default, 0.1. 
-[26thg 92024 03:45:37.724] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.zombieBabyChance was corrected from null to its default, 0.05. 
-[26thg 92024 03:45:37.725] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.permissionHandler was corrected from null to its default, forge:default_handler. 
-[26thg 92024 03:45:37.725] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.advertiseDedicatedServerToLan was corrected from null to its default, true. 
-[26thg 92024 03:45:42.970] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Preparing start region for dimension minecraft:overworld
-[26thg 92024 03:45:44.693] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[26thg 92024 03:45:44.694] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[26thg 92024 03:45:44.694] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[26thg 92024 03:45:44.696] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[26thg 92024 03:45:45.116] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[26thg 92024 03:45:45.615] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 18%
-[26thg 92024 03:45:46.093] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 39%
-[26thg 92024 03:45:46.742] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 48%
-[26thg 92024 03:45:47.163] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 71%
-[26thg 92024 03:45:47.415] [Server thread/INFO] [net.minecraftforge.server.permission.PermissionAPI/]: Successfully initialized permission handler forge:default_handler
-[26thg 92024 03:45:47.415] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Time elapsed: 4341 ms
-[26thg 92024 03:45:47.426] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing view distance to 5, from 10
-[26thg 92024 03:45:47.429] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing simulation distance to 5, from 0
-[26thg 92024 03:45:47.679] [Netty Local Client IO #1/INFO] [net.minecraftforge.network.NetworkHooks/]: Connected to a modded server.
-[26thg 92024 03:45:47.697] [Server thread/INFO] [net.minecraft.server.players.PlayerList/]: Dev[local:E:f2ab9f4c] logged in with entity id 11 at (0.5, -63.0, 0.5)
-[26thg 92024 03:45:47.829] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev joined the game
-[26thg 92024 03:45:47.877] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Teleporting player to Dungeon Dimension
-[26thg 92024 03:45:48.427] [Worker-Main-5/WARN] [net.minecraft.world.level.levelgen.heightproviders.UniformHeight/]: Empty height range: [6 above bottom--1 absolute]
-[26thg 92024 03:45:48.453] [Worker-Main-5/WARN] [net.minecraft.world.level.levelgen.heightproviders.UniformHeight/]: Empty height range: [136 absolute-0 below top]
-[26thg 92024 03:45:48.666] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Player is now in Dungeon Dimension, teleporting to spawn.
-[26thg 92024 03:45:48.666] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Player is already in the Dungeon Dimension.
-[26thg 92024 03:45:48.667] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Player teleported to Dungeon Dimension at x:8.5, y:4, z:8.5
-[26thg 92024 03:45:51.045] [Render thread/INFO] [net.minecraft.advancements.AdvancementList/]: Loaded 2 advancements
-[26thg 92024 03:52:27.558] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Dungeon generation progress: 11%
-[26thg 92024 03:52:27.578] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Dungeon generation progress: 17%
-[26thg 92024 03:52:27.600] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Dungeon generation progress: 23%
-[26thg 92024 03:52:27.629] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Dungeon generation progress: 29%
-[26thg 92024 03:52:27.629] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=32, y=1, z=16}. Creating passage only.
-[26thg 92024 03:52:27.630] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=16, y=1, z=16}. Creating passage only.
-[26thg 92024 03:52:27.656] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Dungeon generation progress: 35%
-[26thg 92024 03:52:27.657] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=16, y=1, z=16}. Creating passage only.
-[26thg 92024 03:52:27.707] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Dungeon generation progress: 41%
-[26thg 92024 03:52:27.708] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=32, y=1, z=32}. Creating passage only.
-[26thg 92024 03:52:27.709] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=16, y=1, z=32}. Creating passage only.
-[26thg 92024 03:52:27.710] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=32, y=1, z=32}. Creating passage only.
-[26thg 92024 03:52:27.711] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=32, y=1, z=16}. Creating passage only.
-[26thg 92024 03:52:27.711] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=16, y=1, z=16}. Creating passage only.
-[26thg 92024 03:52:27.712] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=16, y=1, z=0}. Creating passage only.
-[26thg 92024 03:52:27.812] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Dungeon generation progress: 47%
-[26thg 92024 03:52:27.812] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=32, y=1, z=16}. Creating passage only.
-[26thg 92024 03:52:27.838] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Dungeon generation progress: 52%
-[26thg 92024 03:52:27.919] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Dungeon generation progress: 58%
-[26thg 92024 03:52:27.920] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=48, y=1, z=16}. Creating passage only.
-[26thg 92024 03:52:27.920] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=32, y=1, z=16}. Creating passage only.
-[26thg 92024 03:52:27.921] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=48, y=1, z=16}. Creating passage only.
-[26thg 92024 03:52:27.978] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Dungeon generation progress: 64%
-[26thg 92024 03:52:27.979] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=48, y=1, z=16}. Creating passage only.
-[26thg 92024 03:52:28.041] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Dungeon generation progress: 70%
-[26thg 92024 03:52:28.042] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=32, y=1, z=0}. Creating passage only.
-[26thg 92024 03:52:28.043] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=16, y=1, z=0}. Creating passage only.
-[26thg 92024 03:52:28.044] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=32, y=1, z=0}. Creating passage only.
-[26thg 92024 03:52:28.082] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Dungeon generation progress: 76%
-[26thg 92024 03:52:28.149] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Dungeon generation progress: 82%
-[26thg 92024 03:52:28.149] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=32, y=1, z=-16}. Creating passage only.
-[26thg 92024 03:52:28.178] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Dungeon generation progress: 88%
-[26thg 92024 03:52:28.179] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=48, y=1, z=0}. Creating passage only.
-[26thg 92024 03:52:28.180] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=48, y=1, z=-16}. Creating passage only.
-[26thg 92024 03:52:28.180] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=32, y=1, z=-16}. Creating passage only.
-[26thg 92024 03:52:28.233] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Dungeon generation progress: 94%
-[26thg 92024 03:52:28.233] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=16, y=1, z=0}. Creating passage only.
-[26thg 92024 03:52:28.234] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=16, y=1, z=16}. Creating passage only.
-[26thg 92024 03:52:28.235] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=0, y=1, z=16}. Creating passage only.
-[26thg 92024 03:52:28.236] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Room already exists at BlockPos{x=0, y=1, z=0}. Creating passage only.
-[26thg 92024 03:52:28.319] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Dungeon generation progress: 100%
-[26thg 92024 03:52:48.347] [Render thread/INFO] [net.minecraft.advancements.AdvancementList/]: Loaded 15 advancements
-[26thg 92024 03:52:50.735] [Render thread/INFO] [net.minecraft.advancements.AdvancementList/]: Loaded 18 advancements
-[26thg 92024 03:52:53.466] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Saving and pausing game...
-[26thg 92024 03:52:53.475] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:overworld
-[26thg 92024 03:52:53.479] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/ss:dungeon_dimension
-[26thg 92024 03:52:53.483] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:the_end
-[26thg 92024 03:52:53.487] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:the_nether
-[26thg 92024 03:53:43.051] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev has made the advancement [Monster Hunter]
-[26thg 92024 03:53:43.119] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Dev has made the advancement [Monster Hunter]
-[26thg 92024 03:53:43.128] [Render thread/INFO] [net.minecraft.advancements.AdvancementList/]: Loaded 49 advancements
-[26thg 92024 03:53:51.216] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Saving and pausing game...
-[26thg 92024 03:53:51.226] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:overworld
-[26thg 92024 03:53:51.230] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/ss:dungeon_dimension
-[26thg 92024 03:53:51.235] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:the_end
-[26thg 92024 03:53:51.239] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:the_nether
-[26thg 92024 03:53:54.570] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev was slain by Zombie
-[26thg 92024 03:53:54.595] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Dev was slain by Zombie
-[26thg 92024 03:53:55.851] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Teleporting player to Dungeon Dimension
-[26thg 92024 03:53:55.866] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Player is now in Dungeon Dimension, teleporting to spawn.
-[26thg 92024 03:53:55.866] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Player is already in the Dungeon Dimension.
-[26thg 92024 03:53:55.867] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Player teleported to Dungeon Dimension at x:8.5, y:4, z:8.5
-[26thg 92024 03:53:56.016] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Saving and pausing game...
-[26thg 92024 03:53:56.045] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:overworld
-[26thg 92024 03:53:56.048] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/ss:dungeon_dimension
-[26thg 92024 03:53:56.057] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:the_end
-[26thg 92024 03:53:56.060] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:the_nether
-[26thg 92024 03:54:01.967] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Dev: Set own game mode to Creative Mode]
-[26thg 92024 03:54:01.993] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Set own game mode to Creative Mode
-[26thg 92024 03:54:17.000] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] An unexpected error occurred trying to execute that command
-[26thg 92024 03:54:24.036] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] An unexpected error occurred trying to execute that command
-[26thg 92024 03:54:27.525] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Stopping!
-[26thg 92024 03:54:27.567] [Server thread/INFO] [net.minecraft.server.network.ServerGamePacketListenerImpl/]: Dev lost connection: Disconnected
-[26thg 92024 03:54:27.567] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev left the game
-[26thg 92024 03:54:27.577] [Server thread/INFO] [net.minecraft.server.network.ServerGamePacketListenerImpl/]: Stopping singleplayer server as player logged out
-[26thg 92024 03:54:27.616] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server
-[26thg 92024 03:54:27.616] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving players
-[26thg 92024 03:54:27.616] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving worlds
-[26thg 92024 03:54:28.717] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:overworld
-[26thg 92024 03:54:32.672] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/ss:dungeon_dimension
-[26thg 92024 03:54:32.804] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:the_end
-[26thg 92024 03:54:32.806] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:the_nether
-[26thg 92024 03:54:32.828] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (Save Game (1)): All chunks are saved
-[26thg 92024 03:54:32.829] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (dungeon_dimension): All chunks are saved
-[26thg 92024 03:54:32.829] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
-[26thg 92024 03:54:32.829] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
-[26thg 92024 03:54:32.829] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage: All dimensions are saved
+[14thg 102024 01:28:55.402] [Render thread/INFO] [net.minecraft.world.item.crafting.RecipeManager/]: Loaded 7 recipes
+[14thg 102024 01:28:55.651] [Render thread/INFO] [net.minecraft.advancements.AdvancementList/]: Loaded 1271 advancements
+[14thg 102024 01:28:56.419] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Starting integrated minecraft server version 1.20.1
+[14thg 102024 01:28:56.419] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Generating keypair
+[14thg 102024 01:28:57.725] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Preparing start region for dimension minecraft:overworld
+[14thg 102024 01:29:06.595] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[14thg 102024 01:29:06.598] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[14thg 102024 01:29:06.599] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[14thg 102024 01:29:06.599] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[14thg 102024 01:29:06.600] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[14thg 102024 01:29:06.600] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[14thg 102024 01:29:06.600] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[14thg 102024 01:29:06.600] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[14thg 102024 01:29:06.600] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[14thg 102024 01:29:06.603] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[14thg 102024 01:29:06.604] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[14thg 102024 01:29:06.604] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[14thg 102024 01:29:06.604] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[14thg 102024 01:29:06.606] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[14thg 102024 01:29:06.607] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[14thg 102024 01:29:06.607] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[14thg 102024 01:29:06.607] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[14thg 102024 01:29:06.608] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[14thg 102024 01:29:07.348] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[14thg 102024 01:29:07.480] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[14thg 102024 01:29:07.983] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 1%
+[14thg 102024 01:29:08.535] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 82%
+[14thg 102024 01:29:08.962] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Time elapsed: 11005 ms
+[14thg 102024 01:29:08.963] [Server thread/INFO] [net.minecraftforge.server.permission.PermissionAPI/]: Successfully initialized permission handler forge:default_handler
+[14thg 102024 01:29:10.358] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing view distance to 2, from 10
+[14thg 102024 01:29:10.361] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing simulation distance to 5, from 0
+[14thg 102024 01:29:13.231] [Render thread/WARN] [io.netty.util.internal.SystemPropertyUtil/]: Unable to parse the boolean system property 'java.net.preferIPv6Addresses':system - using the default value: false
+[14thg 102024 01:29:14.715] [Netty Local Client IO #0/INFO] [net.minecraftforge.network.NetworkHooks/]: Connected to a modded server.
+[14thg 102024 01:29:15.932] [Server thread/INFO] [net.minecraft.server.players.PlayerList/]: Dev[local:E:05ba3f82] logged in with entity id 1 at (10.718732076298997, 2.0, 7.587117713846569)
+[14thg 102024 01:29:16.324] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev joined the game
+[14thg 102024 01:29:16.580] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Player is already in the Dungeon Dimension.
+[14thg 102024 01:29:17.490] [Render thread/INFO] [net.minecraft.advancements.AdvancementList/]: Loaded 47 advancements
+[14thg 102024 01:29:17.898] [Server thread/WARN] [net.minecraft.server.MinecraftServer/]: Can't keep up! Is the server overloaded? Running 3085ms or 61 ticks behind
+[14thg 102024 01:30:40.217] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev was slain by entity.ss.mod_zombie
+[14thg 102024 01:30:40.317] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Dev was slain by entity.ss.mod_zombie
+[14thg 102024 01:30:41.331] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Teleporting player to Dungeon Dimension
+[14thg 102024 01:30:41.391] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Player is now in Dungeon Dimension, teleporting to spawn.
+[14thg 102024 01:30:41.391] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Player is already in the Dungeon Dimension.
+[14thg 102024 01:30:41.392] [Server thread/INFO] [net.ss.sudungeon.SsMod/]: Player teleported to Dungeon Dimension at x:8.5, y:4, z:8.5
+[14thg 102024 01:30:41.392] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Saving and pausing game...
+[14thg 102024 01:30:41.478] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:overworld
+[14thg 102024 01:30:41.534] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:the_nether
+[14thg 102024 01:30:41.553] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:the_end
+[14thg 102024 01:30:41.555] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/ss:dungeon_dimension
+[14thg 102024 01:31:16.915] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Saving and pausing game...
+[14thg 102024 01:31:16.949] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:overworld
+[14thg 102024 01:31:16.951] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:the_nether
+[14thg 102024 01:31:16.953] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:the_end
+[14thg 102024 01:31:16.955] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/ss:dungeon_dimension
+[14thg 102024 01:31:17.985] [Server thread/INFO] [net.minecraft.server.network.ServerGamePacketListenerImpl/]: Dev lost connection: Disconnected
+[14thg 102024 01:31:18.008] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev left the game
+[14thg 102024 01:31:18.027] [Server thread/INFO] [net.minecraft.server.network.ServerGamePacketListenerImpl/]: Stopping singleplayer server as player logged out
+[14thg 102024 01:31:18.046] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server
+[14thg 102024 01:31:18.047] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving players
+[14thg 102024 01:31:18.047] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving worlds
+[14thg 102024 01:31:22.436] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:overworld
+[14thg 102024 01:31:25.823] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:the_nether
+[14thg 102024 01:31:25.825] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/minecraft:the_end
+[14thg 102024 01:31:25.827] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Save Game]'/ss:dungeon_dimension
+[14thg 102024 01:31:25.939] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (Save Game (1)): All chunks are saved
+[14thg 102024 01:31:25.939] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[14thg 102024 01:31:25.939] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[14thg 102024 01:31:25.939] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (dungeon_dimension): All chunks are saved
+[14thg 102024 01:31:25.940] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage: All dimensions are saved
+[14thg 102024 01:31:26.768] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Stopping!
