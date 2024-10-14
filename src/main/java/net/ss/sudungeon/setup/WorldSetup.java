@@ -14,7 +14,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.ss.sudungeon.SsMod;
 
-@Mod.EventBusSubscriber(modid = SsMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@Mod.EventBusSubscriber(modid = SsMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class WorldSetup {
 
     @SubscribeEvent

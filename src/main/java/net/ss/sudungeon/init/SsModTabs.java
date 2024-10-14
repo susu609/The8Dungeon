@@ -13,7 +13,7 @@ import net.ss.sudungeon.SsMod;
 
 
 public class SsModTabs {
-    public static final DeferredRegister<CreativeModeTab> REGISTRY = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, SsMod.MODID);
+    public static final DeferredRegister<CreativeModeTab> REGISTRY = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, SsMod.MOD_ID);
     public static final RegistryObject<CreativeModeTab> SU_DUNGEON = REGISTRY.register("su_dungeon",
             () -> CreativeModeTab.builder().title(Component.translatable("item_group.ss.su_dungeon")).icon(() -> new ItemStack(Blocks.STONE_BRICKS)).displayItems((parameters, tabData) -> {
 

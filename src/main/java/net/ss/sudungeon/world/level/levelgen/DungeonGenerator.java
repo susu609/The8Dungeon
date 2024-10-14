@@ -19,7 +19,7 @@ import java.util.List;
 
 public class DungeonGenerator {
     private static final int ROOM_SIZE = 16; // Kích thước mỗi phòng (16x16 blocks)
-    private static final ResourceLocation ROOM_TEMPLATE = new ResourceLocation(SsMod.MODID, "room1x1"); // Đường dẫn đến structure template
+    private static final ResourceLocation ROOM_TEMPLATE = new ResourceLocation(SsMod.MOD_ID, "room1x1"); // Đường dẫn đến structure template
     private static final int MIN_ROOMS = 16; // Số phòng tối thiểu
     private static final int MAX_ROOMS = 32; // Số phòng tối đa
 

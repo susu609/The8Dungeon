@@ -9,13 +9,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.common.Mod;
 import net.ss.sudungeon.SsMod;
-import net.ss.sudungeon.client.player.PlayerRenderProcedure;
-import net.ss.sudungeon.network.SsModVariables;
-import net.ss.sudungeon.world.entity.player.CharacterStatManager;
-import net.ss.sudungeon.world.entity.player.CharacterStats;
+import net.ss.sudungeon.world.entity.player.PlayerCharacterStats;
 import net.ss.sudungeon.world.level.levelgen.dungeongen.DrunkardWalk;
 import net.ss.sudungeon.world.level.levelgen.dungeongen.RoomType;
 import net.ss.sudungeon.world.level.levelgen.dungeongen.SeedManager;
@@ -28,15 +26,14 @@ public class MainMenuScreen extends Screen {
     private static final Component TITLE = Component.literal("Mode Selection");
     private String selectedGameMode = "standard"; // Chế độ chơi mặc định
     private String selectedCharacter = "steve"; // Nhân vật mặc định
-    private CharacterStats characterStats; // Thông tin chỉ số nhân vật
     private SeedManager seedManager;
 
-    public MainMenuScreen () {
+    public MainMenuScreen() {
         super(TITLE);
     }
 
     @Override
-    protected void init () {
+    protected void init() {
         super.init();
         int centerX = this.width / 2;
         int centerY = this.height / 2;
@@ -59,7 +56,7 @@ public class MainMenuScreen extends Screen {
     }
 
     @Override
-    public void render (@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         this.renderDirtBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, partialTicks);
 
@@ -74,63 +71,39 @@ public class MainMenuScreen extends Screen {
         if (player != null) {
             this.selectedCharacter = character;
 
-            // Lấy stat của nhân vật dựa trên tên
-            characterStats = CharacterStatManager.getStatsForCharacter(character);
-
-            // Sử dụng capability để lấy PlayerVariables
-            player.getCapability(SsModVariables.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(playerVars -> {
-                // Thiết lập skinUrl và kiểu mô hình (wide/slim) dựa trên nhân vật
-                switch (character.toLowerCase()) {
-                    case "alex":
-                        playerVars.skinUrl = "ss:textures/entity/player/slim/alex.png"; // Skin của Alex
-                        playerVars.isSlim = true; // Alex có mô hình slim
-                        break;
-                    case "steve":
-                    default:
-                        playerVars.skinUrl = "ss:textures/entity/player/wide/steve.png"; // Skin của Steve
-                        playerVars.isSlim = false; // Steve có mô hình wide
-                        break;
-                }
-                SsMod.LOGGER.info(playerVars.skinUrl + " and " + playerVars.isSlim);
-
-                // Cập nhật các chỉ số của nhân vật
-                player.setHealth(characterStats.getHealth());
-                playerVars.mana = characterStats.getMana();
-                playerVars.stamina = characterStats.getStamina();
-                playerVars.defense = characterStats.getDefense();
-                playerVars.strength = characterStats.getStrength();
-                playerVars.level = characterStats.getLevel();
-
-                // Đồng bộ dữ liệu này với client/server nếu cần thiết
-                playerVars.syncPlayerVariables(player);
-            });
+            // Thiết lập chỉ số và skin của nhân vật
+            PlayerCharacterStats.setCharacterSkinAndModel(player, character);
         } else {
             SsMod.LOGGER.error("Player not found!");
         }
     }
 
-
-
     // Phương thức để đặt chế độ chơi được chọn
-    public void setSelectedGameMode (String gameMode) {
+    public void setSelectedGameMode(String gameMode) {
         this.selectedGameMode = gameMode;
     }
 
-    public String getSelectedGameMode () {
+    public String getSelectedGameMode() {
         return selectedGameMode;
     }
 
-    private void startSelectedGameMode () {
+    private void startSelectedGameMode() {
         if (this.minecraft == null || this.minecraft.player == null) {
             return;
         }
 
+        LocalPlayer player = this.minecraft.player;
+
+        // Thiết lập vật phẩm khởi đầu cho từng nhân vật
+        PlayerCharacterStats.setCharacterAttributes(player, selectedCharacter);
+        PlayerCharacterStats.giveCharacterItems(player, selectedCharacter);
+
+        // Các bước còn lại của phương thức
         if (this.seedManager == null) {
             this.seedManager = new SeedManager(RandomSource.create().nextLong());
         }
 
         long seed = this.seedManager.getRandom().nextLong();
-        LocalPlayer player = this.minecraft.player;
         ServerLevel world = Objects.requireNonNull(this.minecraft.getSingleplayerServer()).getLevel(player.level().dimension());
 
         if (world == null) {
@@ -138,33 +111,25 @@ public class MainMenuScreen extends Screen {
             return;
         }
 
-        // Vô hiệu hóa trọng lực cho người chơi (tạm thời)
-        player.setNoGravity(true);
-
         // Tạo generator dungeon và hiển thị màn hình loading
         DrunkardWalk dungeonGenerator = new DrunkardWalk(RoomType.START);
         this.minecraft.execute(() -> this.minecraft.setScreen(new LoadingScreen(dungeonGenerator)));
 
         // Thực hiện tạo dungeon trên luồng server
         this.minecraft.getSingleplayerServer().execute(() -> {
-
             BlockPos startPos = new BlockPos(0, 1, 0);
             dungeonGenerator.generate(world, startPos, seed);
 
             // Sau khi tạo dungeon xong, kích hoạt lại trọng lực cho người chơi
             this.minecraft.execute(() -> {
-                BlockPos dungeonStartPos = new BlockPos(0, 1, 0);
-                player.teleportTo(dungeonStartPos.getX(), dungeonStartPos.getY(), dungeonStartPos.getZ());
-                player.setNoGravity(false); // Kích hoạt lại trọng lực
                 this.minecraft.setScreen(null); // Quay lại màn hình chính
             });
         });
     }
 
-    private void openScreen (Screen screen) {
+    private void openScreen(Screen screen) {
         if (this.minecraft != null) {
             this.minecraft.setScreen(screen);
         }
     }
-
 }

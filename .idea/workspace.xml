@@ -4,117 +4,29 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="03c3ced8-64e0-427b-af18-e63124b63b3d" name="Changes" comment="update 2">
-      <change afterPath="$PROJECT_DIR$/models/mojmap-1.20.x/ModelTargetDummy.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/config/fancymenu/assets/mod_title.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/config/fancymenu/custom_gui_screens.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/config/fancymenu/customizablemenus.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/config/fancymenu/customization/susu_layout.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/config/fancymenu/customization/universal_layout.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/config/fancymenu/layout_editor/widgets/element_layer_control.lewidget" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/config/fancymenu/legacy_checklist.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/config/fancymenu/options.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/config/fancymenu/ui_themes/dark.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/config/fancymenu/ui_themes/light.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/config/fancymenu/user_variables.db" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/config/konkrete/locals/de_de.local" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/config/konkrete/locals/en_us.local" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/config/konkrete/locals/pl_pl.local" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/config/konkrete/locals/pt_br.local" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/config/torohealth.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-09-28_10.56.05-server.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-09-28_10.56.12-client.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-09-28_11.51.55-server.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-09-28_11.55.15-server.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-09-28_11.56.51-server.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-09-28_12.04.18-server.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-09-28_21.42.09-client.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-10-01_18.19.44-client.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-10-01_18.40.35-client.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-10-01_19.22.38-client.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-10-01_19.33.39-client.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-10-01_19.45.54-client.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-10-01_20.17.05-client.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-10-01_20.20.10-client.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-10-03_22.32.16-fml.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/fancymenu_data/last_world.fmdata" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-09-25-2.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-09-25-3.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-09-26-2.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-09-26-3.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-09-27-2.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-09-28-13.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-09-28-2.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-09-28-3.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-09-28-4.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-09-28-5.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-09-28-6.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-09-29-14.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-09-29-15.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-09-30-13.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-09-30-14.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-01-2.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-01-3.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-01-4.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-01-5.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-01-6.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-01-7.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-01-8.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-01-9.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-02-8.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-02-9.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-03-1.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-03-2.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-03-3.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-03-4.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-03-5.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-03-6.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-03-7.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-03-8.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-12-3.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-12-4.log.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/dimensions/ss/dungeon_dimension/poi/r.-1.-1.mca" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/dimensions/ss/dungeon_dimension/poi/r.-1.0.mca" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/dimensions/ss/dungeon_dimension/poi/r.0.-1.mca" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/dimensions/ss/dungeon_dimension/poi/r.0.0.mca" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/poi/r.-1.-1.mca" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/poi/r.-1.0.mca" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/poi/r.0.-1.mca" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/poi/r.0.0.mca" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/screenshots/2024-09-26_06.09.58.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run/screenshots/2024-10-04_00.01.31.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/animation/definitions/ModZombieAnimation.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/animation/definitions/TargetDummyAnimation.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/PlayerStatBarGui.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/model/ModelModZombie.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/model/ModelTargetDummy.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/particle/ParticleNumeric.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/renderer/entity/ModZombieRenderer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/renderer/entity/TargetDummyRenderer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/command/VariablesCommand.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/event/onCriticalHitEventHandler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/event/onLivingHurtEventHandler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/event/onPlayerAttackEventHandler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/ModModelLayers.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/SsModParticleTypes.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/SsModParticles.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/SsModScreens.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/SsModSounds.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/mixin/PlayerMixin.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/test/AllySummonScreen.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/ModTextDisplay.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/TargetDummy.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/ai/goal/GenericMeleeAttackGoal.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/ai/goal/ModZombieMeleeAttackGoal.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/sounds.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/sounds/sfx_mob_zombiepre-001_soundwave.ogg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/sounds/sfx_mob_zombiepre-002_soundwave.ogg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/sounds/sfx_mob_zombiepre-003_soundwave.ogg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/textures/entity/target_dummy.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/assets/ss/textures/gui/player_stat_bar.png" afterDir="false" />
+    <list default="true" id="03c3ced8-64e0-427b-af18-e63124b63b3d" name="Changes" comment="update 3">
+      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-10-14_05.46.48-client.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-10-14_05.51.35-client.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-10-14_06.01.35-client.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/crash-reports/crash-2024-10-15_02.59.26-client.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-14-10.log.gz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-14-2.log.gz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-14-3.log.gz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-14-6.log.gz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-14-7.log.gz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-14-9.log.gz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-15-1.log.gz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-15-2.log.gz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-15-3.log.gz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-15-4.log.gz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-15-5.log.gz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run/logs/2024-10-15-6.log.gz" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/renderer/entity/player/ModPlayerRenderer.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/command/SetCharacterCommand.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/event/PlayerManaStaminaEvents.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/SsModAttributes.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mcreator.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/mcreator.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/mojmap-1.20.x/ModelRoomMarkerEntity.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/run/logs/debug-1.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/debug-1.log.gz" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run/logs/debug-2.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/debug-2.log.gz" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run/logs/debug-3.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/debug-3.log.gz" afterDir="false" />
@@ -122,15 +34,14 @@
       <change beforePath="$PROJECT_DIR$/run/logs/debug-5.log.gz" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/debug-5.log.gz" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run/logs/debug.log" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/debug.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run/logs/latest.log" beforeDir="false" afterPath="$PROJECT_DIR$/run/logs/latest.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/options.txt" beforeDir="false" afterPath="$PROJECT_DIR$/run/options.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/DIM-1/data/raids.dat" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/DIM-1/data/raids.dat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/DIM1/data/raids_end.dat" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/DIM1/data/raids_end.dat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/advancements/380df991-f603-344c-a090-369bad2a924a.json" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/advancements/380df991-f603-344c-a090-369bad2a924a.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/data/raids.dat" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/data/raids.dat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/dimensions/ss/dungeon_dimension/data/raids.dat" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/dimensions/ss/dungeon_dimension/data/raids.dat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/dimensions/ss/dungeon_dimension/data/sudungeon_data.dat" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/dimensions/ss/dungeon_dimension/data/sudungeon_data.dat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/dimensions/ss/dungeon_dimension/entities/r.-1.-1.mca" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/dimensions/ss/dungeon_dimension/entities/r.-1.-1.mca" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/dimensions/ss/dungeon_dimension/entities/r.-1.0.mca" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/dimensions/ss/dungeon_dimension/entities/r.-1.0.mca" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/dimensions/ss/dungeon_dimension/entities/r.0.-1.mca" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/dimensions/ss/dungeon_dimension/entities/r.0.-1.mca" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/dimensions/ss/dungeon_dimension/entities/r.0.0.mca" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/dimensions/ss/dungeon_dimension/entities/r.0.0.mca" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/dimensions/ss/dungeon_dimension/region/r.-1.-1.mca" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/dimensions/ss/dungeon_dimension/region/r.-1.-1.mca" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/dimensions/ss/dungeon_dimension/region/r.-1.0.mca" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/dimensions/ss/dungeon_dimension/region/r.-1.0.mca" afterDir="false" />
@@ -147,31 +58,49 @@
       <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/region/r.0.0.mca" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/region/r.0.0.mca" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run/saves/Save Game (1)/stats/380df991-f603-344c-a090-369bad2a924a.json" beforeDir="false" afterPath="$PROJECT_DIR$/run/saves/Save Game (1)/stats/380df991-f603-344c-a090-369bad2a924a.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run/usercache.json" beforeDir="false" afterPath="$PROJECT_DIR$/run/usercache.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/ClassicPlayerRenderer.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/ExternalPlayerRenderer.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/InternalPlayerRenderer.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/KleidersEntityRenderer.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/SsMod.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/SsMod.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/WorldSaveCopier.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/WorldSaveCopier.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/animation/definitions/ModZombieAnimation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/animation/definitions/ModZombieAnimation.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/BlackScreenOverlay.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/BlackScreenOverlay.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/DungeonMapGui.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/DungeonMapGui.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/HideVanillaHud.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/HideVanillaHud.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/PlayerBarsGui.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/DungeonMapOverlay.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/DungeonMapOverlay.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/PlayerStatBarGui.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/PlayerStatBarGui.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/PlayerStatsGui.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/PlayerStatsGui.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/gamemodeselection/LoadingScreen.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/gamemodeselection/LoadingScreen.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/gamemodeselection/MainMenuScreen.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/gui/gamemodeselection/MainMenuScreen.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/model/ModPlayerModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/model/ModPlayerModel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/model/ModelModZombie.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/model/ModZombieModel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/model/ModelTargetDummy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/model/TargetDummyModel.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/player/PlayerRenderProcedure.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/player/PlayerRenderProcedure.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/command/EntityScoreCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/command/EntityScoreCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/command/InfoEntityCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/command/InfoEntityCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/command/SetSkinCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/command/SetSkinCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/renderer/entity/ModZombieRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/renderer/entity/ModZombieRenderer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/renderer/entity/TargetDummyRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/client/renderer/entity/TargetDummyRenderer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/command/SetSkinCommand.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/command/VariablesCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/command/VariablesCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/event/CommandBlocker.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/event/CommandBlocker.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/event/DungeonEventHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/event/DungeonEventHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/event/ModBlockEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/event/ModBlockEvent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/event/PlayerEnterDungeonEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/event/PlayerEnterDungeonEvent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/event/onLivingHurtEventHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/event/onLivingHurtEventHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/event/onPlayerAttackEventHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/event/onPlayerAttackEventHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/ModModelLayers.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/ModModelLayers.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/SsModBlockEntities.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/SsModBlockEntities.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/SsModBlocks.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/SsModBlocks.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/SsModEntities.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/SsModEntities.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/SsModEntityRenderers.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/SsModEntityRenderers.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/DamageTextHandler.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/EntityScoring.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/EntityScoring.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/SsModItems.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/SsModItems.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/SsModParticleTypes.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/SsModParticleTypes.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/SsModSounds.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/SsModSounds.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/SsModTabs.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/init/SsModTabs.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/mixin/AttributesMixin.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/mixin/AttributesMixin.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/mixin/DecoratedPotBlockMixin.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/mixin/DecoratedPotBlockMixin.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/network/ChallengePointsManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/network/ChallengePointsManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/setup/WorldSetup.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/setup/WorldSetup.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/ModZombie.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/ModZombie.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/PlayerAttributeHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/PlayerAttributeHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/player/CharacterStatManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/player/CharacterStatManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/player/CharacterStats.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/player/CharacterStats.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/player/PlayerStats.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/player/PlayerStats.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/level/levelgen/dungeongen/DungeonFeatureSpawner.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/level/levelgen/dungeongen/DungeonFeatureSpawner.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/access_transformers.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/access_transformers.cfg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/mixins.ss.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/mixins.ss.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/ai/goal/ModZombieMeleeAttackGoal.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/ai/goal/ModZombieMeleeAttackGoal.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/event/MobSpawnEventHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/event/MobSpawnEventHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/player/PlayerStats.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/player/PlayerCharacterStats.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/level/levelgen/DungeonGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/level/levelgen/DungeonGenerator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/level/levelgen/dungeongen/DrunkardWalk.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/level/levelgen/dungeongen/DrunkardWalk.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -285,59 +214,59 @@
     <option name="showLibraryContents" value="true" />
     <option name="showVisibilityIcons" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Application.runClient.executor": "Run",
-    "Downloaded.Files.Path.Enabled": "true",
-    "Gradle.Build SuDungeon.executor": "Run",
-    "Gradle.Download Sources.executor": "Run",
-    "Gradle.SuDungeon [--warning-mode all].executor": "Run",
-    "Gradle.SuDungeon [-Xlint:deprecation].executor": "Run",
-    "Gradle.SuDungeon [:EntityScoring.main()].executor": "Run",
-    "Gradle.SuDungeon [:clean].executor": "Run",
-    "Gradle.SuDungeon [:createMcpToSrg :createMcpToSrg :createMcpToSrg].executor": "Run",
-    "Gradle.SuDungeon [:prepareRunClientCompile].executor": "Run",
-    "Gradle.SuDungeon [build].executor": "Run",
-    "Gradle.SuDungeon [clean].executor": "Run",
-    "Gradle.SuDungeon [cocompileJava].executor": "Run",
-    "Gradle.SuDungeon [compileJava].executor": "Run",
-    "Gradle.SuDungeon [dependencies].executor": "Run",
-    "Gradle.SuDungeon [downloadMCMeta].executor": "Run",
-    "Gradle.SuDungeon [extractSrg].executor": "Run",
-    "Gradle.SuDungeon [genIntellijRuns].executor": "Run",
-    "Gradle.SuDungeon [info].executor": "Run",
-    "Gradle.SuDungeon [reobfJar].executor": "Run",
-    "Gradle.SuDungeon [runClient].executor": "Run",
-    "Gradle.SuDungeon [stacktrace].executor": "Run",
-    "Gradle.SuDungeon.executor": "Run",
-    "JavaClassFindUsagesOptions.isDerivedClasses": "true",
-    "JavaClassFindUsagesOptions.isFieldsUsages": "true",
-    "JavaClassFindUsagesOptions.isMethodsUsages": "true",
-    "Maven.Unnamed.executor": "Run",
-    "Repository.Attach.Annotations": "false",
-    "Repository.Attach.JavaDocs": "false",
-    "Repository.Attach.Sources": "false",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_directory_selection": "D:/Users/SS/MCreatorWorkspaces/SuDungeon/src/main/java/net/ss/sudungeon/client",
-    "last_opened_file_path": "D:/Downloads/firstperson-forge-2.4.5-mc1.20.1/mowziesmobs-1.6.5.jar",
-    "project.structure.last.edited": "Libraries",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.29086336",
-    "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "jd.intellij.settings",
-    "two.files.diff.last.used.file": "D:/Users/SS/MCreatorWorkspaces/SuDungeon/src/main/resources/assets/ss/models/block/random_stone.json"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Application.runClient.executor&quot;: &quot;Run&quot;,
+    &quot;Downloaded.Files.Path.Enabled&quot;: &quot;true&quot;,
+    &quot;Gradle.Build SuDungeon.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Download Sources.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.SuDungeon [--warning-mode all].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.SuDungeon [-Xlint:deprecation].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.SuDungeon [:EntityScoring.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.SuDungeon [:clean].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.SuDungeon [:createMcpToSrg :createMcpToSrg :createMcpToSrg].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.SuDungeon [:prepareRunClientCompile].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.SuDungeon [build].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.SuDungeon [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.SuDungeon [cocompileJava].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.SuDungeon [compileJava].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.SuDungeon [dependencies].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.SuDungeon [downloadMCMeta].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.SuDungeon [extractSrg].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.SuDungeon [genIntellijRuns].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.SuDungeon [info].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.SuDungeon [reobfJar].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.SuDungeon [runClient].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.SuDungeon [stacktrace].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.SuDungeon.executor&quot;: &quot;Run&quot;,
+    &quot;JavaClassFindUsagesOptions.isDerivedClasses&quot;: &quot;true&quot;,
+    &quot;JavaClassFindUsagesOptions.isFieldsUsages&quot;: &quot;true&quot;,
+    &quot;JavaClassFindUsagesOptions.isMethodsUsages&quot;: &quot;true&quot;,
+    &quot;Maven.Unnamed.executor&quot;: &quot;Run&quot;,
+    &quot;Repository.Attach.Annotations&quot;: &quot;false&quot;,
+    &quot;Repository.Attach.JavaDocs&quot;: &quot;false&quot;,
+    &quot;Repository.Attach.Sources&quot;: &quot;false&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_directory_selection&quot;: &quot;D:/Users/SS/MCreatorWorkspaces/SuDungeon/src/main/java/net/ss/sudungeon/client&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/Downloads/firstperson-forge-2.4.5-mc1.20.1/mowziesmobs-1.6.5.jar&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Libraries&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.29086336&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;jd.intellij.settings&quot;,
+    &quot;two.files.diff.last.used.file&quot;: &quot;D:/Users/SS/MCreatorWorkspaces/SuDungeon/src/main/resources/assets/ss/models/block/random_stone.json&quot;
   },
-  "keyToStringList": {
-    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
-      "PLAIN_TEXT"
+  &quot;keyToStringList&quot;: {
+    &quot;com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File&quot;: [
+      &quot;PLAIN_TEXT&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
       <recent name="net.ss.sudungeon.init" />
@@ -361,11 +290,11 @@
       <recent name="D:\Users\SS\MCreatorWorkspaces\SuDungeon\src\main\resources\assets\ss\textures\gui" />
     </key>
     <key name="ExtractSuperBase.RECENT_KEYS">
+      <recent name="net.ss.sudungeon.world.entity.ai.goal" />
       <recent name="net.ss.sudungeon.client.particle" />
       <recent name="net.ss.sudungeon.test" />
       <recent name="net.ss.sudungeon.client.gui" />
       <recent name="net.ss.sudungeon.client.renderer.entity" />
-      <recent name="net.ss.sudungeon.client.renderer.entity.player" />
     </key>
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
       <recent name="net.ss.sudungeon.command" />
@@ -665,7 +594,15 @@
       <option name="project" value="LOCAL" />
       <updated>1727297755078</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="update 3">
+      <option name="closed" value="true" />
+      <created>1728838397434</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1728838397435</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -683,7 +620,8 @@
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="update" />
     <MESSAGE value="update 2" />
-    <option name="LAST_COMMIT_MESSAGE" value="update 2" />
+    <MESSAGE value="update 3" />
+    <option name="LAST_COMMIT_MESSAGE" value="update 3" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -692,6 +630,11 @@
           <url>jar://$PROJECT_DIR$/../../../../IdeaProjects/SuDungeon/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.3.0_mapped_official_1.20.1/forge-1.20.1-47.3.0_mapped_official_1.20.1-sources.jar!/net/minecraft/world/entity/monster/warden/Warden.java</url>
           <line>227</line>
           <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/net/ss/sudungeon/world/entity/event/MobSpawnEventHandler.java</url>
+          <line>39</line>
+          <option name="timeStamp" value="2" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

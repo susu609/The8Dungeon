@@ -17,7 +17,7 @@ import net.ss.sudungeon.SsMod;
 
 import java.util.HashMap;
 
-@Mod.EventBusSubscriber(modid = SsMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@Mod.EventBusSubscriber(modid = SsMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ModBlockEvent {
     private static final RandomSource RANDOM = RandomSource.create();
     private static final HashMap<Integer, Integer> levelBreakCountMap = new HashMap<>();
@@ -25,7 +25,7 @@ public class ModBlockEvent {
     // Xác suất ban đầu cho từng loại vật phẩm
     private static final double INITIAL_RESOURCE_CHANCE = 0.3; // 30% xác suất tài nguyên
     private static final double INITIAL_FOOD_CHANCE = 0.2;     // 20% xác suất thức ăn
-    private static final double INITIAL_WEAPON_CHANCE = 0.4;   // 40% xác suất vũ khí
+    private static final double INITIAL_WEAPON_CHANCE = 0.1;   // 40% xác suất vũ khí
 
     @SubscribeEvent
     public static void onBlockBreak(BlockEvent.BreakEvent event) {
@@ -42,7 +42,7 @@ public class ModBlockEvent {
             // Tính toán xác suất cho từng loại vật phẩm
             double resourceChance = Math.max(0, INITIAL_RESOURCE_CHANCE);
             double foodChance = Math.max(0, INITIAL_FOOD_CHANCE);
-            double weaponChance = Math.max(0, INITIAL_WEAPON_CHANCE - (breakCount * 0.05));// Giảm 5% mỗi lần
+            double weaponChance = Math.max(0, INITIAL_WEAPON_CHANCE - (breakCount * 0.01));// Giảm % mỗi lần
 
             // Xác định loại vật phẩm sẽ rơi ra
             if (RANDOM.nextDouble() < resourceChance) {

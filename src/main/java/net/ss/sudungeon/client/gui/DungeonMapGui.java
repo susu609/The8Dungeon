@@ -6,8 +6,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraftforge.api.distmarker.Dist;
@@ -24,7 +22,7 @@ import static org.lwjgl.glfw.GLFW.*;
 public class DungeonMapGui extends Screen {
 
     // Constants for dungeon map display
-    private static final ResourceLocation MAP_ICONS = new ResourceLocation(SsMod.MODID, "textures/map/dungeon_map_icons.png");
+    private static final ResourceLocation MAP_ICONS = new ResourceLocation(SsMod.MOD_ID, "textures/map/dungeon_map_icons.png");
     private static final int ROOM_SIZE = 16;
     private static final float MAX_SCALE = 2.0f;
     private static final float MIN_SCALE = 0.5f;

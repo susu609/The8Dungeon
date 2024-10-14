@@ -46,15 +46,7 @@ public class VariablesCommand {
                                                         targetPlayer.getCapability(SsModVariables.PLAYER_VARIABLES_CAPABILITY).ifPresent(vars -> {
                                                             switch (varName) {
                                                                 case "mana" -> vars.mana = value;
-                                                                case "maxMana" -> vars.maxMana = value;
                                                                 case "stamina" -> vars.stamina = value;
-                                                                case "maxStamina" -> vars.maxStamina = value;
-                                                                case "critRate" -> vars.critRate = value;
-                                                                case "critDamageMultiple" ->
-                                                                        vars.critDamageMultiple = value;
-                                                                case "health" -> vars.health = (int) value;
-                                                                case "defense" -> vars.defense = (int) value;
-                                                                case "level" -> vars.level = (int) value;
                                                                 // Thêm các biến khác của PlayerVariables
                                                             }
                                                             vars.syncPlayerVariables(targetPlayer);

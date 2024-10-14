@@ -1,121 +1,295 @@
 {
   "minecraft:recipes/decorations/crafting_table": {
     "criteria": {
-      "unlock_right_away": "2024-10-08 22:02:38 +0900"
+      "unlock_right_away": "2024-10-15 04:03:43 +0900"
     },
     "done": true
   },
   "minecraft:adventure/adventuring_time": {
     "criteria": {
-      "minecraft:plains": "2024-10-08 22:02:39 +0900"
+      "minecraft:plains": "2024-10-15 04:03:50 +0900"
     },
     "done": false
   },
-  "minecraft:recipes/tools/golden_axe": {
+  "minecraft:recipes/combat/iron_sword": {
     "criteria": {
-      "has_gold_ingot": "2024-10-08 22:03:21 +0900"
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
     },
     "done": true
   },
-  "minecraft:recipes/tools/golden_pickaxe": {
+  "minecraft:recipes/tools/iron_pickaxe": {
     "criteria": {
-      "has_gold_ingot": "2024-10-08 22:03:21 +0900"
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
     },
     "done": true
   },
-  "minecraft:recipes/misc/gold_nugget": {
+  "minecraft:recipes/combat/iron_leggings": {
     "criteria": {
-      "has_gold_ingot": "2024-10-08 22:03:21 +0900"
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
     },
     "done": true
   },
-  "minecraft:recipes/tools/golden_shovel": {
+  "minecraft:recipes/combat/shield": {
     "criteria": {
-      "has_gold_ingot": "2024-10-08 22:03:21 +0900"
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
     },
     "done": true
   },
-  "minecraft:recipes/food/golden_apple": {
+  "minecraft:recipes/redstone/hopper": {
     "criteria": {
-      "has_gold_ingot": "2024-10-08 22:03:21 +0900"
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
     },
     "done": true
   },
-  "minecraft:recipes/combat/golden_boots": {
+  "minecraft:recipes/decorations/iron_bars": {
     "criteria": {
-      "has_gold_ingot": "2024-10-08 22:03:21 +0900"
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
     },
     "done": true
   },
-  "minecraft:recipes/combat/golden_helmet": {
+  "minecraft:recipes/combat/iron_boots": {
     "criteria": {
-      "has_gold_ingot": "2024-10-08 22:03:21 +0900"
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
     },
     "done": true
   },
-  "minecraft:recipes/combat/golden_sword": {
+  "minecraft:recipes/combat/iron_chestplate": {
     "criteria": {
-      "has_gold_ingot": "2024-10-08 22:03:21 +0900"
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
     },
     "done": true
   },
-  "minecraft:recipes/building_blocks/gold_block": {
+  "minecraft:recipes/decorations/lantern": {
     "criteria": {
-      "has_gold_ingot": "2024-10-08 22:03:21 +0900"
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
     },
     "done": true
   },
-  "minecraft:recipes/combat/golden_chestplate": {
+  "minecraft:recipes/misc/iron_nugget": {
     "criteria": {
-      "has_gold_ingot": "2024-10-08 22:03:21 +0900"
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
     },
     "done": true
   },
-  "minecraft:recipes/tools/golden_hoe": {
+  "minecraft:recipes/misc/bucket": {
     "criteria": {
-      "has_gold_ingot": "2024-10-08 22:03:21 +0900"
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
     },
     "done": true
   },
-  "minecraft:recipes/redstone/light_weighted_pressure_plate": {
+  "minecraft:recipes/combat/iron_helmet": {
     "criteria": {
-      "has_gold_ingot": "2024-10-08 22:03:21 +0900"
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
     },
     "done": true
   },
-  "minecraft:recipes/combat/golden_leggings": {
+  "minecraft:recipes/transportation/minecart": {
     "criteria": {
-      "has_gold_ingot": "2024-10-08 22:03:21 +0900"
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
     },
     "done": true
   },
-  "minecraft:adventure/root": {
+  "minecraft:recipes/tools/iron_hoe": {
     "criteria": {
-      "killed_by_something": "2024-10-08 22:03:38 +0900"
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/tools/iron_shovel": {
+    "criteria": {
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
+    },
+    "done": true
+  },
+  "minecraft:story/smelt_iron": {
+    "criteria": {
+      "iron": "2024-10-15 04:04:00 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/tools/shears": {
+    "criteria": {
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/redstone/iron_trapdoor": {
+    "criteria": {
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/chain": {
+    "criteria": {
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/building_blocks/iron_block": {
+    "criteria": {
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/tools/iron_axe": {
+    "criteria": {
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/combat/crossbow": {
+    "criteria": {
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/smithing_table": {
+    "criteria": {
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/redstone/iron_door": {
+    "criteria": {
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/redstone/heavy_weighted_pressure_plate": {
+    "criteria": {
+      "has_iron_ingot": "2024-10-15 04:04:00 +0900"
     },
     "done": true
   },
   "minecraft:recipes/building_blocks/emerald_block": {
     "criteria": {
-      "has_emerald": "2024-10-08 22:10:02 +0900"
+      "has_emerald": "2024-10-15 04:04:34 +0900"
     },
     "done": true
   },
-  "minecraft:recipes/redstone/dispenser": {
+  "minecraft:recipes/tools/golden_axe": {
     "criteria": {
-      "has_bow": "2024-10-11 17:53:01 +0900"
+      "has_gold_ingot": "2024-10-15 04:04:39 +0900"
     },
     "done": true
   },
-  "minecraft:recipes/decorations/snow": {
+  "minecraft:recipes/tools/golden_pickaxe": {
     "criteria": {
-      "has_snowball": "2024-10-11 17:53:09 +0900"
+      "has_gold_ingot": "2024-10-15 04:04:39 +0900"
     },
     "done": true
   },
-  "minecraft:recipes/building_blocks/snow_block": {
+  "minecraft:recipes/misc/gold_nugget": {
     "criteria": {
-      "has_snowball": "2024-10-11 17:53:09 +0900"
+      "has_gold_ingot": "2024-10-15 04:04:39 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/tools/golden_shovel": {
+    "criteria": {
+      "has_gold_ingot": "2024-10-15 04:04:39 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/food/golden_apple": {
+    "criteria": {
+      "has_gold_ingot": "2024-10-15 04:04:39 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/combat/golden_boots": {
+    "criteria": {
+      "has_gold_ingot": "2024-10-15 04:04:39 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/combat/golden_helmet": {
+    "criteria": {
+      "has_gold_ingot": "2024-10-15 04:04:39 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/combat/golden_sword": {
+    "criteria": {
+      "has_gold_ingot": "2024-10-15 04:04:39 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/building_blocks/gold_block": {
+    "criteria": {
+      "has_gold_ingot": "2024-10-15 04:04:39 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/combat/golden_chestplate": {
+    "criteria": {
+      "has_gold_ingot": "2024-10-15 04:04:39 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/tools/golden_hoe": {
+    "criteria": {
+      "has_gold_ingot": "2024-10-15 04:04:39 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/redstone/light_weighted_pressure_plate": {
+    "criteria": {
+      "has_gold_ingot": "2024-10-15 04:04:39 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/combat/golden_leggings": {
+    "criteria": {
+      "has_gold_ingot": "2024-10-15 04:04:39 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/building_blocks/bookshelf": {
+    "criteria": {
+      "has_book": "2024-10-15 04:04:45 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/redstone/lectern": {
+    "criteria": {
+      "has_book": "2024-10-15 04:04:45 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/building_blocks/chiseled_bookshelf": {
+    "criteria": {
+      "has_book": "2024-10-15 04:04:45 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/misc/writable_book": {
+    "criteria": {
+      "has_book": "2024-10-15 04:04:45 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/chest": {
+    "criteria": {
+      "has_lots_of_items": "2024-10-15 04:04:58 +0900"
+    },
+    "done": true
+  },
+  "minecraft:recipes/transportation/carrot_on_a_stick": {
+    "criteria": {
+      "has_carrot": "2024-10-15 04:06:27 +0900"
+    },
+    "done": true
+  },
+  "minecraft:husbandry/balanced_diet": {
+    "criteria": {
+      "apple": "2024-10-15 04:07:41 +0900"
+    },
+    "done": false
+  },
+  "minecraft:husbandry/root": {
+    "criteria": {
+      "consumed_item": "2024-10-15 04:07:41 +0900"
     },
     "done": true
   },

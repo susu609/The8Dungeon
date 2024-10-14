@@ -18,7 +18,7 @@ import net.ss.sudungeon.world.entity.TargetDummy;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class SsModEntities {
-    public static final DeferredRegister<EntityType<?>> REGISTRY = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, SsMod.MODID);
+    public static final DeferredRegister<EntityType<?>> REGISTRY = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, SsMod.MOD_ID);
 
     // Đăng ký thực thể ModZombie
     public static final RegistryObject<EntityType<ModZombie>> MOD_ZOMBIE = register("mod_zombie",
@@ -33,7 +33,7 @@ public class SsModEntities {
     public static final RegistryObject<EntityType<ColossalZombie>> COLOSSAL_ZOMBIE = REGISTRY.register("colossal_zombie",
             () -> EntityType.Builder.of(ColossalZombie::new, MobCategory.MONSTER)
                     .sized(0.6F * 2, 1.95F * 2) // Kích thước x2 của zombie
-                    .build(new ResourceLocation(SsMod.MODID, "colossal_zombie").toString())
+                    .build(new ResourceLocation(SsMod.MOD_ID, "colossal_zombie").toString())
     );
 
     public static final RegistryObject<EntityType<TargetDummy>> TARGET_DUMMY = register("target_dummy",

@@ -3,14 +3,13 @@ package net.ss.sudungeon.init;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import net.ss.sudungeon.SsMod;
 
 public class SsModItems {
-    public static final DeferredRegister<Item> REGISTRY = DeferredRegister.create(ForgeRegistries.ITEMS, SsMod.MODID);
+    public static final DeferredRegister<Item> REGISTRY = DeferredRegister.create(ForgeRegistries.ITEMS, SsMod.MOD_ID);
 
     public static final RegistryObject<Item> RANDOM_STONE = block(SsModBlocks.RANDOM_STONE);
     public static final RegistryObject<Item> RANDOM_STONE_BRICKS = block(SsModBlocks.RANDOM_STONE_BRICKS);

@@ -1,3 +1,4 @@
+/*
 package net.ss.sudungeon.mixin;
 
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -42,3 +43,4 @@ public class AttributesMixin {
         STAMINA = new RangedAttribute("attribute.name.generic.stamina", 100.0D, 0.0D, 2048.0D).setSyncable(true);
     }
 }
+*/

@@ -2,18 +2,14 @@ package net.ss.sudungeon.client.model;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.animation.AnimationDefinition;
-import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.monster.Zombie;
 import net.ss.sudungeon.SsMod;
 import net.ss.sudungeon.client.animation.definitions.ModZombieAnimation;
 import net.ss.sudungeon.world.entity.ModZombie;
@@ -24,9 +20,9 @@ import org.jetbrains.annotations.NotNull;
 // Paste this class into your mod and generate all required imports
 
 
-public class ModelModZombie<T extends Entity> extends HierarchicalModel<T> {
+public class ModZombieModel<T extends Entity> extends HierarchicalModel<T> {
     // This layer location should be baked with EntityRendererProvider.Context in the entity renderer and passed into this model's constructor
-    public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(new ResourceLocation(SsMod.MODID, "model_modzombie"), "main");
+    public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(new ResourceLocation(SsMod.MOD_ID, "model_modzombie"), "main");
     private final ModelPart bone;
     private final ModelPart body;
     private final ModelPart head;
@@ -36,7 +32,7 @@ public class ModelModZombie<T extends Entity> extends HierarchicalModel<T> {
     private final ModelPart left_leg;
     private final ModelPart right_leg;
 
-    public ModelModZombie(ModelPart root) {
+    public ModZombieModel (ModelPart root) {
         this.bone = root.getChild("bone");
         this.body = this.bone.getChild("body");
         this.head = this.body.getChild("head");
@@ -73,13 +69,16 @@ public class ModelModZombie<T extends Entity> extends HierarchicalModel<T> {
     @Override
     public void setupAnim(@NotNull T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         if (entity instanceof ModZombie modZombie) {
-            // Reset lại các phần của mô hình
+            // Đặt lại tất cả các bộ phận của mô hình
             this.root().getAllParts().forEach(ModelPart::resetPose);
 
-            // Áp dụng các hoạt ảnh dựa trên trạng thái của ModZombie
+            // Kiểm tra nếu thực thể đang di chuyển
+            if (limbSwingAmount > 0.1f) {  // Đảm bảo chỉ kích hoạt khi có di chuyển
+                this.animateWalk(ModZombieAnimation.ZOMBIE_WALK, limbSwing, limbSwingAmount, 2F, 2F);
+            }
+            // Áp dụng các hoạt ảnh khác dựa trên trạng thái của thực thể
             this.animate(modZombie.attackAnimationState, ModZombieAnimation.ZOMBIE_ATTACK, ageInTicks);
             this.animate(modZombie.hurtAnimationState, ModZombieAnimation.ZOMBIE_HURT, ageInTicks);
-            this.animate(modZombie.walkAnimationState, ModZombieAnimation.ZOMBIE_WALK, limbSwing, (float) (limbSwingAmount + 2.3 + modZombie.getAttributeValue(Attributes.MOVEMENT_SPEED)));
             this.animate(modZombie.idleAnimationState, ModZombieAnimation.ZOMBIE_IDLE, ageInTicks);
         }
     }

@@ -60,7 +60,7 @@ public class LoadingScreen extends Screen {
         String elapsedTimeStr = String.format("Time Loading : %d seconds", elapsedTime / 1000);
 
         // Hiển thị thông báo dựa trên tiến trình
-        String message = progress < 100 ? "Please wait..." : "Done ! :D";
+        String message = progress < 100 ? "Please wait..." : "Done! :D";
         guiGraphics.drawCenteredString(this.font, message, this.width / 2, this.height / 2 - 20, 0xFFFFFF);
 
         // Hiển thị thời gian đã trôi qua
@@ -72,19 +72,18 @@ public class LoadingScreen extends Screen {
         int progressBarY = this.height / 2 + 20;
         drawProgressBar(guiGraphics, progressBarX, progressBarY, progressBarWidth, progress);
 
-        // Chuyển sang BlackScreenOverlay khi tiến trình hoàn tất
+        // Kiểm tra và hiển thị màn hình đen khi tiến trình hoàn tất
         if (progress >= 100) {
-            // Nếu tiến trình đạt 100%, lưu thời điểm hiện tại
             if (doneTime == null) {
                 doneTime = System.currentTimeMillis();
                 System.out.println("[" + currentTime + "] Progress completed.");
-            }
-            // Nếu đã qua 2 giây kể từ khi hoàn thành, chuyển đổi
-            else if (System.currentTimeMillis() - doneTime >= 2000) {
-                transitionToBlackScreenOverlay();
+            } else if (System.currentTimeMillis() - doneTime >= 2000) { // Thời gian chờ 2 giây trước khi chuyển cảnh
+                BlackScreenOverlay.showOverlay();
+                this.minecraft.setScreen(null); // Đóng màn hình tải
             }
         }
     }
+
 
     private void drawProgressBar (GuiGraphics guiGraphics, int x, int y, int width, int progress) {
         // Vẽ nền thanh tiến trình
@@ -92,33 +91,6 @@ public class LoadingScreen extends Screen {
         // Vẽ phần đã hoàn tất
         int filledWidth = (int) (width * (progress / 100.0));
         guiGraphics.fill(x, y, x + filledWidth, y + PROGRESS_BAR_HEIGHT, 0xFFFFFFFF);
-    }
-
-    private void transitionToBlackScreenOverlay () {
-        // Lấy người chơi hiện tại
-        if (minecraft.player != null) {
-            if (minecraft.getSingleplayerServer() != null) {
-                // Trường hợp chơi đơn (singleplayer)
-                // Dịch chuyển người chơi trong chế độ singleplayer
-                ServerLevel world = minecraft.getSingleplayerServer().overworld(); // Lấy thế giới chính
-                ServerPlayer player = minecraft.getSingleplayerServer().getPlayerList().getPlayer(minecraft.player.getUUID());
-
-                if (player != null) {
-                    BlockPos targetPos = new BlockPos(8, 6, 8);
-                    player.teleportTo(world, targetPos.getX() + 0.5, targetPos.getY(), targetPos.getZ() + 0.5, 0, 0);
-                }
-
-                // Hiển thị overlay đen
-                BlackScreenOverlay.showOverlay();
-
-                // Tùy chọn đóng màn hình tải nếu cần
-                this.minecraft.setScreen(null);
-            } else {
-                // Trường hợp multiplayer, không thực hiện gì
-                // Có thể thêm thông báo hoặc ghi log nếu cần
-                System.out.println("Multiplayer mode detected, skipping teleport.");
-            }
-        }
     }
 
     @Override

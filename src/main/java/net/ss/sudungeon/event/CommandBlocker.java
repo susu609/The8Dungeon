@@ -10,7 +10,7 @@ import net.ss.sudungeon.SsMod;
 import java.util.Arrays;
 import java.util.List;
 
-@Mod.EventBusSubscriber(modid = SsMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@Mod.EventBusSubscriber(modid = SsMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class CommandBlocker {
 
     private static final List<String> ALLOWED_COMMANDS = Arrays.asList("help", "seed", "list"); // Danh sách các lệnh được phép

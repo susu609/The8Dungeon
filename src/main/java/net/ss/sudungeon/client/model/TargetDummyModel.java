@@ -17,10 +17,10 @@ import org.jetbrains.annotations.NotNull;
 // Made with Blockbench 4.11.1
 // Exported for Minecraft version 1.17 or later with Mojang mappings
 // Paste this class into your mod and generate all required imports
-public class ModelTargetDummy<T extends Entity> extends HierarchicalModel<T> {
+public class TargetDummyModel<T extends Entity> extends HierarchicalModel<T> {
     // This layer location should be baked with EntityRendererProvider.Context in
     // the entity renderer and passed into this model's constructor
-    public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(new ResourceLocation(SsMod.MODID, "model_target_dummy"), "main");
+    public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(new ResourceLocation(SsMod.MOD_ID, "model_target_dummy"), "main");
 
     public final ModelPart bone;
     public final ModelPart body;
@@ -33,7 +33,7 @@ public class ModelTargetDummy<T extends Entity> extends HierarchicalModel<T> {
     public final ModelPart right_leg;
     public final ModelPart base;
 
-    public ModelTargetDummy (ModelPart root) {
+    public TargetDummyModel (ModelPart root) {
         this.bone = root.getChild("bone");
         this.body = this.bone.getChild("body");
         this.head = this.body.getChild("head");

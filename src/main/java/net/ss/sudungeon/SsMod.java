@@ -36,11 +36,11 @@ import java.util.function.Supplier;
 @Mod("ss")
 public class SsMod {
     public static final Logger LOGGER = LogManager.getLogger(SsMod.class);
-    public static final String MODID = "ss";
+    public static final String MOD_ID = "ss";
     public static final Capability<SsModVariables.PlayerVariables> PLAYER_VARIABLES_CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {});
     private static final String PROTOCOL_VERSION = "1";
     public static final SimpleChannel PACKET_HANDLER = NetworkRegistry.newSimpleChannel(
-            new ResourceLocation(MODID, MODID),
+            new ResourceLocation(MOD_ID, MOD_ID),
             () -> PROTOCOL_VERSION,
             PROTOCOL_VERSION::equals,
             PROTOCOL_VERSION::equals
@@ -56,9 +56,12 @@ public class SsMod {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
 
         // Đăng ký các sự kiện và đối tượng
-        bus.addListener(this::setup);
-        bus.addListener(this::onClientSetup);
+        registerModComponents(bus);
+        registerPackets();
+    }
 
+    private void registerModComponents (IEventBus bus) {
+        SsModAttributes.REGISTRY.register(bus);
         SsModBlockEntities.REGISTRY.register(bus);
         SsModBlocks.REGISTRY.register(bus);
         SsModEntities.REGISTRY.register(bus);
@@ -66,13 +69,8 @@ public class SsMod {
         SsModParticleTypes.REGISTRY.register(bus);
         SsModTabs.REGISTRY.register(bus);
         SsModSounds.REGISTRY.register(bus);
-
-        // Đăng ký gói tin mạng
-        registerPackets();  // Gọi phương thức đăng ký gói tin mạng
-
-        // Đăng ký các gói tin mạng khi mod khởi động
-//        NetworkHandler.registerMessages();
     }
+
 
     public static void registerPackets () {
         int id = 0;

@@ -10,7 +10,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.ss.sudungeon.DungeonSavedData;
 import net.ss.sudungeon.SsMod;
 
-@Mod.EventBusSubscriber(modid = SsMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@Mod.EventBusSubscriber(modid = SsMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class DungeonEventHandler {
     @SubscribeEvent
     public static void onPlayerLogin (PlayerEvent.PlayerLoggedInEvent event) {

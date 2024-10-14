@@ -5,11 +5,13 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.ss.sudungeon.DungeonSavedData;
 import net.ss.sudungeon.SsMod;
+import net.ss.sudungeon.client.gui.BlackScreenOverlay;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -17,8 +19,8 @@ import java.util.*;
 public class DrunkardWalk implements DungeonGen {
 
     // Constants
-    private static final ResourceLocation ROOM_STRUCTURE = new ResourceLocation(SsMod.MODID, "room1x1");
-    private static final ResourceLocation PASSAGE_STRUCTURE = new ResourceLocation(SsMod.MODID, "passage");
+    private static final ResourceLocation ROOM_STRUCTURE = new ResourceLocation(SsMod.MOD_ID, "room1x1");
+    private static final ResourceLocation PASSAGE_STRUCTURE = new ResourceLocation(SsMod.MOD_ID, "passage");
     private static final int MAX_ROOMS = 32;
     private static final int MIN_ROOMS = 16;
     public static final int ROOM_SIZE = 16;
@@ -51,6 +53,10 @@ public class DrunkardWalk implements DungeonGen {
         BlockPos bossRoomPosition = null;
 
         try {
+            for (Entity player : level.players()) {
+                player.setNoGravity(true);
+            }
+
             // Place starting room
             placeRoom(level, startPos, roomType, random);
             rooms.add(new RoomData(startPos, roomType, EnumSet.noneOf(Direction.class), false));
@@ -119,6 +125,12 @@ public class DrunkardWalk implements DungeonGen {
             }
 
             markDeadEnds();
+
+// Sau khi hoàn thành tất cả các phòng
+            if (progress == 100) {
+                onDungeonGenerationComplete(level, startPos);  // startPos là vị trí của phòng bắt đầu
+            }
+
         } catch (Exception e) {
             SsMod.LOGGER.error("Error during dungeon generation: ", e);
         } finally {
@@ -127,6 +139,18 @@ public class DrunkardWalk implements DungeonGen {
             dungeonSavedData.setRooms(rooms);
             dungeonSavedData.setDirty();
         }
+    }
+
+    private void onDungeonGenerationComplete(ServerLevel level, BlockPos startRoomPos) {
+        SsMod.LOGGER.info("Dungeon generation is complete!");
+
+        for (Entity player : level.players()) {
+            player.setNoGravity(false);
+            player.teleportTo(startRoomPos.getX() + 8.5, startRoomPos.getY() + 5, startRoomPos.getZ() + 8.5);
+
+        }
+
+        BlackScreenOverlay.showOverlay();
     }
 
     // Clear dungeon

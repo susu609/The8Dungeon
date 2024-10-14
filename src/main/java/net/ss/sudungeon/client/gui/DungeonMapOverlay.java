@@ -19,10 +19,10 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-@Mod.EventBusSubscriber(modid = SsMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = SsMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class DungeonMapOverlay {
 
-    private static final ResourceLocation MAP_ICONS = new ResourceLocation(SsMod.MODID, "textures/map/dungeon_map_icons.png");
+    private static final ResourceLocation MAP_ICONS = new ResourceLocation(SsMod.MOD_ID, "textures/map/dungeon_map_icons.png");
 
     private static boolean shouldDisplayMap() {
         Minecraft minecraft = Minecraft.getInstance();

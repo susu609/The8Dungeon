@@ -4,12 +4,16 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.ss.sudungeon.init.SsModAttributes;
 import net.ss.sudungeon.network.SsModVariables;
+
+import static net.ss.sudungeon.event.PlayerManaStaminaEvents.getPlayerAttribute;
 
 @Mod.EventBusSubscriber(value = {Dist.CLIENT})
 public class PlayerStatBarGui {
@@ -19,6 +23,15 @@ public class PlayerStatBarGui {
 
     private static final int BAR_WIDTH = 76;   // Độ rộng của thanh
     private static final int BAR_HEIGHT = 5;   // Độ cao của thanh
+
+    public enum Position {
+        TOP_LEFT,
+        TOP_RIGHT,
+        BOTTOM_LEFT,
+        BOTTOM_RIGHT
+    }
+
+    private static Position position = Position.BOTTOM_LEFT; // Mặc định là góc dưới bên trái
 
     @SubscribeEvent
     public static void onRenderGuiOverlay(RenderGuiOverlayEvent.Post event) {
@@ -31,12 +44,37 @@ public class PlayerStatBarGui {
         float currentMana = (float) playerStats.mana;
         float currentStamina = (float) playerStats.stamina;
 
-        renderBars(event.getGuiGraphics(), currentHealth, currentMana, currentStamina, mc.player);
+        int x = 0;
+        int y = 0;
+        int screenWidth = mc.getWindow().getGuiScaledWidth();
+        int screenHeight = mc.getWindow().getGuiScaledHeight();
+
+        // Xác định vị trí dựa trên giá trị của enum Position
+        switch (position) {
+            case TOP_LEFT:
+                x = 0;
+                y = 0;
+                break;
+            case TOP_RIGHT:
+                x = screenWidth - 99;
+                y = 0;
+                break;
+            case BOTTOM_LEFT:
+                x = 0;
+                y = screenHeight - 22;
+                break;
+            case BOTTOM_RIGHT:
+                x = screenWidth - 99 ;
+                y = screenHeight - 22 ;
+                break;
+        }
+
+        renderBars(event.getGuiGraphics(), currentHealth, currentMana, currentStamina, mc.player, x, y);
     }
 
-    private static void renderBars(GuiGraphics guiGraphics, float currentHealth, float currentMana, float currentStamina, Player player) {
-        int x = 0;  // vị trí x cố định cho các thanh
-        int y = 0;  // bắt đầu vẽ tại y = 0, tăng 6px cho mỗi thanh
+    private static void renderBars(GuiGraphics guiGraphics, float currentHealth, float currentMana, float currentStamina, Player player, int x, int y) {
+        // Render khung nền duy nhất
+        renderEmptyBar(guiGraphics, x, y);
 
         // Render mặt người chơi ở vị trí (3, 3) với kích thước 16x16
         renderPlayerFace(guiGraphics, player, x + 3, y + 3, 16);
@@ -44,19 +82,27 @@ public class PlayerStatBarGui {
         // Render thanh máu
         assert mc.player != null;
         float maxHealth = mc.player.getMaxHealth();
-        renderEmptyBar(guiGraphics, x, y);
-        renderFilledBar(guiGraphics, x, y, currentHealth, maxHealth, 3);  // Thanh đỏ
+        if (currentHealth < maxHealth * 0.1f) {
+            x += getShakeOffset();
+            y += getShakeOffset();
+        }
+        renderFilledBar(guiGraphics, x, y, currentHealth, maxHealth, 3);  // Thanh đỏ, đặt tại vị trí 21, 3
 
         // Render thanh mana
-        SsModVariables.PlayerVariables playerStats = getPlayerStats(mc.player);
-        float maxMana = (float) playerStats.maxMana;
-        renderEmptyBar(guiGraphics, x, y + 6);
-        renderFilledBar(guiGraphics, x, y + 6, currentMana, maxMana, 9);  // Thanh xanh dương
+        float maxMana = getPlayerAttribute(player, SsModAttributes.MAX_MANA.get());
+        if (currentMana < maxMana * 0.1f) {
+            x += getShakeOffset();
+            y += getShakeOffset();
+        }
+        renderFilledBar(guiGraphics, x, y + 6, currentMana, maxMana, 9);  // Thanh xanh dương, đặt tại vị trí 21, 9
 
         // Render thanh stamina
-        float maxStamina = (float) playerStats.maxStamina;
-        renderEmptyBar(guiGraphics, x, y + 12);
-        renderFilledBar(guiGraphics, x, y + 12, currentStamina, maxStamina, 15);  // Thanh xanh lá
+        float maxStamina = getPlayerAttribute(player, SsModAttributes.MAX_STAMINA.get());
+        if (currentStamina < maxStamina * 0.1f) {
+            x += getShakeOffset();
+            y += getShakeOffset();
+        }
+        renderFilledBar(guiGraphics, x, y + 12, currentStamina, maxStamina, 15);  // Thanh xanh lá, đặt tại vị trí 21, 15
     }
 
     // Render thanh rỗng (phần khung nền)
@@ -64,7 +110,7 @@ public class PlayerStatBarGui {
         guiGraphics.blit(GUI_BARS_LOCATION, x, y, 0, 0, 99, 22);
     }
 
-    // Render thanh đầy, tọa độ cho mỗi thanh dựa vào y và vị trí tương ứng
+    // Render thanh đầy, tọạ độ cho mỗi thanh dựa vào y và vị trí tương ứng
     private static void renderFilledBar(GuiGraphics guiGraphics, int x, int y, float currentStat, float maxStat, int vOffset) {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
@@ -72,7 +118,7 @@ public class PlayerStatBarGui {
         int filledWidth = calculateBarWidth(currentStat, maxStat);
 
         // Render thanh đầy
-        guiGraphics.blit(GUI_BARS_LOCATION, x + 21, y + vOffset, 21, 25, filledWidth, BAR_HEIGHT);
+        guiGraphics.blit(GUI_BARS_LOCATION, x + 21, y + vOffset, 21, 25 + (vOffset - 3), filledWidth, BAR_HEIGHT);
 
         RenderSystem.disableBlend();
     }
@@ -104,5 +150,10 @@ public class PlayerStatBarGui {
     private static SsModVariables.PlayerVariables getPlayerStats(Player player) {
         return player.getCapability(SsModVariables.PLAYER_VARIABLES_CAPABILITY, null)
                 .orElse(new SsModVariables.PlayerVariables());
+    }
+
+    // Phương thức tạo hiệu ứng rung bằng cách tạo offset ngẫu nhiên
+    private static int getShakeOffset() {
+        return (int) (Math.random() * 4 - 2); // Giá trị dao động từ -2 đến 2
     }
 }

@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 
-@Mod.EventBusSubscriber(modid = SsMod.MODID)
+@Mod.EventBusSubscriber(modid = SsMod.MOD_ID)
 public class WorldSaveCopier {
 
     @SubscribeEvent
@@ -24,7 +24,7 @@ public static void onWorldLoad(LevelEvent.Load event) {
         try {
             // Path to the sample world file in the resources folder
             Path source = Paths.get(
-                    "src", "main", "resources", "assets", SsMod.MODID, "worlds", "my_dungeon_world.dat");
+                    "src", "main", "resources", "assets", SsMod.MOD_ID, "worlds", "my_dungeon_world.dat");
 
             // Path to the "saves" folder of Minecraft
             Path savesDir = level.getServer().getWorldPath(LevelResource.ROOT).resolve("saves");

@@ -1,3 +1,4 @@
+/*
 package net.ss.sudungeon.network;
 
 import net.minecraft.server.level.ServerLevel;
@@ -13,7 +14,7 @@ import net.ss.sudungeon.SsMod;
 import net.ss.sudungeon.event.PlayerEnterDungeonEvent;
 
 
-@Mod.EventBusSubscriber(modid = SsMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@Mod.EventBusSubscriber(modid = SsMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ChallengePointsManager {
 
     private static final int POINTS_PER_MINUTE = 4;
@@ -69,4 +70,4 @@ public class ChallengePointsManager {
         data.maxChallengePoints = 20; // Đặt lại về 20
         data.syncData((LevelAccessor) player.getServer()); // Đồng bộ dữ liệu
     }
-}
+}*/

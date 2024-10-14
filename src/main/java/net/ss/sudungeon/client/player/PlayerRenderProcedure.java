@@ -36,7 +36,7 @@ public class PlayerRenderProcedure {
     // Render skin tùy chỉnh của người chơi khi không ở góc nhìn thứ nhất
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
-    public static void onRenderPlayerPre (RenderPlayerEvent.Pre event) {
+    public static void onRenderPlayerPre (RenderPlayerEvent event) {
         executeRenderPlayer(event, event.getEntity());
     }
 
@@ -57,24 +57,19 @@ public class PlayerRenderProcedure {
             Entity _evtEntity = _evt.getEntity();
             PlayerRenderer _pr = null;
             PoseStack poseStack = _evt.getPoseStack();
-
-
             if (_evt.getRenderer() instanceof PlayerRenderer && !(_evt.getRenderer() instanceof IgnoreCanceled)) {
                 ResourceLocation _texture = new ResourceLocation(skinUrl);
                 new PlayerSkinRenderer(context, isSlim, _texture).render((AbstractClientPlayer) _evt.getEntity(), _evt.getEntity().getYRot(), _evt.getPartialTick(), _evt.getPoseStack(), _evt.getMultiBufferSource(),
                         _evt.getPackedLight());
             }
-
             // Kiểm tra nếu renderer không phải là PlayerRenderer hoặc IgnoreCanceled
             if (_evt.getRenderer() instanceof PlayerRenderer
                     && !(_evt.getRenderer() instanceof IgnoreCanceled)) {
-
                 // Nếu là Pre event thì hủy
                 if (_evt instanceof RenderPlayerEvent.Pre _pre) {
                     _pre.setCanceled(true);
                 }
             }
-
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -133,18 +128,6 @@ public class PlayerRenderProcedure {
             _evt.setCanceled(true);
 
     }
-
-
-
-/*    @OnlyIn(Dist.CLIENT)
-    @SubscribeEvent
-    public static void onRenderHand (RenderHandEvent event) {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.options.getCameraType().isFirstPerson() && mc.player != null) {
-            event.setCanceled(true);
-        }
-    }*/
-
 
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent

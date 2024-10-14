@@ -17,6 +17,7 @@ dependencies {
 //    implementation fg.deobf("curse.maven:fancymenu-367706:5340225")
 //    implementation fg.deobf("curse.maven:melody-938643:5109692")
 //    implementation fg.deobf("curse.maven:konkrete-410295:5028413")
+    implementation fg.deobf("curse.maven:playeranimator-658587:4587214")
 }
 
 

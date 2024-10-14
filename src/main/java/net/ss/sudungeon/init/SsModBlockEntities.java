@@ -9,7 +9,7 @@ import net.ss.sudungeon.SsMod;
 
 public class SsModBlockEntities {
 
-    public static final DeferredRegister<BlockEntityType<?>> REGISTRY = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, SsMod.MODID);
+    public static final DeferredRegister<BlockEntityType<?>> REGISTRY = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, SsMod.MOD_ID);
 
     private static RegistryObject<BlockEntityType<?>> register (String registryname, RegistryObject<Block> block, BlockEntityType.BlockEntitySupplier<?> supplier) {
         return REGISTRY.register(registryname, () -> BlockEntityType.Builder.of(supplier, block.get()).build(null));

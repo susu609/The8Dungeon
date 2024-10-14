@@ -10,7 +10,7 @@ import net.ss.sudungeon.world.level.block.RandomStoneBricks;
 
 
 public class SsModBlocks {
-    public static final DeferredRegister<Block> REGISTRY = DeferredRegister.create(ForgeRegistries.BLOCKS, SsMod.MODID);
+    public static final DeferredRegister<Block> REGISTRY = DeferredRegister.create(ForgeRegistries.BLOCKS, SsMod.MOD_ID);
     public static final RegistryObject<Block> RANDOM_STONE = REGISTRY.register("random_stone", RandomStone::new);
     public static final RegistryObject<Block> RANDOM_STONE_BRICKS = REGISTRY.register("random_stone_bricks", RandomStoneBricks::new);
 
