@@ -1,0 +1,5 @@
+net/ss/sudungeon/mixin/CreateWorldScreenMixin uiState f_267389_
+net/ss/sudungeon/mixin/LevelLoadingScreenMixin progressListener f_96138_
+net/ss/sudungeon/mixin/CameraAccessorMixin setPosition (DDD)V m_90584_
+net/ss/sudungeon/mixin/CameraAccessorMixin setRotation (FF)V m_90572_
+net/ss/sudungeon/mixin/CreateWorldScreenMixin init ()V m_7856_

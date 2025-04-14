@@ -1,0 +1,30 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.ss.sudungeon.mixin",
+  "compatibilityLevel": "JAVA_13",
+  "refmap": "ss.refmap.mixins.json",
+  "mixins": [
+    "EntityAccessor",
+    "LivingEntityMixin",
+    "PlayerMixin",
+    "ServerPlayerMixin"
+  ],
+  "client": [
+    "AbstractClientPlayerMixin",
+    "CameraAccessorMixin",
+    "CreateWorldScreenAccessor",
+    "CreateWorldScreenMixin",
+    "EntityRenderDispatcherMixin",
+    "GameRendererMixin",
+    "LevelLoadingScreenMixin",
+    "LevelRendererMixin",
+    "LivingEntityRendererAccessor",
+    "LocalPlayerMixin",
+    "MinecraftMixin",
+    "PauseScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

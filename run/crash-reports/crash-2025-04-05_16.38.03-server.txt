@@ -1,0 +1,120 @@
+---- Minecraft Crash Report ----
+// I bet Cylons wouldn't have this problem.
+
+Time: 2025-04-05 16:38:03
+Description: Ticking player
+
+java.lang.ClassCastException: class net.minecraft.server.level.ServerPlayer cannot be cast to class net.minecraft.client.player.LocalPlayer (net.minecraft.server.level.ServerPlayer and net.minecraft.client.player.LocalPlayer are in module minecraft@1.20.1 of loader 'TRANSFORMER' @77f905e3)
+	at net.minecraft.world.entity.player.Player.handler$zza000$ss$tick(Player.java:2230) ~[forge-1.20.1-47.3.0_mapped_official_1.20.1.jar%23191!/:?] {re:mixin,pl:accesstransformer:B,re:classloading,pl:accesstransformer:B,pl:mixin:APP:ss.mixins.json:PlayerMixin,pl:mixin:A}
+	at net.minecraft.world.entity.player.Player.tick(Player.java) ~[forge-1.20.1-47.3.0_mapped_official_1.20.1.jar%23191!/:?] {re:mixin,pl:accesstransformer:B,re:classloading,pl:accesstransformer:B,pl:mixin:APP:ss.mixins.json:PlayerMixin,pl:mixin:A}
+	at net.minecraft.server.level.ServerPlayer.doTick(ServerPlayer.java:467) ~[forge-1.20.1-47.3.0_mapped_official_1.20.1.jar%23191!/:?] {re:classloading,pl:accesstransformer:B}
+	at net.minecraft.server.network.ServerGamePacketListenerImpl.tick(ServerGamePacketListenerImpl.java:262) ~[forge-1.20.1-47.3.0_mapped_official_1.20.1.jar%23191!/:?] {re:classloading,pl:accesstransformer:B}
+	at net.minecraft.network.Connection.tick(Connection.java:263) ~[forge-1.20.1-47.3.0_mapped_official_1.20.1.jar%23191!/:?] {re:classloading}
+	at net.minecraft.server.network.ServerConnectionListener.tick(ServerConnectionListener.java:142) ~[forge-1.20.1-47.3.0_mapped_official_1.20.1.jar%23191!/:?] {re:classloading}
+	at net.minecraft.server.MinecraftServer.tickChildren(MinecraftServer.java:907) ~[forge-1.20.1-47.3.0_mapped_official_1.20.1.jar%23191!/:?] {re:classloading,pl:accesstransformer:B}
+	at net.minecraft.server.MinecraftServer.tickServer(MinecraftServer.java:814) ~[forge-1.20.1-47.3.0_mapped_official_1.20.1.jar%23191!/:?] {re:classloading,pl:accesstransformer:B}
+	at net.minecraft.client.server.IntegratedServer.tickServer(IntegratedServer.java:89) ~[forge-1.20.1-47.3.0_mapped_official_1.20.1.jar%23191!/:?] {re:classloading,pl:runtimedistcleaner:A}
+	at net.minecraft.server.MinecraftServer.runServer(MinecraftServer.java:661) ~[forge-1.20.1-47.3.0_mapped_official_1.20.1.jar%23191!/:?] {re:classloading,pl:accesstransformer:B}
+	at net.minecraft.server.MinecraftServer.lambda$spin$2(MinecraftServer.java:251) ~[forge-1.20.1-47.3.0_mapped_official_1.20.1.jar%23191!/:?] {re:classloading,pl:accesstransformer:B}
+	at java.lang.Thread.run(Thread.java:840) ~[?:?] {}
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- Head --
+Thread: Server thread
+Suspected Mod: 
+	SuDungeon (ss), Version: 1.0.0
+		Mixin class: net.ss.sudungeon.mixin.PlayerMixin
+		Target: net.minecraft.world.entity.player.Player
+		at TRANSFORMER/minecraft@1.20.1/net.minecraft.world.entity.player.Player.handler$zza000$ss$tick(Player.java:2230)
+Stacktrace:
+	at net.minecraft.world.entity.player.Player.handler$zza000$ss$tick(Player.java:2230) ~[forge-1.20.1-47.3.0_mapped_official_1.20.1.jar%23191!/:?] {re:mixin,pl:accesstransformer:B,re:classloading,pl:accesstransformer:B,pl:mixin:APP:ss.mixins.json:PlayerMixin,pl:mixin:A}
+	at net.minecraft.world.entity.player.Player.tick(Player.java) ~[forge-1.20.1-47.3.0_mapped_official_1.20.1.jar%23191!/:?] {re:mixin,pl:accesstransformer:B,re:classloading,pl:accesstransformer:B,pl:mixin:APP:ss.mixins.json:PlayerMixin,pl:mixin:A}
+-- Player being ticked --
+Details:
+	Entity Type: minecraft:player (net.minecraft.server.level.ServerPlayer)
+	Entity ID: 159
+	Entity Name: Dev
+	Entity's Exact location: 20.03, 4.00, 16.96
+	Entity's Block location: World: (20,4,16), Section: (at 4,4,0 in 1,0,1; chunk contains blocks 16,0,16 to 31,255,31), Region: (0,0; contains chunks 0,0 to 31,31, blocks 0,0,0 to 511,255,511)
+	Entity's Momentum: 0.00, -0.08, 0.00
+	Entity's Passengers: []
+	Entity's Vehicle: null
+Stacktrace:
+	at net.minecraft.server.level.ServerPlayer.doTick(ServerPlayer.java:467) ~[forge-1.20.1-47.3.0_mapped_official_1.20.1.jar%23191!/:?] {re:classloading,pl:accesstransformer:B}
+	at net.minecraft.server.network.ServerGamePacketListenerImpl.tick(ServerGamePacketListenerImpl.java:262) ~[forge-1.20.1-47.3.0_mapped_official_1.20.1.jar%23191!/:?] {re:classloading,pl:accesstransformer:B}
+	at net.minecraft.network.Connection.tick(Connection.java:263) ~[forge-1.20.1-47.3.0_mapped_official_1.20.1.jar%23191!/:?] {re:classloading}
+	at net.minecraft.server.network.ServerConnectionListener.tick(ServerConnectionListener.java:142) ~[forge-1.20.1-47.3.0_mapped_official_1.20.1.jar%23191!/:?] {re:classloading}
+	at net.minecraft.server.MinecraftServer.tickChildren(MinecraftServer.java:907) ~[forge-1.20.1-47.3.0_mapped_official_1.20.1.jar%23191!/:?] {re:classloading,pl:accesstransformer:B}
+	at net.minecraft.server.MinecraftServer.tickServer(MinecraftServer.java:814) ~[forge-1.20.1-47.3.0_mapped_official_1.20.1.jar%23191!/:?] {re:classloading,pl:accesstransformer:B}
+	at net.minecraft.client.server.IntegratedServer.tickServer(IntegratedServer.java:89) ~[forge-1.20.1-47.3.0_mapped_official_1.20.1.jar%23191!/:?] {re:classloading,pl:runtimedistcleaner:A}
+	at net.minecraft.server.MinecraftServer.runServer(MinecraftServer.java:661) ~[forge-1.20.1-47.3.0_mapped_official_1.20.1.jar%23191!/:?] {re:classloading,pl:accesstransformer:B}
+	at net.minecraft.server.MinecraftServer.lambda$spin$2(MinecraftServer.java:251) ~[forge-1.20.1-47.3.0_mapped_official_1.20.1.jar%23191!/:?] {re:classloading,pl:accesstransformer:B}
+	at java.lang.Thread.run(Thread.java:840) ~[?:?] {}
+
+
+-- System Details --
+Details:
+	Minecraft Version: 1.20.1
+	Minecraft Version ID: 1.20.1
+	Operating System: Windows 10 (amd64) version 10.0
+	Java Version: 17.0.11, Eclipse Adoptium
+	Java VM Version: OpenJDK 64-Bit Server VM (mixed mode, sharing), Eclipse Adoptium
+	Memory: 330823680 bytes (315 MiB) / 1347420160 bytes (1285 MiB) up to 2132803584 bytes (2034 MiB)
+	CPUs: 4
+	Processor Vendor: GenuineIntel
+	Processor Name: Intel(R) Core(TM) i3-7100 CPU @ 3.90GHz
+	Identifier: Intel64 Family 6 Model 158 Stepping 9
+	Microarchitecture: Kaby Lake
+	Frequency (GHz): 3.91
+	Number of physical packages: 1
+	Number of physical CPUs: 2
+	Number of logical CPUs: 4
+	Graphics card #0 name: NVIDIA GeForce GTX 750 Ti
+	Graphics card #0 vendor: NVIDIA (0x10de)
+	Graphics card #0 VRAM (MB): 2048.00
+	Graphics card #0 deviceId: 0x1380
+	Graphics card #0 versionInfo: DriverVersion=32.0.15.6094
+	Memory slot #0 capacity (MB): 8192.00
+	Memory slot #0 clockSpeed (GHz): 2.13
+	Memory slot #0 type: DDR4
+	Virtual memory max (MB): 20427.22
+	Virtual memory used (MB): 12262.32
+	Swap memory total (MB): 12297.48
+	Swap memory used (MB): 855.27
+	JVM Flags: 1 total; -XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump
+	Server Running: true
+	Player Count: 1 / 8; [ServerPlayer['Dev'/159, l='ServerLevel[RougeDungeon]', x=20.03, y=4.00, z=16.96]]
+	Data Packs: vanilla, mod:ss, mod:forge
+	Enabled Feature Flags: minecraft:vanilla
+	World Generation: Experimental
+	Type: Integrated Server (map_client.txt)
+	Is Modded: Definitely; Client brand changed to 'forge'; Server brand changed to 'forge'
+	Launched Version: MOD_DEV
+	ModLauncher: 10.0.9+10.0.9+main.dcd20f30
+	ModLauncher launch target: forgeclientuserdev
+	ModLauncher naming: mcp
+	ModLauncher services: 
+		mixin-0.8.5.jar mixin PLUGINSERVICE 
+		eventbus-6.0.5.jar eventbus PLUGINSERVICE 
+		fmlloader-1.20.1-47.3.0.jar slf4jfixer PLUGINSERVICE 
+		fmlloader-1.20.1-47.3.0.jar object_holder_definalize PLUGINSERVICE 
+		fmlloader-1.20.1-47.3.0.jar runtime_enum_extender PLUGINSERVICE 
+		fmlloader-1.20.1-47.3.0.jar capability_token_subclass PLUGINSERVICE 
+		accesstransformers-8.0.4.jar accesstransformer PLUGINSERVICE 
+		fmlloader-1.20.1-47.3.0.jar runtimedistcleaner PLUGINSERVICE 
+		modlauncher-10.0.9.jar mixin TRANSFORMATIONSERVICE 
+		modlauncher-10.0.9.jar fml TRANSFORMATIONSERVICE 
+	FML Language Providers: 
+		minecraft@1.0
+		lowcodefml@null
+		javafml@null
+	Mod List: 
+		forge-1.20.1-47.3.0_mapped_official_1.20.1.jar    |Minecraft                     |minecraft                     |1.20.1              |DONE      |Manifest: a1:d4:5e:04:4f:d3:d6:e0:7b:37:97:cf:77:b0:de:ad:4a:47:ce:8c:96:49:5f:0a:cf:8c:ae:b2:6d:4b:8a:3f
+		main                                              |SuDungeon                     |ss                            |1.0.0               |DONE      |Manifest: NOSIGNATURE
+		                                                  |Forge                         |forge                         |47.3.0              |DONE      |Manifest: NOSIGNATURE
+	Crash Report UUID: 4ec9a7b6-44fa-44e4-8f34-74bd72025e57
+	FML: 47.3
+	Forge: net.minecraftforge:47.3.0

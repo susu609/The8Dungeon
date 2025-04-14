@@ -1,0 +1,100 @@
+{
+  "mappings": {
+    "net/ss/sudungeon/mixin/ServerPlayerMixin": {
+      "die": "Lnet/minecraft/server/level/ServerPlayer;m_6667_(Lnet/minecraft/world/damagesource/DamageSource;)V"
+    },
+    "net/ss/sudungeon/mixin/CreateWorldScreenMixin": {
+      "onCreate": "Lnet/minecraft/client/gui/screens/worldselection/CreateWorldScreen;m_100972_()V",
+      "init": "Lnet/minecraft/client/gui/screens/worldselection/CreateWorldScreen;m_7856_()V"
+    },
+    "net/ss/sudungeon/mixin/EntityAccessor": {
+      "level": "f_19853_:Lnet/minecraft/world/level/Level;",
+      "setRot": "m_19915_(FF)V"
+    },
+    "net/ss/sudungeon/mixin/LevelRendererMixin": {
+      "renderLevel": "Lnet/minecraft/client/renderer/LevelRenderer;m_109599_(Lcom/mojang/blaze3d/vertex/PoseStack;FJZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;)V",
+      "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;shouldRender(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/client/renderer/culling/Frustum;DDD)Z": "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;m_114397_(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/client/renderer/culling/Frustum;DDD)Z",
+      "Lnet/minecraft/client/Camera;getEntity()Lnet/minecraft/world/entity/Entity;": "Lnet/minecraft/client/Camera;m_90592_()Lnet/minecraft/world/entity/Entity;"
+    },
+    "net/ss/sudungeon/mixin/CreateWorldScreenAccessor": {
+      "uiState": "f_267389_:Lnet/minecraft/client/gui/screens/worldselection/WorldCreationUiState;",
+      "onCreate": "m_100972_()V"
+    },
+    "net/ss/sudungeon/mixin/LevelLoadingScreenMixin": {
+      "render": "Lnet/minecraft/client/gui/screens/LevelLoadingScreen;m_88315_(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"
+    },
+    "net/ss/sudungeon/mixin/MinecraftMixin": {
+      "setInitialScreen": "Lnet/minecraft/client/Minecraft;m_278684_(Lcom/mojang/realmsclient/client/RealmsClient;Lnet/minecraft/server/packs/resources/ReloadInstance;Lnet/minecraft/client/main/GameConfig$QuickPlayData;)V"
+    },
+    "net/ss/sudungeon/mixin/PauseScreenMixin": {
+      "onDisconnect": "Lnet/minecraft/client/gui/screens/PauseScreen;m_261092_()V"
+    },
+    "net/ss/sudungeon/mixin/PlayerMixin": {
+      "handleEntityEvent": "Lnet/minecraft/world/entity/player/Player;m_7822_(B)V",
+      "addAdditionalSaveData": "Lnet/minecraft/world/entity/player/Player;m_7380_(Lnet/minecraft/nbt/CompoundTag;)V",
+      "defineSynchedData": "Lnet/minecraft/world/entity/player/Player;m_8097_()V",
+      "attack": "Lnet/minecraft/world/entity/player/Player;m_5706_(Lnet/minecraft/world/entity/Entity;)V",
+      "tick": "Lnet/minecraft/world/entity/player/Player;m_8119_()V",
+      "readAdditionalSaveData": "Lnet/minecraft/world/entity/player/Player;m_7378_(Lnet/minecraft/nbt/CompoundTag;)V"
+    },
+    "net/ss/sudungeon/mixin/LivingEntityMixin": {
+      "checkFallDamage": "Lnet/minecraft/world/entity/LivingEntity;m_7840_(DZLnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;)V"
+    },
+    "net/ss/sudungeon/mixin/GameRendererMixin": {
+      "renderItemInHand": "Lnet/minecraft/client/renderer/GameRenderer;m_109120_(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/Camera;F)V"
+    },
+    "net/ss/sudungeon/mixin/LivingEntityRendererAccessor": {
+      "model": "f_115290_:Lnet/minecraft/client/model/EntityModel;"
+    }
+  },
+  "data": {
+    "searge": {
+      "net/ss/sudungeon/mixin/ServerPlayerMixin": {
+        "die": "Lnet/minecraft/server/level/ServerPlayer;m_6667_(Lnet/minecraft/world/damagesource/DamageSource;)V"
+      },
+      "net/ss/sudungeon/mixin/CreateWorldScreenMixin": {
+        "onCreate": "Lnet/minecraft/client/gui/screens/worldselection/CreateWorldScreen;m_100972_()V",
+        "init": "Lnet/minecraft/client/gui/screens/worldselection/CreateWorldScreen;m_7856_()V"
+      },
+      "net/ss/sudungeon/mixin/EntityAccessor": {
+        "level": "f_19853_:Lnet/minecraft/world/level/Level;",
+        "setRot": "m_19915_(FF)V"
+      },
+      "net/ss/sudungeon/mixin/LevelRendererMixin": {
+        "renderLevel": "Lnet/minecraft/client/renderer/LevelRenderer;m_109599_(Lcom/mojang/blaze3d/vertex/PoseStack;FJZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;)V",
+        "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;shouldRender(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/client/renderer/culling/Frustum;DDD)Z": "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;m_114397_(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/client/renderer/culling/Frustum;DDD)Z",
+        "Lnet/minecraft/client/Camera;getEntity()Lnet/minecraft/world/entity/Entity;": "Lnet/minecraft/client/Camera;m_90592_()Lnet/minecraft/world/entity/Entity;"
+      },
+      "net/ss/sudungeon/mixin/CreateWorldScreenAccessor": {
+        "uiState": "f_267389_:Lnet/minecraft/client/gui/screens/worldselection/WorldCreationUiState;",
+        "onCreate": "m_100972_()V"
+      },
+      "net/ss/sudungeon/mixin/LevelLoadingScreenMixin": {
+        "render": "Lnet/minecraft/client/gui/screens/LevelLoadingScreen;m_88315_(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"
+      },
+      "net/ss/sudungeon/mixin/MinecraftMixin": {
+        "setInitialScreen": "Lnet/minecraft/client/Minecraft;m_278684_(Lcom/mojang/realmsclient/client/RealmsClient;Lnet/minecraft/server/packs/resources/ReloadInstance;Lnet/minecraft/client/main/GameConfig$QuickPlayData;)V"
+      },
+      "net/ss/sudungeon/mixin/PauseScreenMixin": {
+        "onDisconnect": "Lnet/minecraft/client/gui/screens/PauseScreen;m_261092_()V"
+      },
+      "net/ss/sudungeon/mixin/PlayerMixin": {
+        "handleEntityEvent": "Lnet/minecraft/world/entity/player/Player;m_7822_(B)V",
+        "addAdditionalSaveData": "Lnet/minecraft/world/entity/player/Player;m_7380_(Lnet/minecraft/nbt/CompoundTag;)V",
+        "defineSynchedData": "Lnet/minecraft/world/entity/player/Player;m_8097_()V",
+        "attack": "Lnet/minecraft/world/entity/player/Player;m_5706_(Lnet/minecraft/world/entity/Entity;)V",
+        "tick": "Lnet/minecraft/world/entity/player/Player;m_8119_()V",
+        "readAdditionalSaveData": "Lnet/minecraft/world/entity/player/Player;m_7378_(Lnet/minecraft/nbt/CompoundTag;)V"
+      },
+      "net/ss/sudungeon/mixin/LivingEntityMixin": {
+        "checkFallDamage": "Lnet/minecraft/world/entity/LivingEntity;m_7840_(DZLnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;)V"
+      },
+      "net/ss/sudungeon/mixin/GameRendererMixin": {
+        "renderItemInHand": "Lnet/minecraft/client/renderer/GameRenderer;m_109120_(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/Camera;F)V"
+      },
+      "net/ss/sudungeon/mixin/LivingEntityRendererAccessor": {
+        "model": "f_115290_:Lnet/minecraft/client/model/EntityModel;"
+      }
+    }
+  }
+}

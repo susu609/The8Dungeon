@@ -1,0 +1,13 @@
+repositories {
+    maven {
+        url = "https://cursemaven.com"
+    }
+}
+
+dependencies {
+/*
+    implementation fg.deobf("curse.maven:physics-mod-442735:5306442")
+*/
+
+}
+

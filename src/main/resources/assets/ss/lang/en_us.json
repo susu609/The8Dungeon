@@ -1,0 +1,13 @@
+{
+  "menu.continue": "Continue",
+  "menu.abandon": "Abandon",
+  "menu.newgame": "New Game",
+  "menu.multiplayer": "Multiplayer",
+  "menu.options": "Options",
+  "menu.quit": "Quit",
+  "screen.rougelike.title": "Rougelike Dungeon",
+  "narrator.button.language": "Language",
+  "narrator.button.accessibility": "Accessibility",
+  "error.title": "Error",
+  "error.unable_to_delete_world": "Unable to delete the world: %s"
+}
