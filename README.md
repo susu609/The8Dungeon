@@ -44,13 +44,13 @@ Mở thư mục dự án bằng IntelliJ IDEA, đồng bộ Gradle, sau đó ch�
 Trên Windows:
 
 ```bat
-gradlew.bat runClient
+  gradle build runClient
 ```
 
 Trên Linux/macOS:
 
 ```bash
-./gradlew runClient
+  gradle build runClient
 ```
 
 ## Ghi chú
