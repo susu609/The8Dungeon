@@ -1,0 +1,207 @@
+buildscript {
+    repositories {
+        // Các repository này chỉ dành cho plugin Gradle; khai báo repository khác trong khối repositories bên dưới.
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+    }
+}
+
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
+}
+
+apply plugin: 'org.spongepowered.mixin'
+
+group = mod_group_id
+version = mod_version
+
+base {
+    archivesName = mod_id
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
+}
+
+minecraft {
+    // Có thể thay đổi mapping bất cứ lúc nào; định dạng phải theo cấu trúc bên dưới.
+    // Kênh:      Phiên bản:
+    // official   MCVersion             Tên trường/phương thức chính thức từ tệp mapping của Mojang.
+    // parchment  YYYY.MM.DD-MCVersion  Tên tham số và Javadoc do cộng đồng đóng góp, bổ sung trên mapping official.
+    //
+    // Cần lưu ý giấy phép Mojang khi sử dụng mapping 'official' hoặc 'parchment'.
+    // Xem thêm thông tin tại liên kết bên dưới.
+    //
+    // Parchment là dự án không chính thức do ParchmentMC duy trì, độc lập với MinecraftForge.
+    // Cần thiết lập bổ sung để dùng mapping Parchment; xem tài liệu tại liên kết bên dưới.
+    //
+    // Tự chịu trách nhiệm khi dùng mapping không mặc định; chúng có thể không hoạt động trong mọi trường hợp.
+    // Sau khi đổi mapping, hãy chạy lại tác vụ thiết lập để cập nhật workspace.
+    mappings channel: mapping_channel, version: mapping_version
+
+    // Khi bật, các cấu hình chạy của Eclipse/IntelliJ IDEA sẽ chạy tác vụ "prepareX" tương ứng trước khi khởi động game.
+    // Hầu hết trường hợp không cần bật tùy chọn này.
+    // enableEclipsePrepareRuns = true
+    // enableIdeaPrepareRuns = true
+
+    // Tùy chọn này cho phép tác vụ ProcessResources của Gradle xử lý tài nguyên tại thư mục đầu ra IDE trước khi chạy game.
+    // BẮT BUỘC đặt thành true để template này hoạt động đúng.
+    // Xem tài liệu ProcessResources của Gradle tại liên kết bên dưới.
+    copyIdeResources = true
+
+    // Khi bật, tên thư mục của các cấu hình chạy sẽ được thêm vào cấu hình chạy tạo cho IDE.
+    // Có thể đặt tên thư mục cho từng cấu hình chạy bằng thuộc tính "folderName".
+    // By default, the folder name of a run configuration is the name of the Gradle project containing it.
+    // generateRunFolders = true
+
+    // Tùy chọn này bật access transformer trong quá trình phát triển.
+    // Các transformer này sẽ được áp dụng lên artifact Minecraft.
+    // Tệp access transformer có thể nằm ở bất kỳ vị trí nào trong dự án.
+    // Tuy nhiên, trong file JAR cuối cùng, tệp phải nằm tại "META-INF/accesstransformer.cfg" để Forge nạp được.
+    // Vị trí mặc định này là thông lệ tốt, giúp tự động đưa tệp vào đúng nơi trong JAR cuối cùng.
+    // Xem tài liệu Forge về access transformer tại liên kết bên dưới.
+    // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+
+    // Các cấu hình chạy mặc định.
+    // Có thể chỉnh sửa, xóa hoặc nhân bản các cấu hình này khi cần.
+    runs {
+        // Áp dụng cho tất cả cấu hình chạy bên dưới.
+        configureEach {
+            workingDirectory project.file('run')
+
+            // Các dữ liệu nhật ký được khuyến nghị cho môi trường userdev.
+            // Có thể thêm hoặc xóa marker khi cần; các marker được phân tách bằng dấu phẩy.
+            // "SCAN": Quét các mod.
+            // "REGISTRIES": Theo dõi các sự kiện đăng ký tài nguyên.
+            // "REGISTRYDUMP": Xuất nội dung của tất cả registry.
+            property 'forge.logging.markers', 'REGISTRIES'
+
+
+            // Mức độ ghi nhật ký được khuyến nghị cho console.
+            // Có thể thiết lập các mức độ khác nhau tại đây.
+            // Tham khảo giải thích về các mức độ log tại liên kết bên dưới.
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+                "${mod_id}" {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        client {
+            // Danh sách namespace chứa GameTest, phân tách bằng dấu phẩy. Để trống nghĩa là dùng tất cả namespace.
+            property 'forge.enabledGameTestNamespaces', mod_id
+        }
+
+        server {
+            property 'forge.enabledGameTestNamespaces', mod_id
+            args '--nogui'
+        }
+
+        // Cấu hình này khởi chạy GameTestServer, chạy tất cả GameTest đã đăng ký rồi thoát.
+        // Theo mặc định, máy chủ sẽ gặp lỗi nếu không có GameTest nào được cung cấp.
+        // Hệ thống GameTest cũng được bật mặc định trong các cấu hình chạy khác thông qua lệnh /test.
+        gameTestServer {
+            property 'forge.enabledGameTestNamespaces', mod_id
+        }
+
+        data {
+            // Ví dụ ghi đè workingDirectory đã đặt trong configureEach ở trên.
+            workingDirectory project.file('run-data')
+
+            // Chỉ định mod ID để sinh dữ liệu, thư mục xuất tài nguyên và thư mục chứa tài nguyên hiện có.
+            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+        }
+    }
+}
+
+mixin {
+    add sourceSets.main, "${mod_id}.refmap.json"
+
+    config "${mod_id}.mixins.json"
+}
+
+// Thêm các tài nguyên được tạo bởi trình sinh dữ liệu.
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+repositories {
+    // Khai báo repository phục vụ các thư viện phụ thuộc tại đây.
+    // ForgeGradle tự động thêm Maven của Forge và Maven Central.
+
+    // Nếu có thư viện mod dạng JAR trong ./libs, có thể khai báo repository như ví dụ bên dưới.
+    // See https://docs.gradle.org/current/userguide/declaring_repositories.html#sub:flat_dir_resolver
+    // flatDir {
+    //     dir 'libs'
+    // }
+}
+
+dependencies {
+    // Chỉ định phiên bản Minecraft sẽ sử dụng.
+    // Có thể dùng artifact bất kỳ nếu artifact đó có classifier "userdev" và tương thích với patcher.
+    // ForgeGradle sẽ tự yêu cầu và thiết lập classifier "userdev".
+    // Nếu group ID là "net.minecraft" và artifact ID thuộc một trong các giá trị ["client", "server", "joined"],
+    // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+
+    // Ví dụ dependency JEI: dùng fg.deobf() để remap dependency theo mapping của môi trường phát triển.
+    // JEI API được khai báo để biên dịch; artifact JEI đầy đủ được dùng khi chạy game.
+    // compileOnly fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}")
+    // compileOnly fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}")
+    // runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}")
+
+    // Ví dụ khai báo dependency từ file JAR của mod trong ./libs bằng flat directory repository.
+    // Đường dẫn tương ứng: ./libs/coolmod-${mc_version}-${coolmod_version}.jar.
+    // Group ID bị bỏ qua khi tìm thư viện; trong ví dụ này giá trị là "blank".
+    // implementation fg.deobf("blank:coolmod-${mc_version}:${coolmod_version}")
+
+    // Xem thêm thông tin tại:
+    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
+    // http://www.gradle.org/docs/current/userguide/dependency_management.html
+
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+
+}
+
+// Khối lệnh này thay thế các thuộc tính đã khai báo trong những tài nguyên được chỉ định.
+// Nếu thiếu thuộc tính, quá trình sẽ báo lỗi. Thuộc tính được thay thế bằng cú pháp ${} của Groovy.
+// Khi bật "copyIdeResources", bước này cũng chạy trước khi khởi động game trong IDE.
+// Xem tài liệu ProcessResources của Gradle tại liên kết bên dưới.
+tasks.named('processResources', ProcessResources).configure {
+    var replaceProperties = [minecraft_version   : minecraft_version, minecraft_version_range: minecraft_version_range,
+                             forge_version       : forge_version, forge_version_range: forge_version_range,
+                             loader_version_range: loader_version_range,
+                             mod_id              : mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
+                             mod_authors         : mod_authors, mod_description: mod_description,]
+
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties + [project: project]
+    }
+}
+
+// Ví dụ cách đưa thuộc tính vào manifest để đọc khi chương trình chạy.
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes(["Specification-Title"     : mod_id,
+                    "Specification-Vendor"    : mod_authors,
+                    "Specification-Version"   : "1", // Đây là phiên bản 1 của mod.
+                    "Implementation-Title"    : project.name,
+                    "Implementation-Version"  : project.jar.archiveVersion,
+                    "Implementation-Vendor"   : mod_authors,
+                    "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")])
+    }
+
+    // Đây là phương thức được khuyến nghị để reobfuscate file JAR của mod.
+    finalizedBy 'reobfJar'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8' // Sử dụng bảng mã UTF-8 khi biên dịch Java.
+}
