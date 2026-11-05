@@ -2,28 +2,43 @@ name: Build
 
 on:
   push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
   pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
   workflow_dispatch:
+
+# Cancel an older run when a newer commit lands on the same branch/PR.
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
 
       # Repo has no gradlew yet, so install Gradle 8.8 directly.
       # setup-gradle caches ~/.gradle (including ForgeGradle's cache) between runs.
+      # Only save the cache from main so PR runs read it without polluting it.
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.8
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
       - name: Build
-        run: gradle build --no-daemon
+        run: gradle build --no-daemon --build-cache --parallel
 
       - uses: actions/upload-artifact@v4
         with:
