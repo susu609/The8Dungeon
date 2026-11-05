@@ -1,0 +1,16 @@
+{
+  "name": "The8Dungeons (Forge 1.20.1)",
+  "image": "mcr.microsoft.com/devcontainers/java:1-17-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "none",
+      "installGradle": "true",
+      "gradleVersion": "8.8"
+    }
+  },
+  "hostRequirements": { "cpus": 4, "memory": "8gb" },
+  "onCreateCommand": "gradle wrapper --gradle-version 8.8 && ./gradlew --no-daemon classes",
+  "customizations": {
+    "jetbrains": { "backend": "IntelliJ" }
+  }
+}
