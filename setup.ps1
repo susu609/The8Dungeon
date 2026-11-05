@@ -14,24 +14,15 @@ New-Item -ItemType Directory -Force -Path $Dest, $Tmp | Out-Null
 
 Write-Host "Lay danh sach file tu release gradle-cache..."
 $release = Invoke-RestMethod "https://api.github.com/repos/$Repo/releases/tags/gradle-cache"
-$parts = $release.assets | Where-Object { $_.name -like 'gradle-cache.tgz.part*' } | Sort-Object name
-if (-not $parts) { throw "Release gradle-cache khong co file. Hay chay workflow 'Gradle cache for IntelliJ' truoc." }
+$asset = $release.assets | Where-Object { $_.name -eq 'gradle-cache.zip' }
+if (-not $asset) { throw "Release gradle-cache khong co gradle-cache.zip. Hay chay workflow 'Gradle cache for IntelliJ' truoc." }
 
-$archive = Join-Path $Tmp 'gradle-cache.tgz'
-$out = [System.IO.File]::Create($archive)
-try {
-    foreach ($p in $parts) {
-        $file = Join-Path $Tmp $p.name
-        Write-Host ("Tai {0} ({1:N0} MB)..." -f $p.name, ($p.size / 1MB))
-        Invoke-WebRequest $p.browser_download_url -OutFile $file
-        $in = [System.IO.File]::OpenRead($file)
-        try { $in.CopyTo($out) } finally { $in.Close() }
-        Remove-Item $file
-    }
-} finally { $out.Close() }
+$archive = Join-Path $Tmp 'gradle-cache.zip'
+Write-Host ("Tai gradle-cache.zip ({0:N0} MB)..." -f ($asset.size / 1MB))
+Invoke-WebRequest $asset.browser_download_url -OutFile $archive
 
 Write-Host "Giai nen vao $Dest ..."
-tar -xzf $archive -C $Dest
+Expand-Archive -Path $archive -DestinationPath $Dest -Force
 Remove-Item $archive
 
 [Environment]::SetEnvironmentVariable('GRADLE_USER_HOME', $Dest, 'User')

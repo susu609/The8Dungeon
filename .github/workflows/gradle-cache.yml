@@ -55,16 +55,20 @@ jobs:
           cd /d/gh
           dirs=""
           for d in caches wrapper jdks; do [ -d "$d" ] && dirs="$dirs $d"; done
-          tar --exclude='*.lock' --exclude='caches/journal-1' -czf - $dirs \
-            | split -b 1900m -d - "$GITHUB_WORKSPACE/gradle-cache.tgz.part"
-          ls -la "$GITHUB_WORKSPACE"/gradle-cache.tgz.part*
+          rm -rf caches/journal-1 daemon
+          find . -name '*.lock' -delete
+          # Single .zip so it can be extracted with Windows Explorer (no cmd needed).
+          7z a -tzip -mx=5 "$GITHUB_WORKSPACE/gradle-cache.zip" $dirs > /dev/null
+          size=$(stat -c %s "$GITHUB_WORKSPACE/gradle-cache.zip")
+          echo "gradle-cache.zip: $((size/1048576)) MB"
+          [ "$size" -lt 2000000000 ] || { echo "zip > 2 GB, release asset limit"; exit 1; }
 
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete gradle-cache --yes --cleanup-tag || true
-          gh release create gradle-cache gradle-cache.tgz.part* \
+          gh release create gradle-cache gradle-cache.zip \
             --prerelease \
             --title "Gradle cache (Forge 1.20.1)" \
-            --notes "Built from ${GITHUB_SHA}. Run setup.ps1 to install."
+            --notes "Built from ${GITHUB_SHA}. Tải gradle-cache.zip, giải nén bằng Explorer vào thư mục ngắn (vd C:\\g), rồi IntelliJ > Settings > Build Tools > Gradle > Gradle user home = thư mục đó."
