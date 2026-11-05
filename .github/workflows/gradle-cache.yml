@@ -1,0 +1,70 @@
+name: Gradle cache for IntelliJ
+
+# Builds a ready-to-use Gradle user home (Forge 1.20.1 decompiled, all libraries,
+# Gradle 8.8 distribution) on Windows and publishes it as release "gradle-cache".
+# setup.ps1 downloads it on a fresh machine so IntelliJ sync skips the slow downloads.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - 'gradle/wrapper/**'
+      - '.github/workflows/gradle-cache.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gradle-cache
+  cancel-in-progress: true
+
+jobs:
+  cache:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    env:
+      GRADLE_USER_HOME: D:\gh
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.8
+          cache-disabled: true
+
+      - name: Populate Gradle user home
+        run: |
+          gradle wrapper --gradle-version 8.8 --no-daemon
+          ./gradlew --no-daemon classes
+          ./gradlew --stop || true
+
+      - name: Pack cache
+        run: |
+          cd /d/gh
+          dirs=""
+          for d in caches wrapper jdks; do [ -d "$d" ] && dirs="$dirs $d"; done
+          tar --exclude='*.lock' --exclude='caches/journal-1' -czf - $dirs \
+            | split -b 1900m -d - "$GITHUB_WORKSPACE/gradle-cache.tgz.part"
+          ls -la "$GITHUB_WORKSPACE"/gradle-cache.tgz.part*
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete gradle-cache --yes --cleanup-tag || true
+          gh release create gradle-cache gradle-cache.tgz.part* \
+            --prerelease \
+            --title "Gradle cache (Forge 1.20.1)" \
+            --notes "Built from ${GITHUB_SHA}. Run setup.ps1 to install."
