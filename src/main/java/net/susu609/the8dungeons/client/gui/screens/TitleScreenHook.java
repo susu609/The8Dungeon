@@ -1,0 +1,19 @@
+package net.susu609.the8dungeons.client.gui.screens;
+
+import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.susu609.the8dungeons.The8DungeonsMod;
+
+@Mod.EventBusSubscriber(modid = The8DungeonsMod.MODID, value = Dist.CLIENT)
+public final class TitleScreenHook {
+    @SubscribeEvent
+    public static void onOpen(ScreenEvent.Opening event) {
+        if (event.getNewScreen() instanceof TitleScreen
+                && !(event.getNewScreen() instanceof ModTitleScreen)) {
+            event.setNewScreen(new ModTitleScreen());
+        }
+    }
+}
