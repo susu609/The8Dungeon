@@ -9,6 +9,11 @@ import net.susu609.the8dungeons.The8DungeonsMod;
 
 @Mod.EventBusSubscriber(modid = The8DungeonsMod.MODID, value = Dist.CLIENT)
 public final class TitleScreenHook {
+    /**
+     * Thay TitleScreen vanilla bằng ModTitleScreen ngay khi game định mở nó.
+     * Điều kiện `!(... instanceof ModTitleScreen)` ngăn vòng lặp: ModTitleScreen
+     * cũng là TitleScreen nên nếu thiếu, ta sẽ thay nó bằng chính nó mãi.
+     */
     @SubscribeEvent
     public static void onOpen(ScreenEvent.Opening event) {
         if (event.getNewScreen() instanceof TitleScreen

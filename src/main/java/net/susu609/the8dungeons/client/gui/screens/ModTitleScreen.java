@@ -1,5 +1,7 @@
 package net.susu609.the8dungeons.client.gui.screens;
 
+import com.mojang.logging.LogUtils;
+import net.minecraft.FileUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
@@ -9,11 +11,31 @@ import net.minecraft.client.gui.components.PlainTextButton;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.*;
 import net.minecraft.client.resources.language.LanguageManager;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.LevelSettings;
+import net.minecraft.world.level.WorldDataConfiguration;
+import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.levelgen.WorldDimensions;
+import net.minecraft.world.level.levelgen.WorldOptions;
+import net.minecraft.world.level.levelgen.presets.WorldPreset;
+import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import net.minecraftforge.client.gui.ModListScreen;
 import net.minecraftforge.client.gui.TitleScreenModUpdateIndicator;
+import net.susu609.the8dungeons.The8DungeonsMod;
 import net.susu609.the8dungeons.client.gui.ScreenUtil;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+
+import java.io.IOException;
+import java.util.function.Function;
 
 /**
  * Màn hình tiêu đề riêng của The8Dungeons, kế thừa TitleScreen của vanilla.
@@ -23,6 +45,11 @@ import org.jetbrains.annotations.NotNull;
  */
 public class ModTitleScreen extends TitleScreen implements TitleScreenInterface {
     private static final int MAIN_BUTTON_COUNT = 5;
+
+    /**
+     * Ghi lỗi vào logs/latest.log.
+     */
+    private static final Logger LOGGER = LogUtils.getLogger();
     /**
      * Kích thước/vị trí của panel và nút. Tính một lần trong init(), dùng lại cho mọi nút.
      */
@@ -47,6 +74,7 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     private static Options options() {
         return Minecraft.getInstance().options;
     }
+
     private static LanguageManager LanguageManager() {
         return Minecraft.getInstance().getLanguageManager();
     }
@@ -90,9 +118,64 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     }
 
     /**
-     * Xử lý khi bấm "New Game". TODO: chưa cài đặt.
+     * Xử lý khi bấm "New Game": tạo một world mới và vào chơi ngay,
+     * không qua màn hình CreateWorldScreen của vanilla.
      */
     private void onNewGame() {
+        // Toàn bộ thân hàm nằm trong try vì findAvailableName có thể ném IOException
+        // (ví dụ ổ đĩa đầy, hoặc không có quyền ghi thư mục saves).
+        try {
+            // BƯỚC 1: tên thư mục world, bảo đảm không trùng world có sẵn.
+            // Nếu "The8Dungeons" đã tồn tại thì vanilla trả về "The8Dungeons (1)", v.v.
+            // `minecraft` là field kế thừa từ Screen, chỉ dùng được sau khi màn hình đã init.
+            String levelName = FileUtil.findAvailableName(minecraft.getLevelSource().getBaseDir(), // thư mục chứa các world
+                    "The8Dungeons",                          // tên gốc
+                    "");                                     // không đuôi, vì world là thư mục
+            // BƯỚC 2: luật chơi (những thứ người chơi thường chỉnh ở màn tạo world).
+            LevelSettings settings = new LevelSettings(levelName,                       // tên hiển thị của world
+                    GameType.CREATIVE,               // chế độ chơi
+                    false,                           // hardcore: tắt
+                    Difficulty.NORMAL,             // độ khó
+                    true,                            // cho phép dùng lệnh (cheats)
+                    new GameRules(),                 // gamerule mặc định
+                    WorldDataConfiguration.DEFAULT); // datapack mặc định
+
+            // BƯỚC 3: seed và các cờ sinh công trình.
+            WorldOptions options = new WorldOptions(RandomSource.create().nextLong(), // seed ngẫu nhiên, kiểu long
+                    false,                            // không sinh công trình (làng, hầm mộ...)
+                    false);                           // không tặng rương thưởng
+
+            // BƯỚC 4: lambda mô tả "các dimension của world gồm gì".
+            // Khai báo ngoài lambda (trong onNewGame, trước dòng dimensions):
+            ResourceKey<WorldPreset> VOID = ResourceKey.create(Registries.WORLD_PRESET, new ResourceLocation(The8DungeonsMod.MODID, "void"));
+
+            Function<RegistryAccess, WorldDimensions> dimensions = access -> {
+                // 1. Registry.get(khóa) trả về WorldPreset, hoặc null nếu không có
+                WorldPreset preset = access.registryOrThrow(Registries.WORLD_PRESET).get(VOID);
+
+                // 2. null thì ném lỗi rõ ràng; lỗi hiện trong logs/latest.log
+                if (preset == null) {
+                    throw new IllegalStateException("Không tìm thấy world preset: " + VOID.location());
+                }
+
+                // 3. overworld() trả về Optional<LevelStem>; orElseThrow lấy LevelStem ra
+                LevelStem stem = preset.overworld().orElseThrow();
+
+                // 4. Kiểu của cả biểu thức này là WorldDimensions, khớp với kiểu ra của Function
+                return WorldPresets.createNormalWorldDimensions(access).replaceOverworldGenerator(access, stem.generator());
+            };
+
+            // BƯỚC 5: giao việc cho vanilla.
+            // Hàm này tự tạo thư mục, nạp datapack, ghép dimension datapack (bake) rồi vào world.
+            // Lỗi bên trong chỉ được ghi vào log, nên nếu bấm mà không có gì xảy ra
+            // hãy mở logs/latest.log và tìm "Failed to load datapacks".
+            minecraft.createWorldOpenFlows().createFreshLevel(levelName, settings, options, dimensions);
+
+        } catch (IOException e) {
+            // BƯỚC 6: không xin được tên world. Ghi lỗi để còn tra, game vẫn ở title screen.
+            // Việc báo cho người chơi (toast) để làm sau.
+            LOGGER.error("Không thể tạo tên world mới", e);
+        }
     }
 
     /**
@@ -141,23 +224,26 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     }
 
     /**
-     * Vẽ màn hình mỗi khung hình. Ghi đè hoàn toàn render của vanilla,
-     * nên không có panorama, logo Minecraft hay splash text.
+     * Cố ý để trống: bỏ phần tick của vanilla (kiểm tra Realms, đồng hồ hiệu ứng)
+     * vì màn hình này không dùng đến.
      */
     @Override
-    public void render(@NotNull GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        // Dùng layout.panelWidth() ... thay vì tính lại mỗi khung hình
-        g.fill(0, 0, width, height, 0xFF101820);
-        for (Renderable r : renderables) {
-            r.render(g, mouseX, mouseY, partialTick);
-        }
-        if (modUpdateNotification != null) {
-            modUpdateNotification.render(g, mouseX, mouseY, partialTick);
-        }
+    public void tick() {
     }
 
     @Override
-    public void tick() {
+    public void render(@NotNull GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        // Nền tạm: một màu đặc phủ kín (định dạng ARGB). Panel bên trái chưa được vẽ.
+        g.fill(0, 0, width, height, 0xFF101820);
+        // Không gọi super.render vì nó sẽ vẽ panorama và logo vanilla,
+        // nên các widget phải tự vẽ lại ở đây.
+        for (Renderable r : renderables) {
+            r.render(g, mouseX, mouseY, partialTick);
+        }
+        // Chấm "có bản cập nhật mod" của Forge cạnh nút Mods, vẽ sau cùng để nằm trên cùng.
+        if (modUpdateNotification != null) {
+            modUpdateNotification.render(g, mouseX, mouseY, partialTick);
+        }
     }
 
     /**
