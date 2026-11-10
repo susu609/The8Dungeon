@@ -9,11 +9,11 @@ MOD_DEV
 --assetIndex
 5
 --assetsDir
-C:\\Users\\CKIRUser\\.mcreator\\gradle\\caches\\neoformruntime\\assets
+C:\\Users\\CKIRUser\\.gradle\\caches\\neoformruntime\\assets
 --gameDir
 .
 --fml.forgeVersion
-47.4.22
+47.4.28
 --fml.mcVersion
 1.20.1
 --fml.forgeGroup
