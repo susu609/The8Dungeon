@@ -1,0 +1,18 @@
+--------------------------------------------------------------------------------
+
+Command-Line:
+ - C:\Users\CKIRUser\.mcreator\gradle\jdks\eclipse_adoptium-21-amd64-windows.2\bin\java.exe
+ - -jar
+ - C:\Users\CKIRUser\.mcreator\gradle\caches\modules-2\files-2.1\net.minecraftforge\mergetool\1.1.7\3d41564f78f123d64573cae7948014baf3aaba3f\mergetool-1.1.7-fatjar.jar
+ - --strip
+ - --input
+ - C:\Users\CKIRUser\.mcreator\gradle\caches\neoformruntime\intermediate_results\rename_e7899908df0f2d7551fc3a01260f34d49472d24f_output.jar
+ - --output
+ - ./output.jar
+ - --data
+ - sas\forge.sas
+--------------------------------------------------------------------------------
+
+Input:  C:\Users\CKIRUser\.mcreator\gradle\caches\neoformruntime\intermediate_results\rename_e7899908df0f2d7551fc3a01260f34d49472d24f_output.jar
+Output: C:\Users\CKIRUser\Downloads\sssaa\build\tmp\neoformruntime\20261110-182331_stripSideAnnotations\.\output.jar
+Data:   C:\Users\CKIRUser\Downloads\sssaa\build\tmp\neoformruntime\20261110-182331_stripSideAnnotations\sas\forge.sas
