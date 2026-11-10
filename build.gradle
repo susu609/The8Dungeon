@@ -9,7 +9,7 @@ base.archivesName = "modid"
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 legacyForge {
-    version = "1.20.1-47.4.22"
+    version = "1.20.1-47.4.28"
 
     runs {
         client {

@@ -9,9 +9,9 @@
   },
   "metadata": {
     "files": [
-      "src/main/resources/META-INF/mods.toml",
       "src/main/java/net/susu609/the8dungeon/Susu609Mod.java",
-      "src/main/resources/pack.mcmeta"
+      "src/main/resources/pack.mcmeta",
+      "src/main/resources/META-INF/mods.toml"
     ]
   },
   "foldersRoot": {
