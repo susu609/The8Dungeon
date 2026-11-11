@@ -80,7 +80,7 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `Susu609Mod` | class | 117 | - | NetworkEvent, NetworkEvent.Context, SubscribeEvent, TickEvent, TickEvent.Phase, TickEvent.ServerTickEvent |
+| `Susu609Mod` | class | 117 | - | NetworkEvent, NetworkEvent.Context, TickEvent, TickEvent.Phase, TickEvent.ServerTickEvent |
 
 ### client.gui
 
@@ -92,14 +92,14 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `ScreenInspector` | class | 143 | Susu609Mod | ScreenEvent, ScreenEvent.KeyPressed, ScreenEvent.Render, SubscribeEvent |
+| `ScreenInspector` | class | 143 | Susu609Mod | ScreenEvent, ScreenEvent.KeyPressed, ScreenEvent.Render |
 
 ### client.gui.screens
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
 | `ModTitleScreen` | class | 358 | ScreenUtil, Susu609Mod, TitleScreenInterface | - |
-| `TitleScreenHook` | class | 24 | ModTitleScreen, Susu609Mod | ScreenEvent, ScreenEvent.Opening, SubscribeEvent |
+| `TitleScreenHook` | class | 24 | ModTitleScreen, Susu609Mod | ScreenEvent, ScreenEvent.Opening |
 | `TitleScreenInterface` | interface | 13 | - | - |
 
 ### dungeon
@@ -108,10 +108,10 @@ flowchart LR
 |---|---|---|---|---|
 | `DungeonBuilder` | class | 107 | DungeonLayout, DungeonParams, RoomPreset | - |
 | `DungeonClientState` | class | 27 | DungeonLayout, DungeonParams, WorldRandom | - |
-| `DungeonCommand` | class | 75 | DungeonBuilder, DungeonLayout, DungeonNetwork, DungeonParams, DungeonSavedData, RoomPreset, Susu609Mod, WorldRandom | RegisterCommandsEvent, SubscribeEvent |
-| `DungeonInspector` | class | 159 | DungeonBuilder, DungeonClientState, DungeonLayout, RoomPreset, Susu609Mod | RegisterGuiOverlaysEvent, RenderLevelStageEvent, RenderLevelStageEvent.Stage, SubscribeEvent |
+| `DungeonCommand` | class | 75 | DungeonBuilder, DungeonLayout, DungeonNetwork, DungeonParams, DungeonSavedData, RoomPreset, Susu609Mod, WorldRandom | RegisterCommandsEvent |
+| `DungeonInspector` | class | 159 | DungeonBuilder, DungeonClientState, DungeonLayout, RoomPreset, Susu609Mod | RegisterGuiOverlaysEvent, RenderLevelStageEvent, RenderLevelStageEvent.Stage |
 | `DungeonLayout` | class | 382 | DungeonParams, RoomPreset, WorldRandom | - |
-| `DungeonNetwork` | class | 68 | DungeonClientState, DungeonSavedData, Susu609Mod | NetworkEvent, NetworkEvent.Context, PlayerEvent, PlayerEvent.PlayerLoggedInEvent, SubscribeEvent |
+| `DungeonNetwork` | class | 68 | DungeonClientState, DungeonSavedData, Susu609Mod | NetworkEvent, NetworkEvent.Context, PlayerEvent, PlayerEvent.PlayerLoggedInEvent |
 | `DungeonParams` | record | 43 | DungeonLayout, RoomPreset | - |
 | `DungeonSavedData` | class | 55 | - | - |
 | `RoomPreset` | enum | 40 | - | - |
@@ -120,7 +120,7 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `VoidSpawn` | class | 38 | Susu609Mod | LevelEvent, LevelEvent.CreateSpawnPosition, SubscribeEvent |
+| `VoidSpawn` | class | 38 | Susu609Mod | LevelEvent, LevelEvent.CreateSpawnPosition |
 | `WorldRandom` | class | 67 | - | - |
 
 ## Tài nguyên

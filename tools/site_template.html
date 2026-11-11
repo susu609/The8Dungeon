@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kiến trúc mã The8Dungeon</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<style>
+:root{
+  --bg:#fbfaf7;--dot:#d9d6cf;--ink:#2b2a27;--muted:#7a776f;--line:#e7e3da;--panel:#fff;
+  --sec:#ffffffcc;--arrow:#3a3833;--accent:#d97757;--in:#3b6fd8;--t-core:#f1ae86;--t-important:#fbdcc4;--t-support:#efece5;
+  --green:#dcefd9;--peach:#fbe2cf;--blue:#dbe7fa;--purple:#e9e0f7;--yellow:#fbf0c4;--pink:#f9dde4;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#1c1b19;--dot:#3a3833;--ink:#ecebe7;--muted:#a19e96;--line:#34322e;--panel:#252421;
+  --sec:#252421cc;--arrow:#d8d5ce;--accent:#e58a6a;--in:#7aa2ff;--t-core:#8a4d2e;--t-important:#4f3a2c;--t-support:#2e2c29;
+  --green:#2c3d2b;--peach:#4a3426;--blue:#263750;--purple:#382f4b;--yellow:#4a4223;--pink:#4a2b33;
+}}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+  font:15px/1.45 "Anthropic Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+#stage{position:fixed;inset:0;cursor:grab;touch-action:none;
+  background-image:radial-gradient(var(--dot) 1.2px,transparent 1.2px)}
+#stage.drag{cursor:grabbing}
+#world{position:absolute;left:0;top:0;transform-origin:0 0}
+svg#wires{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
+.wire{fill:none;stroke:var(--arrow);stroke-width:1.6;opacity:.28;transition:opacity .15s,stroke .15s}
+.wire.out{opacity:1;stroke:var(--accent);stroke-width:2.2}
+.wire.in{opacity:1;stroke:var(--in);stroke-width:2.2}
+.wire.cold{opacity:.06}
+.title{position:absolute;font-weight:600;font-size:48px;letter-spacing:-.02em;white-space:nowrap}
+.lead{position:absolute;font-size:28px;color:var(--muted);white-space:nowrap}
+.section{position:absolute;border:1.5px solid var(--line);border-radius:18px;background:var(--sec)}
+.section>span{position:absolute;top:-30px;left:2px;font-weight:600;font-size:16px;white-space:nowrap}
+.card{position:absolute;border-radius:14px;padding:10px 14px;cursor:pointer;
+  box-shadow:0 1px 0 rgba(0,0,0,.04),0 2px 8px rgba(0,0,0,.05);transition:transform .12s,box-shadow .12s,opacity .15s;
+  display:flex;flex-direction:column;justify-content:center;user-select:none}
+.card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.1)}
+.card b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card small{color:var(--muted);font-size:12.5px}
+.card.entry{outline:2.5px solid var(--accent);outline-offset:2px}
+.card.on{outline:2.5px solid var(--ink);outline-offset:2px}
+.card.dim{opacity:.3}
+.t-core{background:var(--t-core)}.t-important{background:var(--t-important)}.t-support{background:var(--t-support)}
+.float{position:fixed;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  box-shadow:0 4px 16px rgba(0,0,0,.08);z-index:5}
+#search{top:14px;left:14px;padding:4px;display:flex;gap:4px}
+#search input{border:0;background:transparent;color:var(--ink);padding:8px 10px;width:200px;font:inherit;outline:none}
+#zoom{right:14px;bottom:14px;display:flex;align-items:center}
+#zoom button,#search button{border:0;background:transparent;color:var(--ink);font:inherit;padding:8px 12px;cursor:pointer;border-radius:8px}
+#zoom button:hover,#search button:hover{background:var(--bg)}
+#zoom span{min-width:52px;text-align:center;color:var(--muted);font-size:13px}
+#drawer{top:14px;right:14px;bottom:70px;width:min(560px,calc(100vw - 28px));display:flex;flex-direction:column;
+  transform:translateX(calc(100% + 30px));transition:transform .22s ease}
+#drawer.open{transform:none}
+#drawer header{padding:14px 16px 8px;border-bottom:1px solid var(--line)}
+#drawer h2{margin:0;font-size:20px;display:flex;justify-content:space-between;align-items:center}
+#drawer h2 button{border:0;background:none;color:var(--muted);font-size:22px;cursor:pointer}
+#drawer .sub{color:var(--muted);font-size:13px;word-break:break-all}
+.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;font-size:13px}
+.chip{border-radius:999px;padding:2px 10px;cursor:pointer;border:1px solid var(--line);color:var(--ink)}
+.chip:hover{border-color:var(--ink)}
+#drawer pre{margin:0;flex:1;overflow:auto;padding:12px 16px;font-size:12.5px;line-height:1.55}
+#drawer pre code{background:none;padding:0}
+@media (prefers-color-scheme:dark){.hljs{color:#e6e6e6}.hljs-keyword{color:#ff9d7a}.hljs-string{color:#a5d6a7}.hljs-comment{color:#8a8780}.hljs-title{color:#9ecbff}}
+.hint{left:14px;bottom:14px;padding:8px 12px;color:var(--muted);font-size:13px}
+#legend{right:14px;top:14px;padding:12px 14px;font-size:13px;max-width:290px}
+#legend.hide{display:none}
+#legend h3{margin:0 0 8px;font-size:13px;font-weight:600}
+#legend .li{display:flex;align-items:center;gap:8px;margin:4px 0;color:var(--ink)}
+#legend .li em{font-style:normal;color:var(--muted)}
+#legend i{display:inline-block;width:22px;height:14px;border-radius:5px;border:1px solid var(--line);flex:none}
+#legend i.ring{background:var(--t-support);outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+#legend i.ln{height:0;border:0;border-top:3px solid;border-radius:0}
+#legend hr{border:0;border-top:1px solid var(--line);margin:8px 0}
+#tip{position:fixed;z-index:9;pointer-events:none;max-width:340px;padding:10px 12px;font-size:13px;opacity:0;transition:opacity .1s}
+#tip.on{opacity:1}
+#tip b{font-size:15px}
+#tip .tag{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;font-size:11.5px;border:1px solid var(--line)}
+#tip .m{color:var(--muted);word-break:break-all;margin-top:2px}
+#tip .k{margin-top:6px}
+#tip .d{margin-top:6px;font-style:italic}
+@media (max-width:640px){.hint{display:none}#legend{top:auto;right:auto;left:14px;bottom:14px}#search input{width:130px}}
+</style></head><body>
+<div id="stage"><div id="world"><svg id="wires"><defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="context-stroke"/></marker>
+</defs></svg></div></div>
+
+<div id="search" class="float"><input id="q" placeholder="Tìm class…"><button id="fit" title="Vừa khung">⤢</button></div>
+<div id="zoom" class="float"><button id="zo">−</button><span id="zl">100%</span><button id="zi">+</button></div>
+<div class="float hint">Kéo để di chuyển · cuộn để phóng to · bấm thẻ để xem mã</div>
+<div id="legend" class="float"></div>
+<div id="tip" class="float" role="tooltip"></div>
+<aside id="drawer" class="float"><header><h2><span id="dn"></span><button id="dx" aria-label="Đóng">×</button></h2>
+<div class="sub" id="dp"></div><div id="dm"></div></header><pre><code id="dc" class="language-java"></code></pre></aside>
+
+<script id="data" type="application/json">__DATA__</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
+<script>
+const D = JSON.parse(document.getElementById('data').textContent);
+const $ = id => document.getElementById(id);
+const el = (t, cls, txt) => { const e = document.createElement(t); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+const world = $('world'), wires = $('wires'), stage = $('stage');
+const COLORS = ['green', 'peach', 'blue', 'purple', 'yellow', 'pink'];
+const TIER = { core: 'Lõi', important: 'Quan trọng', support: 'Phụ trợ' };
+const CW = 200, CH = 64, GAP = 24, PAD = 24, MAXW = 1500;
+
+// ---------- Bố cục tự động: mỗi package một khung, thẻ xếp lưới ----------
+const groups = Object.keys(D.groups).sort((a, b) => (a === '(gốc)' ? -1 : b === '(gốc)' ? 1 : D.groups[b].length - D.groups[a].length || a.localeCompare(b)));
+const boxes = {}, sections = [];
+let x = 0, y = 190, rowH = 0;
+groups.forEach((g, gi) => {
+  const items = D.groups[g].slice().sort();
+  const cols = Math.min(items.length, items.length > 6 ? 4 : 3);
+  const rows = Math.ceil(items.length / cols);
+  const w = PAD * 2 + cols * CW + (cols - 1) * GAP, h = PAD * 2 + rows * CH + (rows - 1) * GAP;
+  if (x > 0 && x + w > MAXW) { x = 0; y += rowH + 64; rowH = 0; }
+  sections.push({ g, x, y, w, h, color: COLORS[gi % COLORS.length] });
+  items.forEach((n, i) => { boxes[n] = { x: x + PAD + (i % cols) * (CW + GAP), y: y + PAD + Math.floor(i / cols) * (CH + GAP), color: COLORS[gi % COLORS.length] }; });
+  x += w + 48; rowH = Math.max(rowH, h);
+});
+
+const title = el('div', 'title', 'The8Dungeon · kiến trúc mã'); title.style.left = '0px'; title.style.top = '0px'; world.append(title);
+const lead = el('div', 'lead', `${Object.keys(D.classes).length} class · ${D.total} dòng Java · ${D.edges.length} phụ thuộc — sinh tự động từ main`);
+lead.style.left = '0px'; lead.style.top = '72px'; world.append(lead);
+
+for (const s of sections) {
+  const d = el('div', 'section'); Object.assign(d.style, { left: s.x + 'px', top: s.y + 'px', width: s.w + 'px', height: s.h + 'px' });
+  d.append(el('span', null, s.g)); world.append(d);
+}
+const cards = {};
+for (const [n, b] of Object.entries(boxes)) {
+  const c = D.classes[n];
+  const d = el('div', `card t-${c.tier}` + (c.mod ? ' entry' : ''));
+  Object.assign(d.style, { left: b.x + 'px', top: b.y + 'px', width: CW + 'px', height: CH + 'px' });
+  d.append(el('b', null, n), el('small', null, `${c.kind} · ${c.lines} dòng`));
+  d.onpointerenter = () => { focus(n); showTip(n, d); }; d.onpointerleave = () => { focus(current); hideTip(); };
+  d.onclick = e => { e.stopPropagation(); open(n); goTo(n); };
+  world.append(d); cards[n] = d;
+}
+
+// ---------- Mũi tên cong giữa các thẻ ----------
+const NS = 'http://www.w3.org/2000/svg', paths = [];
+for (const [a, b] of D.edges) {
+  const A = boxes[a], B = boxes[b]; if (!A || !B) continue;
+  const ax = A.x + CW / 2, ay = A.y + CH / 2, bx = B.x + CW / 2, by = B.y + CH / 2;
+  let p1, p2, c1, c2;
+  if (Math.abs(bx - ax) >= Math.abs(by - ay)) {
+    const s = bx > ax ? 1 : -1;
+    p1 = [ax + s * CW / 2, ay]; p2 = [bx - s * CW / 2, by];
+    const k = Math.max(40, Math.abs(p2[0] - p1[0]) / 2); c1 = [p1[0] + s * k, p1[1]]; c2 = [p2[0] - s * k, p2[1]];
+  } else {
+    const s = by > ay ? 1 : -1;
+    p1 = [ax, ay + s * CH / 2]; p2 = [bx, by - s * CH / 2];
+    const k = Math.max(40, Math.abs(p2[1] - p1[1]) / 2); c1 = [p1[0], p1[1] + s * k]; c2 = [p2[0], p2[1] - s * k];
+  }
+  const p = document.createElementNS(NS, 'path');
+  p.setAttribute('d', `M${p1}C${c1} ${c2} ${p2}`); p.setAttribute('class', 'wire'); p.setAttribute('marker-end', 'url(#ah)');
+  p.dataset.a = a; p.dataset.b = b; wires.append(p); paths.push(p);
+}
+
+// ---------- Làm nổi phụ thuộc của thẻ đang chọn ----------
+let current = null;
+function focus(n) {
+  const near = new Set(n ? [n] : []);
+  for (const p of paths) {
+    const out = !!n && p.dataset.a === n, inn = !!n && p.dataset.b === n;
+    if (out || inn) { near.add(p.dataset.a); near.add(p.dataset.b); }
+    p.classList.toggle('out', out); p.classList.toggle('in', inn); p.classList.toggle('cold', !!n && !out && !inn);
+  }
+  for (const [k, d] of Object.entries(cards)) { d.classList.toggle('dim', !!n && !near.has(k)); d.classList.toggle('on', k === current); }
+}
+function chips(label, list) {
+  const r = el('div', 'row'); r.append(el('span', null, label));
+  if (!list.length) r.append(el('span', null, '—'));
+  for (const n of list) { const c = el('span', 'chip ' + (D.classes[n] ? 't-' + D.classes[n].tier : ''), n); if (D.classes[n]) c.onclick = () => { open(n); goTo(n); }; r.append(c); }
+  return r;
+}
+function open(n) {
+  current = n; const c = D.classes[n];
+  $('dn').textContent = n; $('dp').textContent = `${TIER[c.tier]} · ${c.kind} · ${c.lines} dòng · ${c.path}`;
+  const m = $('dm'); m.textContent = '';
+  m.append(chips('Dùng tới:', D.edges.filter(e => e[0] === n).map(e => e[1])));
+  m.append(chips('Được dùng bởi:', D.edges.filter(e => e[1] === n).map(e => e[0])));
+  if (c.events.length) m.append(chips('Event Forge:', c.events));
+  const code = $('dc'); code.textContent = c.source; delete code.dataset.highlighted;
+  if (window.hljs) hljs.highlightElement(code);
+  $('drawer').classList.add('open'); $('legend').classList.add('hide'); focus(n);
+}
+function close() { current = null; $('drawer').classList.remove('open'); $('legend').classList.remove('hide'); focus(null); }
+$('dx').onclick = close;
+addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+
+// ---------- Chú thích ----------
+(function () {
+  const lg = $('legend'), cl = Object.values(D.classes);
+  const n = t => cl.filter(c => c.tier === t).length;
+  const min = t => Math.min(...cl.filter(c => c.tier === t).map(c => c.usedBy));
+  const row = (cls, label, note, style) => { const r = el('div', 'li'), i = el('i', cls); if (style) i.style.cssText = style; r.append(i, el('span', null, label)); if (note) r.append(el('em', null, note)); lg.append(r); };
+  lg.append(el('h3', null, 'Mức độ quan trọng (số class dùng tới nó)'));
+  row('t-core', 'Lõi', `≥ ${min('core')} class · ${n('core')} thẻ`);
+  row('t-important', 'Quan trọng', `2–${min('core') - 1} class · ${n('important')} thẻ`);
+  row('t-support', 'Phụ trợ', `0–1 class · ${n('support')} thẻ`);
+  lg.append(document.createElement('hr'));
+  row('ring', 'Điểm vào @Mod');
+  row('ln', 'Dùng tới', 'khi rê chuột', 'border-color:var(--accent)');
+  row('ln', 'Được dùng bởi', 'khi rê chuột', 'border-color:var(--in)');
+})();
+
+// ---------- Tooltip inspect khi rê chuột ----------
+const tip = $('tip');
+function showTip(n, card) {
+  const c = D.classes[n], out = D.edges.filter(e => e[0] === n).length;
+  tip.textContent = '';
+  const h = el('div'); h.append(el('b', null, n)); const tg = el('span', 'tag t-' + c.tier, TIER[c.tier]); h.append(tg); tip.append(h);
+  tip.append(el('div', 'm', `${c.kind} · ${c.lines} dòng`), el('div', 'm', c.path));
+  tip.append(el('div', 'k', `Dùng tới ${out} class · được ${c.usedBy} class dùng`));
+  if (c.events.length) tip.append(el('div', 'k', 'Event Forge: ' + c.events.join(', ')));
+  if (c.doc) tip.append(el('div', 'd', c.doc));
+  const r = card.getBoundingClientRect(), w = Math.min(340, innerWidth - 16);
+  tip.style.maxWidth = w + 'px';
+  tip.classList.add('on');
+  const th = tip.offsetHeight;
+  let tx = Math.min(Math.max(8, r.left), innerWidth - w - 8), ty = r.bottom + 10;
+  if (ty + th > innerHeight - 8) ty = Math.max(8, r.top - th - 10);
+  tip.style.left = tx + 'px'; tip.style.top = ty + 'px';
+}
+function hideTip() { tip.classList.remove('on'); }
+
+// ---------- Kéo, phóng to, vừa khung ----------
+let view = { x: 40, y: 40, k: 1 };
+function apply() {
+  world.style.transform = `translate(${view.x}px,${view.y}px) scale(${view.k})`;
+  const g = 22 * view.k; stage.style.backgroundSize = `${g}px ${g}px`; stage.style.backgroundPosition = `${view.x}px ${view.y}px`;
+  $('zl').textContent = Math.round(view.k * 100) + '%';
+}
+function zoomAt(f, cx, cy) {
+  const k = Math.min(2.5, Math.max(0.2, view.k * f)); f = k / view.k;
+  view.x = cx - (cx - view.x) * f; view.y = cy - (cy - view.y) * f; view.k = k; apply();
+}
+function bounds() {
+  let w = 0, h = 0; for (const s of sections) { w = Math.max(w, s.x + s.w); h = Math.max(h, s.y + s.h); }
+  return { w: Math.max(w, title.offsetWidth, lead.offsetWidth), h };
+}
+function fit() {
+  const b = bounds(), m = 48, W = innerWidth - ($('drawer').classList.contains('open') ? Math.min(560, innerWidth) + 28 : 0);
+  view.k = Math.min(1.2, (W - m * 2) / b.w, (innerHeight - m * 2 - 40) / b.h);
+  view.x = (W - b.w * view.k) / 2; view.y = m + 20; apply();
+}
+function goTo(n) { const b = boxes[n]; view.x = innerWidth / 3 - (b.x + CW / 2) * view.k; view.y = innerHeight / 2 - (b.y + CH / 2) * view.k; apply(); }
+stage.addEventListener('wheel', e => { e.preventDefault(); zoomAt(Math.exp(-e.deltaY * 0.0015), e.clientX, e.clientY); }, { passive: false });
+let drag = null;
+stage.addEventListener('pointerdown', e => { hideTip(); if (e.target.closest('.card')) return; drag = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y, moved: false }; stage.classList.add('drag'); stage.setPointerCapture(e.pointerId); });
+stage.addEventListener('pointermove', e => { if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true; view.x = drag.vx + dx; view.y = drag.vy + dy; apply(); });
+stage.addEventListener('pointerup', () => { if (drag && !drag.moved) close(); drag = null; stage.classList.remove('drag'); });
+$('zi').onclick = () => zoomAt(1.2, innerWidth / 2, innerHeight / 2);
+$('zo').onclick = () => zoomAt(1 / 1.2, innerWidth / 2, innerHeight / 2);
+$('fit').onclick = fit;
+$('q').addEventListener('input', e => {
+  const q = e.target.value.trim().toLowerCase();
+  for (const [k, d] of Object.entries(cards)) d.classList.toggle('dim', !!q && !k.toLowerCase().includes(q));
+});
+$('q').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const n = Object.keys(cards).find(k => k.toLowerCase().includes(e.target.value.trim().toLowerCase()));
+  if (n) { open(n); goTo(n); }
+});
+fit();
+</script>
+</body></html>
