@@ -19,6 +19,7 @@ STRING_RE = re.compile(r'"(?:\\.|[^"\\])*"')
 PACKAGE_RE = re.compile(r"^\s*package\s+([\w.]+)\s*;", re.M)
 TYPE_RE = re.compile(r"\b(class|interface|enum|record)\s+(\w+)")
 WORD_RE = re.compile(r"\b[A-Z]\w*\b")
+IMPORT_RE = re.compile(r"^\s*import\s+(?:static\s+)?([\w.]+?)(\.\*)?\s*;", re.M)
 DOC_RE = re.compile(r"/\*\*(.*?)\*/", re.S)
 EVENT_RE = re.compile(r"\b(\w+(?:Event)(?:\.\w+)?)\b")
 
@@ -39,6 +40,43 @@ def first_doc_line(raw: str, name: str) -> str:
         if line and not line.startswith("@"):
             return line.rstrip(":")
     return ""
+
+
+def platform_imports(code: str):
+    """Tách import thành hai nhóm nền tảng: Minecraft (net.minecraft, com.mojang) và Forge API."""
+    out, fqs = {"mc": set(), "forge": set()}, {}
+    for m in IMPORT_RE.finditer(code):
+        fq = m.group(1)
+        key = ("forge" if fq.startswith("net.minecraftforge.")
+               else "mc" if fq.startswith(("net.minecraft.", "com.mojang.")) else None)
+        if key:
+            simple = fq.rsplit(".", 1)[-1] + (".*" if m.group(2) else "")
+            out[key].add(simple)
+            if not m.group(2):
+                fqs[simple] = fq
+    res = {k: sorted(v) for k, v in out.items()}
+    res["fq"] = fqs  # tên ngắn -> tên đầy đủ, để tra mã API
+    return res
+
+
+def platform_info():
+    """Phiên bản Minecraft / Forge đọc từ mods.toml (mặc định nếu không có)."""
+    mc, forge = "?", "?"
+    # Ưu tiên phiên bản cụ thể trong build.gradle: legacyForge { version = "1.20.1-47.4.28" }
+    gradle = ROOT / "build.gradle"
+    if gradle.exists():
+        m = re.search(r'version\s*=\s*"(\d+\.\d+(?:\.\d+)?)-(\d+\.\d+\.\d+)"',
+                      gradle.read_text(encoding="utf-8", errors="replace"))
+        if m:
+            return {"mc": f"Minecraft {m.group(1)}", "forge": f"Forge API {m.group(2)}"}
+    toml = RES / "META-INF" / "mods.toml"
+    if toml.exists():
+        t = toml.read_text(encoding="utf-8", errors="replace")
+        m = re.search(r'modId\s*=\s*"minecraft".*?versionRange\s*=\s*"\[?([\d.]+)', t, re.S)
+        mc = m.group(1) if m else mc
+        m = re.search(r'loaderVersion\s*=\s*"\[?(\d+)', t)
+        forge = m.group(1) + "+" if m else forge
+    return {"mc": f"Minecraft {mc}", "forge": f"Forge API {forge}"}
 
 
 def tier_of(used_by: int, top: int) -> str:
@@ -63,6 +101,7 @@ def scan():
             "lines": raw.count("\n") + 1,
             "mod": "@Mod(" in code,
             "doc": first_doc_line(raw, name),
+            "platform": platform_imports(code),
             "events": sorted({e for e in EVENT_RE.findall(code) if e[0].isupper() and e != "SubscribeEvent"}),
         }
     return classes
@@ -153,6 +192,11 @@ def write_site(classes, groups, edges, mermaid, base, total):
         "edges": sorted(edges),
         "groups": {k: sorted(v) for k, v in groups.items()},
         "classes": {},
+        "platform": {
+            k: {"label": v, "users": sorted(n for n, c in classes.items() if c["platform"][k]),
+                "symbols": sorted({x for c in classes.values() for x in c["platform"][k]})}
+            for k, v in platform_info().items()
+        },
     }
     used = {n: sum(1 for _, b in edges if b == n) for n in classes}
     top = max(used.values(), default=0)
@@ -166,6 +210,7 @@ def write_site(classes, groups, edges, mermaid, base, total):
             "events": c["events"],
             "mod": c["mod"],
             "doc": c["doc"],
+            "platform": c["platform"],
             "usedBy": used[name],
             "tier": tier_of(used[name], top),
             "source": src.read_text(encoding="utf-8", errors="replace"),
@@ -173,6 +218,12 @@ def write_site(classes, groups, edges, mermaid, base, total):
     diagram = mermaid.removeprefix("```mermaid\n").removesuffix("```")
     diagram += "\n" + "\n".join(
         f'  click {re.sub(r"[^A-Za-z0-9_]", "_", n)} call pick("{n}")' for n in classes)
+    from api_index import extract
+    wanted = {fq: k for c in classes.values() for k in ("mc", "forge")
+              for s, fq in c["platform"]["fq"].items() if s in c["platform"][k]}
+    data["api"], data["apiJars"] = extract(ROOT, wanted)
+    print(f"Mã API: {len(data['api'])}/{len(wanted)} ký hiệu"
+          + (f" từ {', '.join(data['apiJars'])}" if data["apiJars"] else " (không tìm thấy sources jar)"))
     payload = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
     html = SITE_TEMPLATE.replace("__DIAGRAM__", diagram.replace("<", "&lt;").replace(">", "&gt;"))
     html = html.replace("__DATA__", payload)

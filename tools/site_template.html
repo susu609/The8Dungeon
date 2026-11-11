@@ -6,12 +6,12 @@
 <style>
 :root{
   --bg:#fbfaf7;--dot:#d9d6cf;--ink:#2b2a27;--muted:#7a776f;--line:#e7e3da;--panel:#fff;
-  --sec:#ffffffcc;--arrow:#3a3833;--accent:#d97757;--in:#3b6fd8;--t-core:#f1ae86;--t-important:#fbdcc4;--t-support:#efece5;
+  --sec:#ffffffcc;--arrow:#3a3833;--accent:#d97757;--in:#3b6fd8;--plat:#cfe0fb;--t-core:#f1ae86;--t-important:#fbdcc4;--t-support:#efece5;
   --green:#dcefd9;--peach:#fbe2cf;--blue:#dbe7fa;--purple:#e9e0f7;--yellow:#fbf0c4;--pink:#f9dde4;
 }
 @media (prefers-color-scheme:dark){:root{
   --bg:#1c1b19;--dot:#3a3833;--ink:#ecebe7;--muted:#a19e96;--line:#34322e;--panel:#252421;
-  --sec:#252421cc;--arrow:#d8d5ce;--accent:#e58a6a;--in:#7aa2ff;--t-core:#8a4d2e;--t-important:#4f3a2c;--t-support:#2e2c29;
+  --sec:#252421cc;--arrow:#d8d5ce;--accent:#e58a6a;--in:#7aa2ff;--plat:#243a5c;--t-core:#8a4d2e;--t-important:#4f3a2c;--t-support:#2e2c29;
   --green:#2c3d2b;--peach:#4a3426;--blue:#263750;--purple:#382f4b;--yellow:#4a4223;--pink:#4a2b33;
 }}
 *{box-sizing:border-box}
@@ -39,6 +39,8 @@ svg#wires{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
 .card.entry{outline:2.5px solid var(--accent);outline-offset:2px}
 .card.on{outline:2.5px solid var(--ink);outline-offset:2px}
 .card.dim{opacity:.3}
+.t-platform{background:var(--plat)}.card.plat{border:1.5px solid var(--in)}
+.wire.plat:not(.out):not(.in){opacity:0}
 .t-core{background:var(--t-core)}.t-important{background:var(--t-important)}.t-support{background:var(--t-support)}
 .float{position:fixed;background:var(--panel);border:1px solid var(--line);border-radius:12px;
   box-shadow:0 4px 16px rgba(0,0,0,.08);z-index:5}
@@ -58,6 +60,7 @@ svg#wires{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
 .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;font-size:13px}
 .chip{border-radius:999px;padding:2px 10px;cursor:pointer;border:1px solid var(--line);color:var(--ink)}
 .chip:hover{border-color:var(--ink)}
+.chip.off{opacity:.55;cursor:default}.chip.off:hover{border-color:var(--line)}
 #drawer pre{margin:0;flex:1;overflow:auto;padding:12px 16px;font-size:12.5px;line-height:1.55}
 #drawer pre code{background:none;padding:0}
 @media (prefers-color-scheme:dark){.hljs{color:#e6e6e6}.hljs-keyword{color:#ff9d7a}.hljs-string{color:#a5d6a7}.hljs-comment{color:#8a8780}.hljs-title{color:#9ecbff}}
@@ -66,10 +69,12 @@ svg#wires{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
 #legend.hide{display:none}
 #legend h3{margin:0 0 8px;font-size:13px;font-weight:600}
 #legend .li{display:flex;align-items:center;gap:8px;margin:4px 0;color:var(--ink)}
+#legend .li span{white-space:nowrap}
 #legend .li em{font-style:normal;color:var(--muted)}
 #legend i{display:inline-block;width:22px;height:14px;border-radius:5px;border:1px solid var(--line);flex:none}
 #legend i.ring{background:var(--t-support);outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
 #legend i.ln{height:0;border:0;border-top:3px solid;border-radius:0}
+#legend i.pl{border-color:var(--in)}
 #legend hr{border:0;border-top:1px solid var(--line);margin:8px 0}
 #tip{position:fixed;z-index:9;pointer-events:none;max-width:340px;padding:10px 12px;font-size:13px;opacity:0;transition:opacity .1s}
 #tip.on{opacity:1}
@@ -107,7 +112,10 @@ const CW = 200, CH = 64, GAP = 24, PAD = 24, MAXW = 1500;
 // ---------- Bố cục tự động: mỗi package một khung, thẻ xếp lưới ----------
 const groups = Object.keys(D.groups).sort((a, b) => (a === '(gốc)' ? -1 : b === '(gốc)' ? 1 : D.groups[b].length - D.groups[a].length || a.localeCompare(b)));
 const boxes = {}, sections = [];
-let x = 0, y = 190, rowH = 0;
+const PLAT_Y = 190, PLAT_H = PAD * 2 + CH, PLAT_W = PAD * 2 + CW * 2 + GAP;
+sections.push({ g: 'Nền tảng (không phải mã của mod)', x: 0, y: PLAT_Y, w: PLAT_W, h: PLAT_H });
+boxes['plat:mc'] = { x: PAD, y: PLAT_Y + PAD }; boxes['plat:forge'] = { x: PAD + CW + GAP, y: PLAT_Y + PAD };
+let x = 0, y = PLAT_Y + PLAT_H + 64, rowH = 0;
 groups.forEach((g, gi) => {
   const items = D.groups[g].slice().sort();
   const cols = Math.min(items.length, items.length > 6 ? 4 : 3);
@@ -129,6 +137,15 @@ for (const s of sections) {
 }
 const cards = {};
 for (const [n, b] of Object.entries(boxes)) {
+  if (n.startsWith('plat:')) {
+    const pl = D.platform[n.slice(5)];
+    const d = el('div', 'card plat t-platform');
+    Object.assign(d.style, { left: b.x + 'px', top: b.y + 'px', width: CW + 'px', height: CH + 'px' });
+    d.append(el('b', null, pl.label), el('small', null, `${pl.users.length} class dùng · ${pl.symbols.length} ký hiệu`));
+    d.onpointerenter = () => { focus(n); showPlatTip(n, d); }; d.onpointerleave = () => { focus(current); hideTip(); };
+    d.onclick = e => { e.stopPropagation(); open(n); goTo(n); };
+    world.append(d); cards[n] = d; continue;
+  }
   const c = D.classes[n];
   const d = el('div', `card t-${c.tier}` + (c.mod ? ' entry' : ''));
   Object.assign(d.style, { left: b.x + 'px', top: b.y + 'px', width: CW + 'px', height: CH + 'px' });
@@ -140,11 +157,14 @@ for (const [n, b] of Object.entries(boxes)) {
 
 // ---------- Mũi tên cong giữa các thẻ ----------
 const NS = 'http://www.w3.org/2000/svg', paths = [];
-for (const [a, b] of D.edges) {
+const platEdges = [];
+for (const k of Object.keys(D.platform)) for (const u of D.platform[k].users) platEdges.push([u, 'plat:' + k]);
+for (const [a, b] of D.edges.concat(platEdges)) {
   const A = boxes[a], B = boxes[b]; if (!A || !B) continue;
+  const toPlat = b.startsWith('plat:');
   const ax = A.x + CW / 2, ay = A.y + CH / 2, bx = B.x + CW / 2, by = B.y + CH / 2;
   let p1, p2, c1, c2;
-  if (Math.abs(bx - ax) >= Math.abs(by - ay)) {
+  if (!toPlat && Math.abs(bx - ax) >= Math.abs(by - ay)) {
     const s = bx > ax ? 1 : -1;
     p1 = [ax + s * CW / 2, ay]; p2 = [bx - s * CW / 2, by];
     const k = Math.max(40, Math.abs(p2[0] - p1[0]) / 2); c1 = [p1[0] + s * k, p1[1]]; c2 = [p2[0] - s * k, p2[1]];
@@ -154,7 +174,7 @@ for (const [a, b] of D.edges) {
     const k = Math.max(40, Math.abs(p2[1] - p1[1]) / 2); c1 = [p1[0], p1[1] + s * k]; c2 = [p2[0], p2[1] - s * k];
   }
   const p = document.createElementNS(NS, 'path');
-  p.setAttribute('d', `M${p1}C${c1} ${c2} ${p2}`); p.setAttribute('class', 'wire'); p.setAttribute('marker-end', 'url(#ah)');
+  p.setAttribute('d', `M${p1}C${c1} ${c2} ${p2}`); p.setAttribute('class', 'wire' + (toPlat ? ' plat' : '')); p.setAttribute('marker-end', 'url(#ah)');
   p.dataset.a = a; p.dataset.b = b; wires.append(p); paths.push(p);
 }
 
@@ -175,14 +195,55 @@ function chips(label, list) {
   for (const n of list) { const c = el('span', 'chip ' + (D.classes[n] ? 't-' + D.classes[n].tier : ''), n); if (D.classes[n]) c.onclick = () => { open(n); goTo(n); }; r.append(c); }
   return r;
 }
+function openPlatform(n) {
+  current = n; const k = n.slice(5), pl = D.platform[k], cnt = {};
+  Object.values(D.classes).forEach(c => c.platform[k].forEach(sym => cnt[sym] = (cnt[sym] || 0) + 1));
+  $('dn').textContent = pl.label; $('dp').textContent = 'Nền tảng bên ngoài: mã của mod chỉ import, không nằm trong repo này';
+  const m = $('dm'); m.textContent = '';
+  m.append(chips('Class của mod dùng:', pl.users));
+  const sr = el('div', 'row'); sr.append(el('span', null, D.apiJars.length ? 'Bấm để xem mã:' : 'Ký hiệu:'));
+  Object.keys(cnt).sort().forEach(sym => sr.append(apiChip(sym, fqOf[sym], n))); m.append(sr);
+  const code = $('dc'); code.className = 'language-plaintext';
+  code.textContent = Object.entries(cnt).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([sym, v]) => `${String(v).padStart(2)} class  ${sym}`).join('\n');
+  delete code.dataset.highlighted;
+  $('drawer').classList.add('open'); $('legend').classList.add('hide'); focus(n);
+}
+const fqOf = {};
+Object.values(D.classes).forEach(c => Object.assign(fqOf, c.platform.fq));
+function apiChip(sym, fq, back) {
+  const a = fq && D.api[fq], ch = el('span', 'chip t-platform' + (a ? '' : ' off'), sym);
+  if (a) { ch.title = fq; ch.onclick = () => openApi(fq, back); }
+  else ch.title = 'Chưa có mã API: trang được sinh khi chưa có sources jar (xem workflow trên GitHub Actions)';
+  return ch;
+}
+function openApi(fq, back) {
+  const a = D.api[fq];
+  $('dn').textContent = fq.split('.').pop();
+  $('dp').textContent = `${a.cls} · ${a.mode === 'source' ? 'Forge · mã nguồn (LGPL)' : 'Minecraft · chỉ khai báo, đã bỏ thân hàm'} · ${a.jar}`;
+  const m = $('dm'); m.textContent = '';
+  const r = el('div', 'row'), bk = el('span', 'chip', '← ' + (back.startsWith('plat:') ? D.platform[back.slice(5)].label : back));
+  bk.onclick = () => open(back); r.append(bk); m.append(r);
+  m.append(chips('Mod dùng ở:', Object.keys(D.classes).filter(k => Object.values(D.classes[k].platform.fq).includes(fq)).sort()));
+  const code = $('dc'); code.className = 'language-java'; code.textContent = a.text; delete code.dataset.highlighted;
+  if (window.hljs) hljs.highlightElement(code);
+  $('drawer').querySelector('pre').scrollTop = 0;
+}
 function open(n) {
+  if (n.startsWith('plat:')) return openPlatform(n);
   current = n; const c = D.classes[n];
   $('dn').textContent = n; $('dp').textContent = `${TIER[c.tier]} · ${c.kind} · ${c.lines} dòng · ${c.path}`;
   const m = $('dm'); m.textContent = '';
   m.append(chips('Dùng tới:', D.edges.filter(e => e[0] === n).map(e => e[1])));
   m.append(chips('Được dùng bởi:', D.edges.filter(e => e[1] === n).map(e => e[0])));
   if (c.events.length) m.append(chips('Event Forge:', c.events));
-  const code = $('dc'); code.textContent = c.source; delete code.dataset.highlighted;
+  for (const [k, lb] of [['mc', 'Dùng từ Minecraft:'], ['forge', 'Dùng từ Forge API:']]) {
+    const l = c.platform[k]; if (!l.length) continue;
+    const r = el('div', 'row'); r.append(el('span', null, lb));
+    l.slice(0, 10).forEach(sym => r.append(apiChip(sym, c.platform.fq[sym], n)));
+    if (l.length > 10) r.append(el('span', null, `+${l.length - 10}`));
+    m.append(r);
+  }
+  const code = $('dc'); code.className = 'language-java'; code.textContent = c.source; delete code.dataset.highlighted;
   if (window.hljs) hljs.highlightElement(code);
   $('drawer').classList.add('open'); $('legend').classList.add('hide'); focus(n);
 }
@@ -201,6 +262,7 @@ addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
   row('t-important', 'Quan trọng', `2–${min('core') - 1} class · ${n('important')} thẻ`);
   row('t-support', 'Phụ trợ', `0–1 class · ${n('support')} thẻ`);
   lg.append(document.createElement('hr'));
+  row('t-platform pl', 'Nền tảng', 'nối khi rê chuột');
   row('ring', 'Điểm vào @Mod');
   row('ln', 'Dùng tới', 'khi rê chuột', 'border-color:var(--accent)');
   row('ln', 'Được dùng bởi', 'khi rê chuột', 'border-color:var(--in)');
@@ -209,12 +271,14 @@ addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
 // ---------- Tooltip inspect khi rê chuột ----------
 const tip = $('tip');
 function showTip(n, card) {
+  if (n.startsWith('plat:')) return showPlatTip(n, card);
   const c = D.classes[n], out = D.edges.filter(e => e[0] === n).length;
   tip.textContent = '';
   const h = el('div'); h.append(el('b', null, n)); const tg = el('span', 'tag t-' + c.tier, TIER[c.tier]); h.append(tg); tip.append(h);
   tip.append(el('div', 'm', `${c.kind} · ${c.lines} dòng`), el('div', 'm', c.path));
   tip.append(el('div', 'k', `Dùng tới ${out} class · được ${c.usedBy} class dùng`));
   if (c.events.length) tip.append(el('div', 'k', 'Event Forge: ' + c.events.join(', ')));
+  if (c.platform.mc.length || c.platform.forge.length) tip.append(el('div', 'k', `Nền tảng: Minecraft ${c.platform.mc.length} ký hiệu · Forge API ${c.platform.forge.length} ký hiệu`));
   if (c.doc) tip.append(el('div', 'd', c.doc));
   const r = card.getBoundingClientRect(), w = Math.min(340, innerWidth - 16);
   tip.style.maxWidth = w + 'px';
@@ -223,6 +287,20 @@ function showTip(n, card) {
   let tx = Math.min(Math.max(8, r.left), innerWidth - w - 8), ty = r.bottom + 10;
   if (ty + th > innerHeight - 8) ty = Math.max(8, r.top - th - 10);
   tip.style.left = tx + 'px'; tip.style.top = ty + 'px';
+}
+function showPlatTip(n, card) {
+  const k = n.slice(5), pl = D.platform[k], cnt = {};
+  Object.values(D.classes).forEach(c => c.platform[k].forEach(sym => cnt[sym] = (cnt[sym] || 0) + 1));
+  const top = Object.entries(cnt).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 6).map(e => e[0]);
+  tip.textContent = '';
+  const h = el('div'); h.append(el('b', null, pl.label), el('span', 'tag t-platform', 'Nền tảng')); tip.append(h);
+  tip.append(el('div', 'k', `${pl.users.length} class của mod dùng · ${pl.symbols.length} ký hiệu`));
+  tip.append(el('div', 'd', 'Hay dùng: ' + top.join(', ')));
+  tip.append(el('div', 'm', 'Bấm để xem toàn bộ'));
+  const r = card.getBoundingClientRect(), w = Math.min(340, innerWidth - 16);
+  tip.style.maxWidth = w + 'px'; tip.classList.add('on');
+  const th = tip.offsetHeight; let ty = r.bottom + 10; if (ty + th > innerHeight - 8) ty = Math.max(8, r.top - th - 10);
+  tip.style.left = Math.min(Math.max(8, r.left), innerWidth - w - 8) + 'px'; tip.style.top = ty + 'px';
 }
 function hideTip() { tip.classList.remove('on'); }
 
