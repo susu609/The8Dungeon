@@ -19,11 +19,33 @@ STRING_RE = re.compile(r'"(?:\\.|[^"\\])*"')
 PACKAGE_RE = re.compile(r"^\s*package\s+([\w.]+)\s*;", re.M)
 TYPE_RE = re.compile(r"\b(class|interface|enum|record)\s+(\w+)")
 WORD_RE = re.compile(r"\b[A-Z]\w*\b")
+DOC_RE = re.compile(r"/\*\*(.*?)\*/", re.S)
 EVENT_RE = re.compile(r"\b(\w+(?:Event)(?:\.\w+)?)\b")
 
 
 def strip(code: str) -> str:
     return STRING_RE.sub('""', COMMENT_RE.sub("", code))
+
+
+def first_doc_line(raw: str, name: str) -> str:
+    """Dòng đầu có chữ của Javadoc nằm ngay trước khai báo class (rỗng nếu không có)."""
+    decl = next((m for m in TYPE_RE.finditer(raw) if m.group(2) == name), None)
+    end = decl.start() if decl else len(raw)
+    docs = [m for m in DOC_RE.finditer(raw) if m.end() <= end]
+    if not docs:
+        return ""
+    for line in docs[-1].group(1).splitlines():
+        line = re.sub(r"<[^>]+>", "", line).strip(" *\t")
+        if line and not line.startswith("@"):
+            return line.rstrip(":")
+    return ""
+
+
+def tier_of(used_by: int, top: int) -> str:
+    """Mức quan trọng theo số class phụ thuộc vào nó: core / important / support."""
+    if used_by >= max(3, top * 0.5):
+        return "core"
+    return "important" if used_by >= 2 else "support"
 
 
 def scan():
@@ -40,6 +62,7 @@ def scan():
             "code": code,
             "lines": raw.count("\n") + 1,
             "mod": "@Mod(" in code,
+            "doc": first_doc_line(raw, name),
             "events": sorted({e for e in EVENT_RE.findall(code) if e[0].isupper() and e != "SubscribeEvent"}),
         }
     return classes
@@ -131,6 +154,8 @@ def write_site(classes, groups, edges, mermaid, base, total):
         "groups": {k: sorted(v) for k, v in groups.items()},
         "classes": {},
     }
+    used = {n: sum(1 for _, b in edges if b == n) for n in classes}
+    top = max(used.values(), default=0)
     for name, c in classes.items():
         src = next(SRC.rglob(f"{name}.java"))
         data["classes"][name] = {
@@ -140,6 +165,9 @@ def write_site(classes, groups, edges, mermaid, base, total):
             "path": src.relative_to(ROOT).as_posix(),
             "events": c["events"],
             "mod": c["mod"],
+            "doc": c["doc"],
+            "usedBy": used[name],
+            "tier": tier_of(used[name], top),
             "source": src.read_text(encoding="utf-8", errors="replace"),
         }
     diagram = mermaid.removeprefix("```mermaid\n").removesuffix("```")
