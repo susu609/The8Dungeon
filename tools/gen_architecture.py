@@ -57,6 +57,13 @@ def platform_imports(code: str):
 def platform_info():
     """Phiên bản Minecraft / Forge đọc từ mods.toml (mặc định nếu không có)."""
     mc, forge = "?", "?"
+    # Ưu tiên phiên bản cụ thể trong build.gradle: legacyForge { version = "1.20.1-47.4.28" }
+    gradle = ROOT / "build.gradle"
+    if gradle.exists():
+        m = re.search(r'version\s*=\s*"(\d+\.\d+(?:\.\d+)?)-(\d+\.\d+\.\d+)"',
+                      gradle.read_text(encoding="utf-8", errors="replace"))
+        if m:
+            return {"mc": f"Minecraft {m.group(1)}", "forge": f"Forge API {m.group(2)}"}
     toml = RES / "META-INF" / "mods.toml"
     if toml.exists():
         t = toml.read_text(encoding="utf-8", errors="replace")
