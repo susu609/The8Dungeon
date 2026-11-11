@@ -30,6 +30,21 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+
+      # Tạo sources jar của Minecraft + Forge (đã đổi sang tên Mojang) để trang hiện mã API.
+      # Bước này lỗi thì trang vẫn được sinh, chỉ thiếu phần mã API.
+      - name: Tạo mã nguồn Minecraft / Forge
+        continue-on-error: true
+        run: |
+          chmod +x gradlew
+          ./gradlew createMinecraftArtifacts --no-configuration-cache
+          ls -la build/moddev/artifacts || true
+
       - run: python3 tools/gen_architecture.py
 
       - name: Commit ARCHITECTURE.md nếu có thay đổi

@@ -44,14 +44,19 @@ def first_doc_line(raw: str, name: str) -> str:
 
 def platform_imports(code: str):
     """Tách import thành hai nhóm nền tảng: Minecraft (net.minecraft, com.mojang) và Forge API."""
-    out = {"mc": set(), "forge": set()}
+    out, fqs = {"mc": set(), "forge": set()}, {}
     for m in IMPORT_RE.finditer(code):
         fq = m.group(1)
         key = ("forge" if fq.startswith("net.minecraftforge.")
                else "mc" if fq.startswith(("net.minecraft.", "com.mojang.")) else None)
         if key:
-            out[key].add(fq.rsplit(".", 1)[-1] + (".*" if m.group(2) else ""))
-    return {k: sorted(v) for k, v in out.items()}
+            simple = fq.rsplit(".", 1)[-1] + (".*" if m.group(2) else "")
+            out[key].add(simple)
+            if not m.group(2):
+                fqs[simple] = fq
+    res = {k: sorted(v) for k, v in out.items()}
+    res["fq"] = fqs  # tên ngắn -> tên đầy đủ, để tra mã API
+    return res
 
 
 def platform_info():
@@ -213,6 +218,12 @@ def write_site(classes, groups, edges, mermaid, base, total):
     diagram = mermaid.removeprefix("```mermaid\n").removesuffix("```")
     diagram += "\n" + "\n".join(
         f'  click {re.sub(r"[^A-Za-z0-9_]", "_", n)} call pick("{n}")' for n in classes)
+    from api_index import extract
+    wanted = {fq: k for c in classes.values() for k in ("mc", "forge")
+              for s, fq in c["platform"]["fq"].items() if s in c["platform"][k]}
+    data["api"], data["apiJars"] = extract(ROOT, wanted)
+    print(f"Mã API: {len(data['api'])}/{len(wanted)} ký hiệu"
+          + (f" từ {', '.join(data['apiJars'])}" if data["apiJars"] else " (không tìm thấy sources jar)"))
     payload = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
     html = SITE_TEMPLATE.replace("__DIAGRAM__", diagram.replace("<", "&lt;").replace(">", "&gt;"))
     html = html.replace("__DATA__", payload)
