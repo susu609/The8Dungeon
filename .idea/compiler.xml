@@ -4,6 +4,12 @@
     <annotationProcessing>
       <profile name="Gradle Imported" enabled="true">
         <outputRelativeToContentRoot value="true" />
+        <option name="defaultObfuscationEnv" value="searge" />
+        <option name="mappingTypes" value="tsrg" />
+        <option name="outRefMapFile" value="C:\Users\CKIRUser\IdeaProjects\The8Dungeon\build\mixin\susu609.refmap.json" />
+        <option name="outTsrgFile" value="C:\Users\CKIRUser\IdeaProjects\The8Dungeon\build\mixin\susu609.refmap.json.mappings.tsrg" />
+        <option name="pluginVersion" value="0.7" />
+        <option name="reobfTsrgFile" value="C:\Users\CKIRUser\IdeaProjects\The8Dungeon\build\moddev\artifacts\namedToIntermediate.tsrg" />
         <processorPath useClasspath="false">
           <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.github.llamalad7/mixinextras-common/0.5.0/286da96036621082491d971dfc62bee8fc37d161/mixinextras-common-0.5.0.jar" />
           <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.spongepowered/mixin/0.8.5/6d1c8bf4c28e697f472a83bd6add76ec4951734/mixin-0.8.5-processor.jar" />

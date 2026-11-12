@@ -11,30 +11,29 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.PacketDistributor;
 import net.susu609.the8dungeon.Susu609Mod;
+import net.susu609.the8dungeon.network.ClientboundDungeonSeedPacket;
 import net.susu609.the8dungeon.world.WorldRandom;
 
 /**
  * Lệnh thử nhanh:
- *   /dungeon build [seed]
+ * /dungeon build [seed]
  * Vị trí cố định: phòng vào ở chunk (0, 0), sàn ở y = 0, bất kể người chơi đứng đâu.
  * Không có seed thì lấy ngẫu nhiên và in seed ra để chạy lại được.
  */
 @Mod.EventBusSubscriber(modid = Susu609Mod.MODID)
 public final class DungeonCommand {
 
-    @SubscribeEvent
-    public static void onRegisterCommands(RegisterCommandsEvent event) {
-        event.getDispatcher().register(Commands.literal("dungeon")
-                .requires(source -> source.hasPermission(2))
-                .then(Commands.literal("build")
-                        .executes(ctx -> run(ctx.getSource(), System.nanoTime()))
-                        .then(Commands.argument("seed", LongArgumentType.longArg())
-                                .executes(ctx -> run(ctx.getSource(), LongArgumentType.getLong(ctx, "seed"))))));
+    private DungeonCommand() {
     }
 
-    private static int run(CommandSourceStack source, long seed)
-            throws CommandSyntaxException {
+    @SubscribeEvent
+    public static void onRegisterCommands(RegisterCommandsEvent event) {
+        event.getDispatcher().register(Commands.literal("dungeon").requires(source -> source.hasPermission(2)).then(Commands.literal("build").executes(ctx -> run(ctx.getSource(), System.nanoTime())).then(Commands.argument("seed", LongArgumentType.longArg()).executes(ctx -> run(ctx.getSource(), LongArgumentType.getLong(ctx, "seed"))))));
+    }
+
+    private static int run(CommandSourceStack source, long seed) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
         if (source.getLevel().dimension() != Level.OVERWORLD) {
             source.sendFailure(Component.literal("Chỉ dựng được dungeon ở Overworld."));
@@ -57,7 +56,7 @@ public final class DungeonCommand {
 
         // Lưu seed vào world và báo cho mọi client để inspector vẽ được.
         DungeonSavedData.get(source.getLevel()).set(seed);
-        DungeonNetwork.sendToAll(seed);
+        Susu609Mod.PACKET_HANDLER.send(PacketDistributor.ALL.noArg(), new ClientboundDungeonSeedPacket(true, seed));
 
         // Đưa người chơi vào giữa phòng vào, đứng trên sàn.
         DungeonLayout.Room start = layout.start();
@@ -65,10 +64,7 @@ public final class DungeonCommand {
         double cz = origin.getZ() + (start.cz() + start.cellsZ() / 2.0) * RoomPreset.CELL;
         player.teleportTo(cx, origin.getY() + 1, cz);
 
-        source.sendSuccess(() -> Component.literal("Dungeon seed " + seed + ": "
-                + layout.rooms().size() + " phòng, " + layout.deadEndCount() + " phòng cụt"), true);
+        source.sendSuccess(() -> Component.literal("Dungeon seed " + seed + ": " + layout.rooms().size() + " phòng, " + layout.deadEndCount() + " phòng cụt"), true);
         return 1;
     }
-
-    private DungeonCommand() {}
 }
