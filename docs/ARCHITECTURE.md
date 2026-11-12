@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 17 class/kiểu Java, 1732 dòng, 34 phụ thuộc nội bộ
+- 17 class/kiểu Java, 1704 dòng, 33 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -26,27 +26,31 @@ flowchart LR
   subgraph pkg_dungeon["dungeon"]
     DungeonBuilder["DungeonBuilder<br/><small>class · 107 dòng</small>"]
     DungeonClientState["DungeonClientState<br/><small>class · 27 dòng</small>"]
-    DungeonCommand["DungeonCommand<br/><small>class · 75 dòng</small>"]
+    DungeonCommand["DungeonCommand<br/><small>class · 71 dòng</small>"]
     DungeonInspector["DungeonInspector<br/><small>class · 159 dòng</small>"]
     DungeonLayout["DungeonLayout<br/><small>class · 382 dòng</small>"]
-    DungeonNetwork["DungeonNetwork<br/><small>class · 68 dòng</small>"]
     DungeonParams["DungeonParams<br/><small>record · 43 dòng</small>"]
     DungeonSavedData["DungeonSavedData<br/><small>class · 55 dòng</small>"]
     RoomPreset["RoomPreset<br/><small>enum · 40 dòng</small>"]
+  end
+  subgraph pkg_network["network"]
+    ClientboundDungeonSeedPacket["ClientboundDungeonSeedPacket<br/><small>class · 44 dòng</small>"]
   end
   subgraph pkg_world["world"]
     VoidSpawn["VoidSpawn<br/><small>class · 38 dòng</small>"]
     WorldRandom["WorldRandom<br/><small>class · 67 dòng</small>"]
   end
+  ClientboundDungeonSeedPacket --> DungeonClientState
+  ClientboundDungeonSeedPacket --> Susu609Mod
   DungeonBuilder --> DungeonLayout
   DungeonBuilder --> DungeonParams
   DungeonBuilder --> RoomPreset
   DungeonClientState --> DungeonLayout
   DungeonClientState --> DungeonParams
   DungeonClientState --> WorldRandom
+  DungeonCommand --> ClientboundDungeonSeedPacket
   DungeonCommand --> DungeonBuilder
   DungeonCommand --> DungeonLayout
-  DungeonCommand --> DungeonNetwork
   DungeonCommand --> DungeonParams
   DungeonCommand --> DungeonSavedData
   DungeonCommand --> RoomPreset
@@ -60,9 +64,6 @@ flowchart LR
   DungeonLayout --> DungeonParams
   DungeonLayout --> RoomPreset
   DungeonLayout --> WorldRandom
-  DungeonNetwork --> DungeonClientState
-  DungeonNetwork --> DungeonSavedData
-  DungeonNetwork --> Susu609Mod
   DungeonParams --> DungeonLayout
   DungeonParams --> RoomPreset
   ModTitleScreen --> ScreenUtil
@@ -108,13 +109,18 @@ flowchart LR
 |---|---|---|---|---|
 | `DungeonBuilder` | class | 107 | DungeonLayout, DungeonParams, RoomPreset | - |
 | `DungeonClientState` | class | 27 | DungeonLayout, DungeonParams, WorldRandom | - |
-| `DungeonCommand` | class | 75 | DungeonBuilder, DungeonLayout, DungeonNetwork, DungeonParams, DungeonSavedData, RoomPreset, Susu609Mod, WorldRandom | RegisterCommandsEvent |
+| `DungeonCommand` | class | 71 | ClientboundDungeonSeedPacket, DungeonBuilder, DungeonLayout, DungeonParams, DungeonSavedData, RoomPreset, Susu609Mod, WorldRandom | RegisterCommandsEvent |
 | `DungeonInspector` | class | 159 | DungeonBuilder, DungeonClientState, DungeonLayout, RoomPreset, Susu609Mod | RegisterGuiOverlaysEvent, RenderLevelStageEvent, RenderLevelStageEvent.Stage |
 | `DungeonLayout` | class | 382 | DungeonParams, RoomPreset, WorldRandom | - |
-| `DungeonNetwork` | class | 68 | DungeonClientState, DungeonSavedData, Susu609Mod | NetworkEvent, NetworkEvent.Context, PlayerEvent, PlayerEvent.PlayerLoggedInEvent |
 | `DungeonParams` | record | 43 | DungeonLayout, RoomPreset | - |
 | `DungeonSavedData` | class | 55 | - | - |
 | `RoomPreset` | enum | 40 | - | - |
+
+### network
+
+| Class | Loại | Dòng | Dùng tới | Event Forge |
+|---|---|---|---|---|
+| `ClientboundDungeonSeedPacket` | class | 44 | DungeonClientState, Susu609Mod | FMLCommonSetupEvent, NetworkEvent, NetworkEvent.Context |
 
 ### world
 
