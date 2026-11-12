@@ -1,34 +1,32 @@
 package net.susu609.the8dungeon; // "Địa chỉ" của class, phải khớp với thư mục src/main/java/net/susu609/the8dungeon
 
 // ===== IMPORT: báo cho Java biết các class bên dưới lấy từ đâu =====
-import org.apache.logging.log4j.Logger;      // Dùng để ghi log (in thông báo ra console/log)
-import org.apache.logging.log4j.LogManager;
 
-import net.minecraftforge.network.simple.SimpleChannel;   // Kênh gửi gói tin client <-> server
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.fml.util.thread.SidedThreadGroups; // Dùng để biết code đang chạy trên luồng server hay client
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.common.MinecraftForge;
-
-import net.minecraft.server.TickTask;          // Một "việc" gắn với số tick cần chạy
-import net.minecraft.resources.ResourceLocation; // ID dạng "namespace:path", ví dụ "susu609:susu609"
-import net.minecraft.network.FriendlyByteBuf;  // Bộ đệm byte để ghi/đọc dữ liệu gói tin
-
-import java.util.function.Supplier;    // Interface hàm: () -> T
-import java.util.function.Function;    // Interface hàm: A -> B
-import java.util.function.BiConsumer;  // Interface hàm: (A, B) -> không trả về gì
-import java.util.concurrent.ConcurrentLinkedQueue; // Hàng đợi an toàn khi nhiều luồng cùng dùng
-import java.util.Queue;
-import java.util.PriorityQueue;        // Hàng đợi tự sắp xếp theo độ ưu tiên
-import java.util.Comparator;
-
-import it.unimi.dsi.fastutil.ints.IntObjectPair;          // Cặp (int, Object)
 import it.unimi.dsi.fastutil.ints.IntObjectImmutablePair;
+import it.unimi.dsi.fastutil.ints.IntObjectPair;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.TickTask;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.util.thread.SidedThreadGroups;
+import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.simple.SimpleChannel;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Comparator;
+import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Mod("susu609") // Annotation: báo cho Forge "đây là class chính của mod có id susu609"
 public class Susu609Mod {
@@ -50,6 +48,8 @@ public class Susu609Mod {
 		// (đăng ký item, block, entity... sẽ gắn vào bus này)
 		IEventBus bus = context.getModEventBus();
 		// Start of user code block mod init
+
+		net.susu609.the8dungeon.init.ModEntitiesRegistry.register(bus);
 		// End of user code block mod init
 	}
 
