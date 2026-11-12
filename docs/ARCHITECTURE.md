@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 17 class/kiểu Java, 1793 dòng, 33 phụ thuộc nội bộ
+- 22 class/kiểu Java, 2019 dòng, 44 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -23,6 +23,12 @@ flowchart LR
     TitleScreenHook["TitleScreenHook<br/><small>class · 24 dòng</small>"]
     TitleScreenInterface["TitleScreenInterface<br/><small>interface · 13 dòng</small>"]
   end
+  subgraph pkg_client_model["client.model"]
+    ClawdModel["ClawdModel<br/><small>class · 83 dòng</small>"]
+  end
+  subgraph pkg_client_renderer_entity["client.renderer.entity"]
+    ClawdRenderer["ClawdRenderer<br/><small>class · 24 dòng</small>"]
+  end
   subgraph pkg_dungeon["dungeon"]
     DungeonBuilder["DungeonBuilder<br/><small>class · 107 dòng</small>"]
     DungeonClientState["DungeonClientState<br/><small>class · 27 dòng</small>"]
@@ -33,6 +39,10 @@ flowchart LR
     DungeonSavedData["DungeonSavedData<br/><small>class · 55 dòng</small>"]
     RoomPreset["RoomPreset<br/><small>enum · 40 dòng</small>"]
   end
+  subgraph pkg_init["init"]
+    ModEntitiesRegistry["ModEntitiesRegistry<br/><small>class · 42 dòng</small>"]
+    ModEntityRenderers["ModEntityRenderers<br/><small>class · 34 dòng</small>"]
+  end
   subgraph pkg_network["network"]
     ClientboundDungeonSeedPacket["ClientboundDungeonSeedPacket<br/><small>class · 44 dòng</small>"]
   end
@@ -40,6 +50,14 @@ flowchart LR
     VoidSpawn["VoidSpawn<br/><small>class · 38 dòng</small>"]
     WorldRandom["WorldRandom<br/><small>class · 67 dòng</small>"]
   end
+  subgraph pkg_world_entity["world.entity"]
+    ClawdEntity["ClawdEntity<br/><small>class · 43 dòng</small>"]
+  end
+  ClawdModel --> ClawdEntity
+  ClawdModel --> Susu609Mod
+  ClawdRenderer --> ClawdEntity
+  ClawdRenderer --> ClawdModel
+  ClawdRenderer --> Susu609Mod
   ClientboundDungeonSeedPacket --> DungeonClientState
   ClientboundDungeonSeedPacket --> Susu609Mod
   DungeonBuilder --> DungeonLayout
@@ -66,10 +84,16 @@ flowchart LR
   DungeonLayout --> WorldRandom
   DungeonParams --> DungeonLayout
   DungeonParams --> RoomPreset
+  ModEntitiesRegistry --> ClawdEntity
+  ModEntitiesRegistry --> Susu609Mod
+  ModEntityRenderers --> ClawdModel
+  ModEntityRenderers --> ClawdRenderer
+  ModEntityRenderers --> ModEntitiesRegistry
   ModTitleScreen --> ScreenUtil
   ModTitleScreen --> Susu609Mod
   ModTitleScreen --> TitleScreenInterface
   ScreenInspector --> Susu609Mod
+  Susu609Mod --> ModEntitiesRegistry
   TitleScreenHook --> ModTitleScreen
   TitleScreenHook --> Susu609Mod
   VoidSpawn --> Susu609Mod
@@ -81,7 +105,7 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `Susu609Mod` | class | 117 | - | NetworkEvent, NetworkEvent.Context, TickEvent, TickEvent.Phase, TickEvent.ServerTickEvent |
+| `Susu609Mod` | class | 117 | ModEntitiesRegistry | NetworkEvent, NetworkEvent.Context, TickEvent, TickEvent.Phase, TickEvent.ServerTickEvent |
 
 ### client.gui
 
@@ -103,6 +127,18 @@ flowchart LR
 | `TitleScreenHook` | class | 24 | ModTitleScreen, Susu609Mod | ScreenEvent, ScreenEvent.Opening |
 | `TitleScreenInterface` | interface | 13 | - | - |
 
+### client.model
+
+| Class | Loại | Dòng | Dùng tới | Event Forge |
+|---|---|---|---|---|
+| `ClawdModel` | class | 83 | ClawdEntity, Susu609Mod | - |
+
+### client.renderer.entity
+
+| Class | Loại | Dòng | Dùng tới | Event Forge |
+|---|---|---|---|---|
+| `ClawdRenderer` | class | 24 | ClawdEntity, ClawdModel, Susu609Mod | - |
+
 ### dungeon
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
@@ -115,6 +151,13 @@ flowchart LR
 | `DungeonParams` | record | 43 | DungeonLayout, RoomPreset | - |
 | `DungeonSavedData` | class | 55 | - | - |
 | `RoomPreset` | enum | 40 | - | - |
+
+### init
+
+| Class | Loại | Dòng | Dùng tới | Event Forge |
+|---|---|---|---|---|
+| `ModEntitiesRegistry` | class | 42 | ClawdEntity, Susu609Mod | EntityAttributeCreationEvent |
+| `ModEntityRenderers` | class | 34 | ClawdModel, ClawdRenderer, ModEntitiesRegistry | EntityRenderersEvent, EntityRenderersEvent.RegisterLayerDefinitions, EntityRenderersEvent.RegisterRenderers |
 
 ### network
 
@@ -129,10 +172,17 @@ flowchart LR
 | `VoidSpawn` | class | 38 | Susu609Mod | LevelEvent, LevelEvent.CreateSpawnPosition |
 | `WorldRandom` | class | 67 | - | - |
 
+### world.entity
+
+| Class | Loại | Dòng | Dùng tới | Event Forge |
+|---|---|---|---|---|
+| `ClawdEntity` | class | 43 | - | - |
+
 ## Tài nguyên
 
 - `META-INF/mods.toml`
 - `assets/susu609/lang/en_us.json`
+- `assets/susu609/textures/entity/clawd_agent.png`
 - `assets/susu609/textures/gui/title/mod_title.png`
 - `assets/susu609/textures/map/minimap_icons.png`
 - `data/susu609/worldgen/world_preset/void.json`
