@@ -226,8 +226,7 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     @Override
     public void render(@NotNull GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         renderStoneBackground(g);   // 1. nền đá trôi
-        renderModLogo(g);           // 2. logo rơi vào chỗ
-
+        renderTitle(g);// 2. title rơi vào chỗ
         // 3. widget (không gọi super.render vì nó vẽ panorama và logo vanilla)
         for (Renderable r : renderables) {
             r.render(g, mouseX, mouseY, partialTick);
@@ -261,23 +260,6 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
             }
         }
     }
-
-    /**
-     * Vẽ logo mod: rơi từ cao hơn 30px xuống vị trí trên cột nút, ease-out.
-     */
-    private void renderModLogo(GuiGraphics g) {
-        float t = Math.min(1f, (System.currentTimeMillis() - openedAt) / (float) LOGO_ANIM_MS);
-        float ease = 1f - (1f - t) * (1f - t) * (1f - t); // easeOutCubic: chậm dần về cuối
-
-        int logoW = layout.buttonWidth();
-        int logoH = logoW / 4;                              // giữ tỉ lệ 4:1
-        int x = layout.buttonX();
-        int restY = layout.buttonTop() - logoH - 12;        // vị trí đích
-        int y = restY - Math.round((1f - ease) * 30f);      // vị trí hiện tại
-
-        g.blit(MOD_LOGO, x, y, logoW, logoH, 0, 0, 1024, 256, 1024, 256);
-    }
-
     // ===================== 6. TẠO VÀ XÓA WORLD =====================
 
     /**
@@ -396,5 +378,70 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
      */
     private record Layout(int panelWidth, int buttonX, int buttonWidth, int buttonTop, int buttonHeight,
                           int buttonGap) {
+    }
+
+    // ===== Khung bao quanh logo và cột nút =====
+// Hằng số: khoảng đệm quanh khung (px)
+    private static final int PANEL_PAD = 12;
+
+// Tính vị trí khung từ layout hiện có:
+//   x0 = buttonX - PAD          x1 = buttonX + buttonWidth + PAD
+//   y0 = đỉnh logo - PAD        y1 = đáy hàng icon + PAD
+//   đỉnh logo  = buttonTop - logoH - 12        (logoH = buttonWidth / 4)
+//   đáy icon   = buttonTop + MAIN_BUTTON_COUNT * (buttonHeight + buttonGap) + iconSize
+// Gợi ý: viết một hàm riêng trả về 4 số, hoặc một record nhỏ.
+
+    private void renderPanel(GuiGraphics g) {
+        // Tính x0, y0, x1, y1 theo công thức trên
+        // Vẽ hình chữ nhật đen mờ 50%: g.fill(x0, y0, x1, y1, 0x80000000)
+        // (tuỳ chọn) viền: g.renderOutline(x0, y0, x1 - x0, y1 - y0, màu ARGB)
+    }
+
+    // Logo Minecraft gốc (vanilla): vùng vẽ 256x44 trong file 256x64
+    private static final ResourceLocation VANILLA_LOGO =
+            ResourceLocation.tryParse("minecraft:textures/gui/title/minecraft.png");
+    private static final int VANILLA_LOGO_W = 256;
+    private static final int VANILLA_LOGO_H = 44;
+    private static final int VANILLA_TEX_H = 64;
+    // Logo mod đè lên đáy logo vanilla bao nhiêu px (vanilla dùng 7px ở kích thước gốc)
+    private static final int TITLE_OVERLAP = 4;
+
+    /** Chiều cao logo vanilla khi co theo chiều rộng nút (giữ tỉ lệ). */
+    private int vanillaLogoHeight() {
+        return layout.buttonWidth() * VANILLA_LOGO_H / VANILLA_LOGO_W;
+    }
+
+    /** Chiều cao logo mod (tỉ lệ 4:1). */
+    private int modLogoHeight() {
+        return layout.buttonWidth() / 4;
+    }
+
+    /** Tổng chiều cao khối tiêu đề, đã trừ phần chồng lên nhau. */
+    private int titleHeight() {
+        return vanillaLogoHeight() + modLogoHeight() - TITLE_OVERLAP;
+    }
+
+    /** Y đỉnh khối tiêu đề khi đã đứng yên, ngay trên cột nút. */
+    private int titleTop() {
+        return layout.buttonTop() - titleHeight() - 12;
+    }
+    private void renderTitle(GuiGraphics g) {
+        // Chuyển động rơi nhẹ (giống renderModLogo cũ)
+        float t = Math.min(1f, (System.currentTimeMillis() - openedAt) / (float) LOGO_ANIM_MS);
+        float ease = 1f - (1f - t) * (1f - t) * (1f - t);
+        int drop = Math.round((1f - ease) * 30f);
+
+        int x = layout.buttonX();
+        int w = layout.buttonWidth();
+        int top = titleTop() - drop;
+        int vH = vanillaLogoHeight();
+
+        // 1. Logo Minecraft: co theo chiều rộng nút
+        g.blit(VANILLA_LOGO, x, top, w, vH,
+                0, 0, VANILLA_LOGO_W, VANILLA_LOGO_H, VANILLA_LOGO_W, VANILLA_TEX_H);
+
+        // 2. Logo mod: đặt ở vị trí của Edition, chồng lên đáy logo vanilla
+        g.blit(MOD_LOGO, x, top + vH - TITLE_OVERLAP, w, modLogoHeight(),
+                0, 0, 1024, 256, 1024, 256);
     }
 }
