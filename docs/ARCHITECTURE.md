@@ -3,14 +3,14 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 22 class/kiểu Java, 2019 dòng, 44 phụ thuộc nội bộ
+- 23 class/kiểu Java, 2082 dòng, 48 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
 ```mermaid
 flowchart LR
   subgraph pkg__g_c_["(gốc)"]
-    Susu609Mod(["Susu609Mod<br/><small>class · 117 dòng</small>"])
+    Susu609Mod(["Susu609Mod<br/><small>class · 119 dòng</small>"])
   end
   subgraph pkg_client_gui["client.gui"]
     ScreenUtil["ScreenUtil<br/><small>class · 16 dòng</small>"]
@@ -42,6 +42,7 @@ flowchart LR
   subgraph pkg_init["init"]
     ModEntitiesRegistry["ModEntitiesRegistry<br/><small>class · 42 dòng</small>"]
     ModEntityRenderers["ModEntityRenderers<br/><small>class · 34 dòng</small>"]
+    ModSoundsRegistry["ModSoundsRegistry<br/><small>class · 35 dòng</small>"]
   end
   subgraph pkg_network["network"]
     ClientboundDungeonSeedPacket["ClientboundDungeonSeedPacket<br/><small>class · 44 dòng</small>"]
@@ -51,8 +52,9 @@ flowchart LR
     WorldRandom["WorldRandom<br/><small>class · 67 dòng</small>"]
   end
   subgraph pkg_world_entity["world.entity"]
-    ClawdEntity["ClawdEntity<br/><small>class · 43 dòng</small>"]
+    ClawdEntity["ClawdEntity<br/><small>class · 69 dòng</small>"]
   end
+  ClawdEntity --> ModSoundsRegistry
   ClawdModel --> ClawdEntity
   ClawdModel --> Susu609Mod
   ClawdRenderer --> ClawdEntity
@@ -89,11 +91,14 @@ flowchart LR
   ModEntityRenderers --> ClawdModel
   ModEntityRenderers --> ClawdRenderer
   ModEntityRenderers --> ModEntitiesRegistry
+  ModSoundsRegistry --> Susu609Mod
   ModTitleScreen --> ScreenUtil
   ModTitleScreen --> Susu609Mod
   ModTitleScreen --> TitleScreenInterface
   ScreenInspector --> Susu609Mod
   Susu609Mod --> ModEntitiesRegistry
+  Susu609Mod --> ModEntityRenderers
+  Susu609Mod --> ModSoundsRegistry
   TitleScreenHook --> ModTitleScreen
   TitleScreenHook --> Susu609Mod
   VoidSpawn --> Susu609Mod
@@ -105,7 +110,7 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `Susu609Mod` | class | 117 | ModEntitiesRegistry | NetworkEvent, NetworkEvent.Context, TickEvent, TickEvent.Phase, TickEvent.ServerTickEvent |
+| `Susu609Mod` | class | 119 | ModEntitiesRegistry, ModEntityRenderers, ModSoundsRegistry | NetworkEvent, NetworkEvent.Context, TickEvent, TickEvent.Phase, TickEvent.ServerTickEvent |
 
 ### client.gui
 
@@ -158,6 +163,7 @@ flowchart LR
 |---|---|---|---|---|
 | `ModEntitiesRegistry` | class | 42 | ClawdEntity, Susu609Mod | EntityAttributeCreationEvent |
 | `ModEntityRenderers` | class | 34 | ClawdModel, ClawdRenderer, ModEntitiesRegistry | EntityRenderersEvent, EntityRenderersEvent.RegisterLayerDefinitions, EntityRenderersEvent.RegisterRenderers |
+| `ModSoundsRegistry` | class | 35 | Susu609Mod | SoundEvent, SoundEvent.createVariableRangeEvent |
 
 ### network
 
@@ -176,12 +182,23 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `ClawdEntity` | class | 43 | - | - |
+| `ClawdEntity` | class | 69 | ModSoundsRegistry | SoundEvent |
 
 ## Tài nguyên
 
 - `META-INF/mods.toml`
 - `assets/susu609/lang/en_us.json`
+- `assets/susu609/sounds/entity/clawd/ambient1.ogg`
+- `assets/susu609/sounds/entity/clawd/ambient2.ogg`
+- `assets/susu609/sounds/entity/clawd/ambient3.ogg`
+- `assets/susu609/sounds/entity/clawd/death.ogg`
+- `assets/susu609/sounds/entity/clawd/happy.ogg`
+- `assets/susu609/sounds/entity/clawd/hurt.ogg`
+- `assets/susu609/sounds/entity/clawd/step1.ogg`
+- `assets/susu609/sounds/entity/clawd/step2.ogg`
+- `assets/susu609/sounds/entity/clawd/think.ogg`
+- `assets/susu609/sounds/entity/clawd/work.ogg`
+- `assets/susu609/sounds.json`
 - `assets/susu609/textures/entity/clawd_agent.png`
 - `assets/susu609/textures/gui/title/mod_title.png`
 - `assets/susu609/textures/map/minimap_icons.png`
