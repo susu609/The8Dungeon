@@ -8,6 +8,8 @@ import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.PlainTextButton;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.*;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -27,7 +29,6 @@ import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraftforge.client.gui.ModListScreen;
 import net.minecraftforge.client.gui.TitleScreenModUpdateIndicator;
-
 import net.susu609.the8dungeon.Susu609Mod;
 import net.susu609.the8dungeon.client.gui.ScreenUtil;
 import org.jetbrains.annotations.NotNull;
@@ -38,319 +39,360 @@ import java.util.function.Function;
 
 /**
  * Màn hình tiêu đề riêng của The8Dungeons, kế thừa TitleScreen của vanilla.
- * Thay vì dùng layout vanilla (nút căn giữa màn hình), lớp này dựng menu
- * dạng "panel bên trái":
+ * Menu nằm ở "panel bên trái":
  * <ul>
  *   <li>Cột nút chính: New Game, Continue, Mods, Options.</li>
- *   <li>Hàng dưới cùng: icon ngôn ngữ, icon trợ năng, nút Quit.</li>
- *   <li>Dòng bản quyền ở góc dưới bên phải màn hình.</li>
+ *   <li>Hàng dưới: icon ngôn ngữ, icon trợ năng, nút Quit.</li>
+ *   <li>Dòng bản quyền ở góc dưới bên phải.</li>
  * </ul>
- * Mod chỉ có MỘT world, tên cố định {@link #WORLD_NAME}: New Game xóa world cũ
- * (sau khi hỏi xác nhận) rồi tạo world void mới, Continue mở lại đúng world đó.
+ * Nền là lưới ô đá stone bricks ngẫu nhiên, trôi chậm xuống; logo mod rơi nhẹ vào vị trí.
+ * Mod chỉ có MỘT world, tên cố định {@link #WORLD_NAME}.
  */
 public class ModTitleScreen extends TitleScreen implements TitleScreenInterface {
-    // ===== Hằng số =====
 
-    /** Số nút trong cột nút chính (New Game, Continue, Mods, Options). */
+    // ===================== 1. HẰNG SỐ =====================
+
+    // --- Cột nút chính ---
+    /**
+     * Số nút trong cột nút chính (New Game, Continue, Mods, Options).
+     */
     private static final int MAIN_BUTTON_COUNT = 4;
 
-    /** Tên thư mục của world duy nhất. New Game tạo nó, Continue mở nó. */
-    private static final String WORLD_NAME = "The8Dungeons";
+    // --- Nền đá ---
+    private static final int TILE = 16;                 // kích thước gốc của một texture block (px)
+    private static final int TILE_SCALE = 4;            // phóng to x4 cho dễ thấy
+    private static final int TILE_DRAW = TILE * TILE_SCALE;
+    private static final float SCROLL_PX_PER_SEC = 12f; // tốc độ nền trôi xuống (px/giây)
 
     /**
-     * Khóa của world preset void (file
-     * data/susu609/worldgen/world_preset/void.json).
+     * Pool biến thể đá; mỗi ô lưới chọn ngẫu nhiên một cái.
+     */
+    private static final String[] STONE_BRICK_TILES = {"minecraft:block/stone_bricks", "minecraft:block/mossy_stone_bricks", "minecraft:block/cracked_stone_bricks", "minecraft:block/chiseled_stone_bricks"};
+
+    // --- Logo mod ---
+    private static final long LOGO_ANIM_MS = 900L;      // logo rơi vào chỗ trong 0,9 giây
+    /**
+     * Logo mod, file 1024x256 (tỉ lệ 4:1). Đường dẫn lấy từ MODID, không viết cứng.
+     */
+    private static final ResourceLocation MOD_LOGO = ResourceLocation.fromNamespaceAndPath(Susu609Mod.MODID,"textures/gui/title/mod_title.png");
+
+    // --- World ---
+    /**
+     * Tên thư mục của world duy nhất. New Game tạo nó, Continue mở nó.
+     */
+    private static final String WORLD_NAME = "The8Dungeons";
+    /**
+     * Khóa world preset void (data/susu609/worldgen/world_preset/void.json).
      * Dùng MODID thật của mod, không phải "the8dungeons".
      */
-    private static final ResourceKey<WorldPreset> VOID_PRESET =
-            ResourceKey.create(
-                    Registries.WORLD_PRESET,
-                    ResourceLocation.fromNamespaceAndPath(Susu609Mod.MODID, "void"));
+    private static final ResourceKey<WorldPreset> VOID_PRESET = ResourceKey.create(Registries.WORLD_PRESET, ResourceLocation.fromNamespaceAndPath(Susu609Mod.MODID, "void"));
 
-    /** Ghi lỗi vào logs/latest.log. */
-    private static final Logger LOGGER = LogUtils.getLogger();
-
+    // --- Tiện ích ---
     /**
-     * Instance Minecraft, lấy một lần khi lớp được nạp. An toàn vì lớp này chỉ
-     * được nạp ở client, lúc game đã mở màn hình tiêu đề.
+     * Ghi lỗi vào logs/latest.log.
+     */
+    private static final Logger LOGGER = LogUtils.getLogger();
+    /**
+     * Instance Minecraft, lấy một lần khi lớp được nạp. An toàn vì lớp chỉ được nạp
+     * ở client, lúc game đã mở màn hình tiêu đề.
      */
     private static final Minecraft mc = Minecraft.getInstance();
-    // ===== Trạng thái =====
+
+    // ===================== 2. TRẠNG THÁI =====================
 
     /**
-     * Kích thước/vị trí của panel và nút. Tính trong init(), dùng lại cho mọi
-     * nút.
+     * Thời điểm màn hình được tạo; mọi chuyển động (nền, logo) tính từ mốc này.
+     */
+    private final long openedAt = System.currentTimeMillis();
+
+    /**
+     * Kích thước/vị trí panel và nút. Tính lại trong init() mỗi lần resize.
      */
     private Layout layout;
 
-    /** [Forge] Chỉ báo "có bản cập nhật mod" (dấu chấm nhỏ cạnh nút Mods). */
+    /**
+     * [Forge] Chấm "có bản cập nhật mod" cạnh nút Mods.
+     */
     private TitleScreenModUpdateIndicator modUpdateNotification;
+
+    /**
+     * Sprite đá đã lấy từ atlas, theo đúng thứ tự STONE_BRICK_TILES.
+     */
+    private TextureAtlasSprite[] tileSprites;
+    /**
+     * Chỉ số pool của từng ô lưới, xếp theo hàng rồi cột.
+     */
+    private int[] tileIndex;
+    /**
+     * Số cột và số hàng của lưới nền (đã dư thêm để không lộ khoảng trống khi trôi).
+     */
+    private int cols;
+    private int rows;
+
+    // ===================== 3. KHỞI TẠO VÀ VÒNG ĐỜI =====================
 
     public ModTitleScreen() {
         super(false); // false = không dùng hiệu ứng fade-in của vanilla
     }
-    // ===== Vòng đời màn hình =====
+
     /**
-     * Cố ý để trống: bỏ phần tick của vanilla (kiểm tra Realms, đồng hồ hiệu
-     * ứng) vì màn hình này không dùng đến.
+     * Lấy sprite đá từ atlas block. Block không có file PNG riêng trong GUI nên phải qua atlas.
      */
-    @Override public void tick() {
+    private static TextureAtlasSprite[] loadTileSprites() {
+        TextureAtlas atlas = mc.getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS);
+        TextureAtlasSprite[] sprites = new TextureAtlasSprite[STONE_BRICK_TILES.length];
+        for (int i = 0; i < sprites.length; i++) {
+            sprites[i] = atlas.getSprite(ResourceLocation.tryParse(STONE_BRICK_TILES[i]));
+        }
+        return sprites;
     }
+
     /**
-     * Được gọi khi màn hình mở hoặc khi cửa sổ đổi kích thước.
-     * Vanilla xóa sạch widget cũ trước khi gọi, nên ở đây phải thêm lại toàn
-     * bộ.
+     * Giới hạn v trong [min, max].
+     */
+    private static int clamp(int v, int min, int max) {
+        return Math.max(min, Math.min(max, v));
+    }
+
+    // ===================== 4. VẼ MỖI KHUNG HÌNH =====================
+
+    /**
+     * Bỏ phần tick của vanilla (kiểm tra Realms, đồng hồ hiệu ứng) vì không dùng đến.
+     */
+    @Override
+    public void tick() {
+    }
+
+    /**
+     * Gọi khi mở màn hình hoặc đổi kích thước cửa sổ. Vanilla đã xóa widget cũ trước đó,
+     * nên ở đây phải thêm lại toàn bộ.
      */
     @Override
     public void init() {
-        // Không gọi super.init(): vanilla sẽ thêm bộ nút gốc và đè lên menu tự chế này.
-        // Tính layout theo kích thước cửa sổ hiện tại (init chạy lại mỗi khi
-        // resize).
+        // Không gọi super.init(): vanilla sẽ thêm bộ nút gốc và đè lên menu này.
+
+        // Bước 1: nạp sprite đá và dựng lưới ngẫu nhiên
+        tileSprites = loadTileSprites();
+        cols = width / TILE_DRAW + 2;
+        rows = height / TILE_DRAW + 2;
+        tileIndex = new int[cols * rows];
+        RandomSource random = RandomSource.create();
+        for (int i = 0; i < tileIndex.length; i++) {
+            tileIndex[i] = random.nextInt(tileSprites.length);
+        }
+
+        // Bước 2: tính layout theo kích thước hiện tại
         layout = calculateLayout();
-        // ===== Cột nút chính (hàng 0..3, khớp MAIN_BUTTON_COUNT) =====
+
+        // Bước 3: cột nút chính (hàng 0..MAIN_BUTTON_COUNT-1)
         addMainButton(0, Component.literal("New Game"), b -> onNewGame());
-        // Continue chỉ bấm được khi world đã tồn tại. init() chạy lại mỗi
-        // lần quay về
+
+        // Continue chỉ bấm được khi world đã tồn tại. init() chạy lại mỗi lần quay về
         // màn hình tiêu đề nên trạng thái này luôn mới.
-        Button continueButton = addMainButton(
-                1, Component.literal("Continue"),
-                b -> onContinue());
+        Button continueButton = addMainButton(1, Component.literal("Continue"), b -> onContinue());
         continueButton.active = mc.getLevelSource().levelExists(WORLD_NAME);
-        // [Forge] Nút Mods: hứng kết quả trả về để gắn chỉ báo cập nhật.
-        Button modButton =
-                addMainButton(
-                        2, Component.translatable("fml.menu.mods"),
-                        b -> ScreenUtil.open(new ModListScreen(this)));
-        this.modUpdateNotification = TitleScreenModUpdateIndicator.init(
-                this, modButton);
-        addMainButton(
-                3, Component.translatable("menu.options"),
-                b -> ScreenUtil.open(new OptionsScreen(this, mc.options)));
-        // ===== Hàng dưới: [ngôn ngữ] [trợ năng] [Quit] =====
+
+        // [Forge] Nút Mods: giữ kết quả để gắn chấm cập nhật.
+        Button modButton = addMainButton(2, Component.translatable("fml.menu.mods"), b -> ScreenUtil.open(new ModListScreen(this)));
+        this.modUpdateNotification = TitleScreenModUpdateIndicator.init(this, modButton);
+
+        addMainButton(3, Component.translatable("menu.options"), b -> ScreenUtil.open(new OptionsScreen(this, mc.options)));
+
+        // Bước 4: hàng dưới [ngôn ngữ] [trợ năng] [Quit]
         int iconSize = 20;
         int iconGap = 4;
-        // Đáy cột nút = buttonTop + MAIN_BUTTON_COUNT * (cao + hở). Số này
-        // đã gồm sẵn
-        // một khoảng hở dưới nút cuối.
+        // Đáy cột nút, đã gồm khoảng hở sau nút cuối
         int iconY = layout.buttonTop() + MAIN_BUTTON_COUNT * (layout.buttonHeight() + layout.buttonGap());
         int languageX = layout.buttonX();
         int accessibilityX = languageX + iconSize + iconGap;
         int quitX = accessibilityX + iconSize + iconGap;
-        // Quit chiếm phần còn lại đến mép phải của cột nút.
-        int quitWidth = layout.buttonX() + layout.buttonWidth() - quitX;
-        // Icon ngôn ngữ: sát mép trái của cột nút.
-        this.addRenderableWidget(new ImageButton(
-                languageX, iconY, iconSize, iconSize, 0, 106, 20,
-                Button.WIDGETS_LOCATION, 256, 256, btn -> ScreenUtil.open(
-                new LanguageSelectScreen(
-                        this, mc.options,
-                        mc.getLanguageManager())),
-                Component.translatable("narrator.button.language")));
-        // Icon trợ năng: ngay cạnh icon ngôn ngữ.
-        this.addRenderableWidget(new ImageButton(
-                accessibilityX, iconY, iconSize, iconSize, 0, 0, 20,
-                Button.ACCESSIBILITY_TEXTURE, 32, 64, btn -> ScreenUtil.open(
-                new AccessibilityOptionsScreen(this, mc.options)),
-                Component.translatable("narrator.button.accessibility")));
-        // Nút Quit: phần còn lại của hàng.
-        this.addRenderableWidget(
-                Button.builder(
-                                Component.translatable("menu.quit"),
-                                b -> ScreenUtil.quit())
-                        .bounds(quitX, iconY, quitWidth, iconSize).build());
+        int quitWidth = layout.buttonX() + layout.buttonWidth() - quitX; // Quit chiếm phần còn lại
 
-        // ===== Dòng bản quyền, góc dưới bên phải màn hình =====
+        this.addRenderableWidget(new ImageButton(languageX, iconY, iconSize, iconSize, 0, 106, 20, Button.WIDGETS_LOCATION, 256, 256, btn -> ScreenUtil.open(new LanguageSelectScreen(this, mc.options, mc.getLanguageManager())), Component.translatable("narrator.button.language")));
+
+        this.addRenderableWidget(new ImageButton(accessibilityX, iconY, iconSize, iconSize, 0, 0, 20, Button.ACCESSIBILITY_TEXTURE, 32, 64, btn -> ScreenUtil.open(new AccessibilityOptionsScreen(this, mc.options)), Component.translatable("narrator.button.accessibility")));
+
+        this.addRenderableWidget(Button.builder(Component.translatable("menu.quit"), b -> ScreenUtil.quit()).bounds(quitX, iconY, quitWidth, iconSize).build());
+
+        // Bước 5: dòng bản quyền góc dưới bên phải
         int copyrightWidth = this.font.width(COPYRIGHT_TEXT);
-        this.addRenderableWidget(new PlainTextButton(
-                this.width - copyrightWidth - 2, this.height - 10,
-                copyrightWidth, 10, COPYRIGHT_TEXT,
-                btn -> ScreenUtil.open(new CreditsAndAttributionScreen(this))
-                , this.font));
+        this.addRenderableWidget(new PlainTextButton(this.width - copyrightWidth - 2, this.height - 10, copyrightWidth, 10, COPYRIGHT_TEXT, btn -> ScreenUtil.open(new CreditsAndAttributionScreen(this)), this.font));
     }
+
     /**
-     * Vẽ màn hình mỗi khung hình. Ghi đè hoàn toàn render của vanilla, nên
-     * không có panorama, logo Minecraft hay splash text.
+     * Ghi đè hoàn toàn render của vanilla: không có panorama, logo Minecraft hay splash text.
+     * Thứ tự vẽ từ dưới lên: nền -> logo -> widget -> chấm cập nhật.
      */
-    @Override public void render(@NotNull GuiGraphics g, int mouseX, int mouseY,
-            float partialTick)
-    {
-        // Nền tạm: một màu đặc phủ kín (định dạng ARGB). Panel bên trái chưa
-        // được vẽ.
-        g.fill(0, 0, width, height, 0xFF101820);
-        // Không gọi super.render vì nó sẽ vẽ panorama và logo vanilla,
-        // nên các widget phải tự vẽ lại ở đây.
+    @Override
+    public void render(@NotNull GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        renderStoneBackground(g);   // 1. nền đá trôi
+        renderModLogo(g);           // 2. logo rơi vào chỗ
+
+        // 3. widget (không gọi super.render vì nó vẽ panorama và logo vanilla)
         for (Renderable r : renderables) {
             r.render(g, mouseX, mouseY, partialTick);
         }
-        // Chấm "có bản cập nhật mod" của Forge cạnh nút Mods, vẽ sau cùng để
-        // nằm trên cùng.
+
+        // 4. chấm cập nhật của Forge, vẽ sau cùng để nằm trên cùng
         if (modUpdateNotification != null) {
             modUpdateNotification.render(g, mouseX, mouseY, partialTick);
         }
     }
-    // ===== Hành động của nút =====
+
+    // ===================== 5. HÀNH ĐỘNG CỦA NÚT =====================
 
     /**
-     * Xử lý khi bấm "New Game". Nếu world cũ đã tồn tại thì hỏi xác nhận,
-     * xóa nó rồi
-     * tạo lại; nếu chưa có thì tạo luôn. Không qua CreateWorldScreen của
-     * vanilla.
+     * Vẽ lưới đá. Hàng/cột tính theo thời gian: nền đi xuống, quay vòng không giật.
+     */
+    private void renderStoneBackground(GuiGraphics g) {
+        float elapsedMs = System.currentTimeMillis() - openedAt;
+        int shiftPx = (int) (elapsedMs / 1000f * SCROLL_PX_PER_SEC); // tổng số px đã trôi
+        int wraps = shiftPx / TILE_DRAW;    // số lần trôi đúng một ô
+        int offsetY = shiftPx % TILE_DRAW;  // phần lẻ trong ô hiện tại
+
+        for (int row = 0; row < rows; row++) {
+            // Hàng nguồn lệch theo số vòng đã trôi, dùng floorMod để không ra chỉ số âm
+            int srcRow = Math.floorMod(row - wraps, rows);
+            for (int col = 0; col < cols; col++) {
+                int sprite = tileIndex[srcRow * cols + col];
+                int x = col * TILE_DRAW;
+                int y = row * TILE_DRAW + offsetY - TILE_DRAW; // bắt đầu lệch lên một ô
+                g.blit(x, y, 0, TILE_DRAW, TILE_DRAW, tileSprites[sprite]);
+            }
+        }
+    }
+
+    /**
+     * Vẽ logo mod: rơi từ cao hơn 30px xuống vị trí trên cột nút, ease-out.
+     */
+    private void renderModLogo(GuiGraphics g) {
+        float t = Math.min(1f, (System.currentTimeMillis() - openedAt) / (float) LOGO_ANIM_MS);
+        float ease = 1f - (1f - t) * (1f - t) * (1f - t); // easeOutCubic: chậm dần về cuối
+
+        int logoW = layout.buttonWidth();
+        int logoH = logoW / 4;                              // giữ tỉ lệ 4:1
+        int x = layout.buttonX();
+        int restY = layout.buttonTop() - logoH - 12;        // vị trí đích
+        int y = restY - Math.round((1f - ease) * 30f);      // vị trí hiện tại
+
+        g.blit(MOD_LOGO, x, y, logoW, logoH, 0, 0, 1024, 256, 1024, 256);
+    }
+
+    // ===================== 6. TẠO VÀ XÓA WORLD =====================
+
+    /**
+     * New Game: nếu đã có world thì hỏi xác nhận, xóa rồi tạo lại; chưa có thì tạo luôn.
      */
     private void onNewGame() {
-        // Chưa có world cũ thì tạo luôn, không cần hỏi.
         if (!mc.getLevelSource().levelExists(WORLD_NAME)) {
             createWorld();
             return;
         }
-        // Có world cũ thì hỏi trước, vì xóa là mất toàn bộ tiến trình chơi.
-        // Lambda nhận một boolean: người chơi chọn "có" (true) hay "không"
-        // (false).
-        mc.setScreen(new ConfirmScreen(
-                confirmed -> {
-                    if (confirmed) {
-                        try {
-                            deleteOldWorld();
-                            createWorld();
-                        } catch (IOException e) {
-                            LOGGER.error("Không xóa được world cũ", e);
-                            mc.setScreen(this); // quay lại màn hình tiêu đề
-                        }
-                    } else {
-                        mc.setScreen(
-                                this); // người chơi hủy, quay lại màn hình
-                        // tiêu đề
-                    }
-                }, Component.literal("Bắt đầu lại?"), Component.literal(
-                "World \"" + WORLD_NAME + "\" hiện tại sẽ bị xóa vĩnh viễn.")));
-    }
-    /**
-     * Tạo world mới tên {@link #WORLD_NAME} rồi vào chơi ngay. Overworld dùng
-     * preset void; các dimension khác (kể cả dimension datapack của mod) giữ
-     * như bình thường. Lỗi bên trong createFreshLevel chỉ được ghi vào log,
-     * không hiện trên màn hình: nếu bấm mà không có gì xảy ra, mở
-     * logs/latest.log và tìm "Failed to load datapacks".
-     */
-    private void createWorld() {
-        // Luật chơi (những thứ người chơi thường chỉnh ở màn tạo world).
-        LevelSettings settings = new LevelSettings(
-                WORLD_NAME,                      // tên hiển thị của world
-                GameType.CREATIVE,               // chế độ chơi
-                false,                           // hardcore: tắt
-                Difficulty.NORMAL,               // độ khó
-                true,                            // cho phép dùng lệnh (cheats)
-                new GameRules(),                 // gamerule mặc định
-                WorldDataConfiguration.DEFAULT); // datapack mặc định
-        // Seed ngẫu nhiên (kiểu long); không sinh công trình; không tặng
-        // rương thưởng.
-        WorldOptions options =
-                new WorldOptions(
-                        RandomSource.create().nextLong(), false,
-                        false);
-        // Lambda mô tả "các dimension của world gồm gì". createFreshLevel
-        // gọi nó
-        // (bằng .apply) và đưa vào `access`; ta chỉ trả về WorldDimensions.
-        Function<RegistryAccess, WorldDimensions> dimensions = access -> {
-            // 1. Registry.get(khóa) trả về WorldPreset, hoặc null nếu không có.
-            WorldPreset preset = access.registryOrThrow(Registries.WORLD_PRESET)
-                    .get(VOID_PRESET);
-            // 2. Không có thì ném lỗi rõ ràng; lỗi hiện trong logs/latest.log.
-            if (preset == null) {
-                throw new IllegalStateException(
-                        "Không tìm thấy world preset: " +
-                                VOID_PRESET.location());
+        // Xóa là mất toàn bộ tiến trình, nên hỏi trước. Lambda nhận true (có) hoặc false (không).
+        mc.setScreen(new ConfirmScreen(confirmed -> {
+            if (confirmed) {
+                try {
+                    deleteOldWorld();
+                    createWorld();
+                } catch (IOException e) {
+                    LOGGER.error("Không xóa được world cũ", e);
+                    mc.setScreen(this);
+                }
+            } else {
+                mc.setScreen(this);
             }
-            // 3. overworld() trả về Optional<LevelStem>; orElseThrow lấy
-            // LevelStem ra.
-            LevelStem stem = preset.overworld().orElseThrow();
-            // 4. Giữ dimension bình thường, chỉ thay bộ sinh của Overworld
-            // bằng void.
-            return WorldPresets.createNormalWorldDimensions(access)
-                    .replaceOverworldGenerator(access, stem.generator());
-        };
-        // Tự tạo thư mục, nạp datapack, ghép dimension datapack (bake) rồi
-        // vào world.
-        mc.createWorldOpenFlows()
-                .createFreshLevel(WORLD_NAME, settings, options, dimensions);
+        }, Component.literal("Bắt đầu lại?"), Component.literal("World \"" + WORLD_NAME + "\" hiện tại sẽ bị xóa vĩnh viễn.")));
     }
-    // ===== Tạo và xóa world =====
+
     /**
-     * Xóa thư mục world cũ. CHỈ xóa {@link #WORLD_NAME}, không bao giờ đụng
-     * world khác.
-     * Ném IOException nếu không xóa được (ví dụ world đang bị khóa).
-     */
-    private void deleteOldWorld() throws IOException {
-        // try-with-resources: tự đóng `access` (giải phóng khóa thư mục) kể
-        // cả khi có lỗi.
-        try (LevelStorageSource.LevelStorageAccess access = mc.getLevelSource()
-                .createAccess(WORLD_NAME))
-        {
-            access.deleteLevel();
-        }
-    }
-    /**
-     * Xử lý khi bấm "Continue": mở world có tên {@link #WORLD_NAME}. Nút này đã
-     * bị làm mờ trong init() khi world chưa tồn tại; kiểm tra lại ở đây để an
-     * toàn.
+     * Continue: mở world {@link #WORLD_NAME}. Nút đã bị làm mờ nếu world chưa có;
+     * kiểm tra lại ở đây để an toàn.
      */
     private void onContinue() {
         if (mc.getLevelSource().levelExists(WORLD_NAME)) {
-            // Tham số đầu: màn hình quay về nếu mở thất bại; tham số sau:
-            // tên thư mục world.
+            // Tham số đầu: màn hình quay về nếu mở thất bại; tham số sau: tên thư mục world.
             mc.createWorldOpenFlows().loadLevel(this, WORLD_NAME);
         }
     }
-    // ===== Layout =====
+
+    // ===================== 7. LAYOUT VÀ TIỆN ÍCH =====================
+
     /**
-     * Tính layout theo kích thước cửa sổ hiện tại (gọi lại mỗi lần init()).
-     * Panel nằm bên trái, các nút căn giữa theo chiều ngang của panel.
+     * Tạo world mới {@link #WORLD_NAME} rồi vào chơi ngay. Overworld dùng preset void,
+     * các dimension khác giữ bình thường. Lỗi chỉ ghi vào log: nếu không có gì xảy ra,
+     * tìm "Failed to load datapacks" trong logs/latest.log.
+     */
+    private void createWorld() {
+        // Luật chơi
+        LevelSettings settings = new LevelSettings(WORLD_NAME,                      // tên hiển thị
+                GameType.CREATIVE,               // chế độ chơi
+                false,                           // hardcore: tắt
+                Difficulty.NORMAL,               // độ khó
+                true,                            // cho phép lệnh
+                new GameRules(),                 // gamerule mặc định
+                WorldDataConfiguration.DEFAULT); // datapack mặc định
+
+        // Seed ngẫu nhiên; không sinh công trình; không tặng rương
+        WorldOptions options = new WorldOptions(RandomSource.create().nextLong(), false, false);
+
+        // Mô tả các dimension: lấy preset void, thay bộ sinh của Overworld
+        Function<RegistryAccess, WorldDimensions> dimensions = access -> {
+            WorldPreset preset = access.registryOrThrow(Registries.WORLD_PRESET).get(VOID_PRESET);
+            if (preset == null) {
+                throw new IllegalStateException("Không tìm thấy world preset: " + VOID_PRESET.location());
+            }
+            LevelStem stem = preset.overworld().orElseThrow();
+            return WorldPresets.createNormalWorldDimensions(access).replaceOverworldGenerator(access, stem.generator());
+        };
+
+        // Tạo thư mục, nạp datapack, rồi vào world
+        mc.createWorldOpenFlows().createFreshLevel(WORLD_NAME, settings, options, dimensions);
+    }
+
+    /**
+     * Xóa thư mục world {@link #WORLD_NAME}. Chỉ xóa đúng world này.
+     * Ném IOException nếu không xóa được (ví dụ world đang bị khóa).
+     */
+    private void deleteOldWorld() throws IOException {
+        // try-with-resources: tự đóng access (giải phóng khóa thư mục) kể cả khi lỗi
+        try (LevelStorageSource.LevelStorageAccess access = mc.getLevelSource().createAccess(WORLD_NAME)) {
+            access.deleteLevel();
+        }
+    }
+
+    /**
+     * Tính layout theo kích thước cửa sổ. Panel bên trái, nút căn giữa trong panel.
      */
     private Layout calculateLayout() {
-        // Panel rộng 30% màn hình, giới hạn 168..280px.
-        int panelWidth = clamp(Math.round(width * 0.30f), 168, 280);
-        // Nút hẹp hơn panel 40px (mỗi bên chừa 20px), giới hạn 120..190px.
-        int buttonWidth = clamp(panelWidth - 40, 120, 190);
-        // X của nút: căn giữa trong panel.
-        int buttonX = (panelWidth - buttonWidth) / 2;
+        int panelWidth = clamp(Math.round(width * 0.30f), 168, 280);   // panel 30% màn hình
+        int buttonWidth = clamp(panelWidth - 40, 120, 190);            // nút hẹp hơn panel 40px
+        int buttonX = (panelWidth - buttonWidth) / 2;                  // căn giữa trong panel
 
-        int buttonHeight = 20; // chiều cao nút chuẩn của vanilla
-        int buttonGap = 4;     // khoảng hở giữa hai nút liền nhau
-        int rows = MAIN_BUTTON_COUNT;
-        // Tổng chiều cao của cả nhóm nút = các nút + các khoảng hở giữa chúng.
-        int groupHeight = rows * buttonHeight + (rows - 1) * buttonGap;
-        // Y của nút đầu tiên: nhóm nút được căn giữa quanh mốc 61% chiều cao
-        // màn hình.
-        int buttonTop = Math.round(height * 0.61f) - groupHeight / 2;
+        int buttonHeight = 20;  // chiều cao nút chuẩn vanilla
+        int buttonGap = 4;      // khoảng hở giữa hai nút
+        int buttonRows = MAIN_BUTTON_COUNT;
+        int groupHeight = buttonRows * buttonHeight + (buttonRows - 1) * buttonGap;
+        int buttonTop = Math.round(height * 0.61f) - groupHeight / 2;  // nhóm nút quanh mốc 61%
 
         return new Layout(panelWidth, buttonX, buttonWidth, buttonTop, buttonHeight, buttonGap);
     }
-    /** Giới hạn giá trị v trong khoảng [min, max]. */
-    private static int clamp(int v, int min, int max) {
-        return Math.max(min, Math.min(max, v));
-    }
-    /**
-     * Thêm một nút ở hàng thứ `row` (bắt đầu từ 0) trong cột nút chính.
-     *
-     * @param row    chỉ số hàng, hàng 0 ở trên cùng
-     * @param label  chữ hiển thị trên nút
-     * @param action hành động khi bấm
-     * @return chính nút vừa tạo (dùng để gắn thêm thứ khác như chỉ báo Mods
-     * hoặc làm mờ nút)
-     */
-    private Button addMainButton(int row, Component label,
-            Button.OnPress action)
-    {
-        // Y = đỉnh nhóm nút + số hàng × (chiều cao nút + khoảng hở).
-        int y = layout.buttonTop() + row * (layout.buttonHeight() +
-                layout.buttonGap());
-        return addRenderableWidget(Button.builder(label, action)
-                .bounds(
-                        layout.buttonX(), y, layout.buttonWidth(),
-                        layout.buttonHeight()).build());
-    }
 
     /**
-     * Gói các số đo layout lại thành một khối bất biến:
-     * rộng panel, X nút, rộng nút, Y nút đầu, cao nút, khoảng hở giữa các nút.
+     * Thêm nút ở hàng {@code row} (từ 0, hàng 0 trên cùng) trong cột nút chính.
+     *
+     * @return chính nút vừa tạo, để gắn thêm chỉ báo hoặc làm mờ
+     */
+    private Button addMainButton(int row, Component label, Button.OnPress action) {
+        int y = layout.buttonTop() + row * (layout.buttonHeight() + layout.buttonGap());
+        return addRenderableWidget(Button.builder(label, action).bounds(layout.buttonX(), y, layout.buttonWidth(), layout.buttonHeight()).build());
+    }
+
+    // ===================== 8. KIỂU DỮ LIỆU =====================
+
+    /**
+     * Gói các số đo layout thành một khối bất biến.
+     * panelWidth: rộng panel; buttonX / buttonWidth: vị trí và rộng nút;
+     * buttonTop: Y của nút đầu; buttonHeight / buttonGap: cao nút và khoảng hở.
      */
     private record Layout(int panelWidth, int buttonX, int buttonWidth, int buttonTop, int buttonHeight,
                           int buttonGap) {
