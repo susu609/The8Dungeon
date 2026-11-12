@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 17 class/kiểu Java, 1704 dòng, 33 phụ thuộc nội bộ
+- 17 class/kiểu Java, 1793 dòng, 33 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -19,7 +19,7 @@ flowchart LR
     ScreenInspector["ScreenInspector<br/><small>class · 143 dòng</small>"]
   end
   subgraph pkg_client_gui_screens["client.gui.screens"]
-    ModTitleScreen["ModTitleScreen<br/><small>class · 358 dòng</small>"]
+    ModTitleScreen["ModTitleScreen<br/><small>class · 447 dòng</small>"]
     TitleScreenHook["TitleScreenHook<br/><small>class · 24 dòng</small>"]
     TitleScreenInterface["TitleScreenInterface<br/><small>interface · 13 dòng</small>"]
   end
@@ -99,7 +99,7 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `ModTitleScreen` | class | 358 | ScreenUtil, Susu609Mod, TitleScreenInterface | - |
+| `ModTitleScreen` | class | 447 | ScreenUtil, Susu609Mod, TitleScreenInterface | - |
 | `TitleScreenHook` | class | 24 | ModTitleScreen, Susu609Mod | ScreenEvent, ScreenEvent.Opening |
 | `TitleScreenInterface` | interface | 13 | - | - |
 
