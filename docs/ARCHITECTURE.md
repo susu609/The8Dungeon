@@ -3,14 +3,23 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 25 class/kiểu Java, 2288 dòng, 55 phụ thuộc nội bộ
+- 33 class/kiểu Java, 3047 dòng, 74 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
 ```mermaid
 flowchart LR
   subgraph pkg__g_c_["(gốc)"]
-    Susu609Mod(["Susu609Mod<br/><small>class · 120 dòng</small>"])
+    Susu609Mod(["Susu609Mod<br/><small>class · 121 dòng</small>"])
+  end
+  subgraph pkg_ai["ai"]
+    ClawdBrain["ClawdBrain<br/><small>class · 268 dòng</small>"]
+    ClawdChat["ClawdChat<br/><small>class · 65 dòng</small>"]
+    ClawdKeyStore["ClawdKeyStore<br/><small>class · 39 dòng</small>"]
+    ClawdPlan["ClawdPlan<br/><small>record · 24 dòng</small>"]
+    ClawdReply["ClawdReply<br/><small>record · 16 dòng</small>"]
+    ClawdSenses["ClawdSenses<br/><small>class · 147 dòng</small>"]
+    ClawdWorker["ClawdWorker<br/><small>class · 133 dòng</small>"]
   end
   subgraph pkg_client_gui["client.gui"]
     ScreenUtil["ScreenUtil<br/><small>class · 16 dòng</small>"]
@@ -42,7 +51,8 @@ flowchart LR
   subgraph pkg_init["init"]
     ModEntitiesRegistry["ModEntitiesRegistry<br/><small>class · 42 dòng</small>"]
     ModEntityRenderers["ModEntityRenderers<br/><small>class · 34 dòng</small>"]
-    ModItemsRegistry["ModItemsRegistry<br/><small>class · 34 dòng</small>"]
+    ModGameEventsRegistry["ModGameEventsRegistry<br/><small>class · 44 dòng</small>"]
+    ModItemsRegistry["ModItemsRegistry<br/><small>class · 37 dòng</small>"]
     ModSoundsRegistry["ModSoundsRegistry<br/><small>class · 35 dòng</small>"]
   end
   subgraph pkg_network["network"]
@@ -53,20 +63,35 @@ flowchart LR
     WorldRandom["WorldRandom<br/><small>class · 67 dòng</small>"]
   end
   subgraph pkg_world_entity["world.entity"]
-    ClawdEntity["ClawdEntity<br/><small>class · 155 dòng</small>"]
+    ClawdEntity["ClawdEntity<br/><small>class · 175 dòng</small>"]
   end
   subgraph pkg_world_item["world.item"]
-    ClawdSpawnEggItem["ClawdSpawnEggItem<br/><small>class · 85 dòng</small>"]
+    ClawdSpawnEggItem["ClawdSpawnEggItem<br/><small>class · 84 dòng</small>"]
   end
+  ClawdBrain --> ClawdEntity
+  ClawdBrain --> ClawdKeyStore
+  ClawdBrain --> ClawdPlan
+  ClawdBrain --> ClawdReply
+  ClawdBrain --> ClawdSenses
+  ClawdBrain --> ClawdWorker
+  ClawdChat --> ClawdBrain
+  ClawdChat --> ClawdEntity
+  ClawdChat --> ClawdSpawnEggItem
+  ClawdChat --> ClawdWorker
   ClawdEntity --> ClawdSpawnEggItem
   ClawdEntity --> ModSoundsRegistry
+  ClawdKeyStore --> ClawdBrain
   ClawdModel --> ClawdEntity
   ClawdModel --> Susu609Mod
   ClawdRenderer --> ClawdEntity
   ClawdRenderer --> ClawdModel
   ClawdRenderer --> Susu609Mod
+  ClawdSenses --> ClawdEntity
   ClawdSpawnEggItem --> ClawdEntity
   ClawdSpawnEggItem --> ModEntitiesRegistry
+  ClawdWorker --> ClawdBrain
+  ClawdWorker --> ClawdEntity
+  ClawdWorker --> ClawdPlan
   ClientboundDungeonSeedPacket --> DungeonClientState
   ClientboundDungeonSeedPacket --> Susu609Mod
   DungeonBuilder --> DungeonLayout
@@ -98,6 +123,9 @@ flowchart LR
   ModEntityRenderers --> ClawdModel
   ModEntityRenderers --> ClawdRenderer
   ModEntityRenderers --> ModEntitiesRegistry
+  ModGameEventsRegistry --> ClawdChat
+  ModGameEventsRegistry --> ClawdKeyStore
+  ModGameEventsRegistry --> ClawdWorker
   ModItemsRegistry --> ClawdSpawnEggItem
   ModItemsRegistry --> ModEntitiesRegistry
   ModItemsRegistry --> Susu609Mod
@@ -108,6 +136,7 @@ flowchart LR
   ScreenInspector --> Susu609Mod
   Susu609Mod --> ModEntitiesRegistry
   Susu609Mod --> ModEntityRenderers
+  Susu609Mod --> ModGameEventsRegistry
   Susu609Mod --> ModItemsRegistry
   Susu609Mod --> ModSoundsRegistry
   TitleScreenHook --> ModTitleScreen
@@ -121,7 +150,19 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `Susu609Mod` | class | 120 | ModEntitiesRegistry, ModEntityRenderers, ModItemsRegistry, ModSoundsRegistry | NetworkEvent, NetworkEvent.Context, TickEvent, TickEvent.Phase, TickEvent.ServerTickEvent |
+| `Susu609Mod` | class | 121 | ModEntitiesRegistry, ModEntityRenderers, ModGameEventsRegistry, ModItemsRegistry, ModSoundsRegistry | NetworkEvent, NetworkEvent.Context, TickEvent, TickEvent.Phase, TickEvent.ServerTickEvent |
+
+### ai
+
+| Class | Loại | Dòng | Dùng tới | Event Forge |
+|---|---|---|---|---|
+| `ClawdBrain` | class | 268 | ClawdEntity, ClawdKeyStore, ClawdPlan, ClawdReply, ClawdSenses, ClawdWorker | - |
+| `ClawdChat` | class | 65 | ClawdBrain, ClawdEntity, ClawdSpawnEggItem, ClawdWorker | ServerChatEvent |
+| `ClawdKeyStore` | class | 39 | ClawdBrain | - |
+| `ClawdPlan` | record | 24 | - | - |
+| `ClawdReply` | record | 16 | - | - |
+| `ClawdSenses` | class | 147 | ClawdEntity | - |
+| `ClawdWorker` | class | 133 | ClawdBrain, ClawdEntity, ClawdPlan | TickEvent, TickEvent.Phase, TickEvent.ServerTickEvent |
 
 ### client.gui
 
@@ -174,7 +215,8 @@ flowchart LR
 |---|---|---|---|---|
 | `ModEntitiesRegistry` | class | 42 | ClawdEntity, Susu609Mod | EntityAttributeCreationEvent |
 | `ModEntityRenderers` | class | 34 | ClawdModel, ClawdRenderer, ModEntitiesRegistry | EntityRenderersEvent, EntityRenderersEvent.RegisterLayerDefinitions, EntityRenderersEvent.RegisterRenderers |
-| `ModItemsRegistry` | class | 34 | ClawdSpawnEggItem, ModEntitiesRegistry, Susu609Mod | BuildCreativeModeTabContentsEvent |
+| `ModGameEventsRegistry` | class | 44 | ClawdChat, ClawdKeyStore, ClawdWorker | RegisterCommandsEvent |
+| `ModItemsRegistry` | class | 37 | ClawdSpawnEggItem, ModEntitiesRegistry, Susu609Mod | BuildCreativeModeTabContentsEvent |
 | `ModSoundsRegistry` | class | 35 | Susu609Mod | SoundEvent, SoundEvent.createVariableRangeEvent |
 
 ### network
@@ -194,18 +236,19 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `ClawdEntity` | class | 155 | ClawdSpawnEggItem, ModSoundsRegistry | SoundEvent |
+| `ClawdEntity` | class | 175 | ClawdSpawnEggItem, ModSoundsRegistry | SoundEvent |
 
 ### world.item
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `ClawdSpawnEggItem` | class | 85 | ClawdEntity, ModEntitiesRegistry | - |
+| `ClawdSpawnEggItem` | class | 84 | ClawdEntity, ModEntitiesRegistry | - |
 
 ## Tài nguyên
 
 - `META-INF/mods.toml`
 - `assets/susu609/lang/en_us.json`
+- `assets/susu609/lang/vi_vn.json`
 - `assets/susu609/models/item/clawd_spawn_egg.json`
 - `assets/susu609/sounds/entity/clawd/ambient1.ogg`
 - `assets/susu609/sounds/entity/clawd/ambient2.ogg`
