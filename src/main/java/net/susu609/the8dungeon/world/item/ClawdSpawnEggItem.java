@@ -1,5 +1,7 @@
 package net.susu609.the8dungeon.world.item;
 
+import java.util.UUID;
+import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -14,9 +16,7 @@ import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.susu609.the8dungeon.init.ModEntitiesRegistry;
 import net.susu609.the8dungeon.world.entity.ClawdEntity;
 
-import java.util.UUID;
-import java.util.function.Supplier;
-
+/** Trứng triệu hồi Clawd. Mỗi người chơi chỉ một Clawd: dùng lại trứng sẽ thay con cũ. */
 public class ClawdSpawnEggItem extends ForgeSpawnEggItem {
 
     private static final String KEY = "susu609_clawd";
@@ -24,35 +24,6 @@ public class ClawdSpawnEggItem extends ForgeSpawnEggItem {
     public ClawdSpawnEggItem(Supplier<? extends EntityType<? extends Mob>> type,
                              int background, int highlight, Properties props) {
         super(type, background, highlight, props);
-    }
-
-    /**
-     * UUID của Clawd đang hoạt động của người chơi, hoặc null nếu chưa có.
-     */
-    public static UUID activeClawdOf(Player player) {
-        CompoundTag data = persisted(player);
-        return data.hasUUID(KEY) ? data.getUUID(KEY) : null;
-    }
-
-    private static void removeOldClawd(ServerLevel server, Player player) {
-        UUID old = activeClawdOf(player);
-        if (old == null) return;
-        for (ServerLevel lvl : server.getServer().getAllLevels()) {
-            Entity e = lvl.getEntity(old);
-            if (e != null) {
-                e.discard();
-                return;
-            }
-        }
-        // Không tìm thấy (vùng chưa tải): Clawd cũ sẽ tự biến mất trong tick() khi được tải lại.
-    }
-
-    private static CompoundTag persisted(Player player) {
-        CompoundTag root = player.getPersistentData();
-        if (!root.contains(Player.PERSISTED_NBT_TAG)) {
-            root.put(Player.PERSISTED_NBT_TAG, new CompoundTag());
-        }
-        return root.getCompound(Player.PERSISTED_NBT_TAG);
     }
 
     @Override
@@ -81,5 +52,32 @@ public class ClawdSpawnEggItem extends ForgeSpawnEggItem {
         persisted(player).putUUID(KEY, clawd.getUUID());
         if (!player.getAbilities().instabuild) ctx.getItemInHand().shrink(1);
         return InteractionResult.CONSUME;
+    }
+
+    /** UUID của Clawd đang hoạt động của người chơi, hoặc null nếu chưa có. */
+    public static UUID activeClawdOf(Player player) {
+        CompoundTag data = persisted(player);
+        return data.hasUUID(KEY) ? data.getUUID(KEY) : null;
+    }
+
+    private static void removeOldClawd(ServerLevel server, Player player) {
+        UUID old = activeClawdOf(player);
+        if (old == null) return;
+        for (ServerLevel lvl : server.getServer().getAllLevels()) {
+            Entity e = lvl.getEntity(old);
+            if (e != null) {
+                e.discard();
+                return;
+            }
+        }
+        // Không tìm thấy (vùng chưa tải): Clawd cũ tự biến mất trong tick() khi được tải lại.
+    }
+
+    private static CompoundTag persisted(Player player) {
+        CompoundTag root = player.getPersistentData();
+        if (!root.contains(Player.PERSISTED_NBT_TAG)) {
+            root.put(Player.PERSISTED_NBT_TAG, new CompoundTag());
+        }
+        return root.getCompound(Player.PERSISTED_NBT_TAG);
     }
 }

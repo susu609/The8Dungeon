@@ -16,11 +16,13 @@ public final class ModItemsRegistry {
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(ForgeRegistries.ITEMS, Susu609Mod.MODID);
 
+    // Nền cam #D97757, chấm đen #1C1412 theo mắt Clawd
     public static final RegistryObject<Item> CLAWD_SPAWN_EGG = ITEMS.register("clawd_spawn_egg",
             () -> new ClawdSpawnEggItem(ModEntitiesRegistry.CLAWD_AGENT, 0xD97757, 0x1C1412, new Item.Properties()));
 
     private ModItemsRegistry() {}
 
+    /** Gọi một lần trong constructor của mod, với mod event bus. */
     public static void register(IEventBus modBus) {
         ITEMS.register(modBus);
         modBus.addListener(ModItemsRegistry::onCreativeTabs);

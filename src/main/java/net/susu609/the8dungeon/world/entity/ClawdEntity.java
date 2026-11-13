@@ -16,7 +16,13 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.*;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.FollowOwnerGoal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.SitWhenOrderedToGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.OwnerHurtTargetGoal;
@@ -28,6 +34,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.susu609.the8dungeon.init.ModSoundsRegistry;
 import net.susu609.the8dungeon.world.item.ClawdSpawnEggItem;
 
+/** Clawd: linh vật agent thợ xây. Mỗi người chơi chỉ có một con. */
 public class ClawdEntity extends TamableAnimal {
 
     public ClawdEntity(EntityType<? extends TamableAnimal> type, Level level) {
@@ -127,21 +134,29 @@ public class ClawdEntity extends TamableAnimal {
     // ===== Âm thanh =====
 
     @Override
-    protected SoundEvent getAmbientSound() { return ModSoundsRegistry.CLAWD_AMBIENT.get(); }
+    protected SoundEvent getAmbientSound() {
+        return ModSoundsRegistry.CLAWD_AMBIENT.get();
+    }
 
     @Override
-    protected SoundEvent getHurtSound(DamageSource source) { return ModSoundsRegistry.CLAWD_HURT.get(); }
+    protected SoundEvent getHurtSound(DamageSource source) {
+        return ModSoundsRegistry.CLAWD_HURT.get();
+    }
 
     @Override
-    protected SoundEvent getDeathSound() { return ModSoundsRegistry.CLAWD_DEATH.get(); }
+    protected SoundEvent getDeathSound() {
+        return ModSoundsRegistry.CLAWD_DEATH.get();
+    }
 
     @Override
     protected void playStepSound(BlockPos pos, BlockState state) {
+        // Mức âm lượng của mob vanilla
         this.playSound(ModSoundsRegistry.CLAWD_STEP.get(), 0.15F, 1.0F);
     }
 
     @Override
     public float getVoicePitch() {
+        // Giữ biến thiên ngẫu nhiên của vanilla, chỉ nâng nhẹ cao độ
         return super.getVoicePitch() * 1.15F;
     }
 
@@ -149,7 +164,11 @@ public class ClawdEntity extends TamableAnimal {
         this.playSound(ModSoundsRegistry.CLAWD_WORK.get(), 0.8F, 0.95F + this.random.nextFloat() * 0.1F);
     }
 
-    public void playThinkSound() { this.playSound(ModSoundsRegistry.CLAWD_THINK.get(), 0.6F, 1.0F); }
+    public void playThinkSound() {
+        this.playSound(ModSoundsRegistry.CLAWD_THINK.get(), 0.6F, 1.0F);
+    }
 
-    public void playHappySound() { this.playSound(ModSoundsRegistry.CLAWD_HAPPY.get(), 0.9F, 1.0F); }
+    public void playHappySound() {
+        this.playSound(ModSoundsRegistry.CLAWD_HAPPY.get(), 0.9F, 1.0F);
+    }
 }
