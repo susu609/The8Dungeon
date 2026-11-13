@@ -238,8 +238,8 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     @Override
     public void render(@NotNull GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         renderStoneBackground(g);   // 1. nền đá trôi
-        renderTitle(g);// 2. title rơi vào chỗ
         renderPanel(g);
+        renderTitle(g);// 2. title rơi vào chỗ
         // 3. widget (không gọi super.render vì nó vẽ panorama và logo vanilla)
         for (Renderable r : renderables) {
             r.render(g, mouseX, mouseY, partialTick);
