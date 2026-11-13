@@ -74,7 +74,7 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     /**
      * Logo mod, file 1024x256 (tỉ lệ 4:1). Đường dẫn lấy từ MODID, không viết cứng.
      */
-    private static final ResourceLocation MOD_LOGO = ResourceLocation.fromNamespaceAndPath(Susu609Mod.MODID,"textures/gui/title/mod_title.png");
+    private static final ResourceLocation MOD_LOGO = ResourceLocation.fromNamespaceAndPath(Susu609Mod.MODID, "textures/gui/title/mod_title.png");
 
     // --- World ---
     /**
@@ -99,22 +99,33 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     private static final Minecraft mc = Minecraft.getInstance();
 
     // ===================== 2. TRẠNG THÁI =====================
+    // Khoảng đệm giữa khung và nội dung (px)
+    private static final int PANEL_PAD = 12;
+    // Kích thước icon ở hàng dưới; trước đây là biến cục bộ trong init()
+    private static final int ICON_SIZE = 20;
+    // Logo Minecraft gốc (vanilla): vùng vẽ 256x44 trong file 256x64
+    private static final ResourceLocation VANILLA_LOGO = ResourceLocation.tryParse("minecraft:textures/gui/title/minecraft.png");
+    private static final int VANILLA_LOGO_W = 256;
+    private static final int VANILLA_LOGO_H = 44;
+    private static final int VANILLA_TEX_H = 64;
+    // Logo mod đè lên đáy logo vanilla bao nhiêu px (vanilla dùng 7px ở kích thước gốc)
+    private static final int TITLE_OVERLAP = 4;
 
+    // ===================== 3. KHỞI TẠO VÀ VÒNG ĐỜI =====================
     /**
      * Thời điểm màn hình được tạo; mọi chuyển động (nền, logo) tính từ mốc này.
      */
     private final long openedAt = System.currentTimeMillis();
-
     /**
      * Kích thước/vị trí panel và nút. Tính lại trong init() mỗi lần resize.
      */
     private Layout layout;
-
     /**
      * [Forge] Chấm "có bản cập nhật mod" cạnh nút Mods.
      */
     private TitleScreenModUpdateIndicator modUpdateNotification;
 
+    // ===================== 4. VẼ MỖI KHUNG HÌNH =====================
     /**
      * Sprite đá đã lấy từ atlas, theo đúng thứ tự STONE_BRICK_TILES.
      */
@@ -127,9 +138,10 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
      * Số cột và số hàng của lưới nền (đã dư thêm để không lộ khoảng trống khi trôi).
      */
     private int cols;
-    private int rows;
 
-    // ===================== 3. KHỞI TẠO VÀ VÒNG ĐỜI =====================
+    // ===================== 5. HÀNH ĐỘNG CỦA NÚT =====================
+    private int rows;
+    // ===================== 6. TẠO VÀ XÓA WORLD =====================
 
     public ModTitleScreen() {
         super(false); // false = không dùng hiệu ứng fade-in của vanilla
@@ -147,14 +159,14 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
         return sprites;
     }
 
+    // ===================== 7. LAYOUT VÀ TIỆN ÍCH =====================
+
     /**
      * Giới hạn v trong [min, max].
      */
     private static int clamp(int v, int min, int max) {
         return Math.max(min, Math.min(max, v));
     }
-
-    // ===================== 4. VẼ MỖI KHUNG HÌNH =====================
 
     /**
      * Bỏ phần tick của vanilla (kiểm tra Realms, đồng hồ hiệu ứng) vì không dùng đến.
@@ -227,6 +239,7 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     public void render(@NotNull GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         renderStoneBackground(g);   // 1. nền đá trôi
         renderTitle(g);// 2. title rơi vào chỗ
+        renderPanel(g);
         // 3. widget (không gọi super.render vì nó vẽ panorama và logo vanilla)
         for (Renderable r : renderables) {
             r.render(g, mouseX, mouseY, partialTick);
@@ -238,7 +251,7 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
         }
     }
 
-    // ===================== 5. HÀNH ĐỘNG CỦA NÚT =====================
+    // ===================== 8. KIỂU DỮ LIỆU =====================
 
     /**
      * Vẽ lưới đá. Hàng/cột tính theo thời gian: nền đi xuống, quay vòng không giật.
@@ -260,7 +273,6 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
             }
         }
     }
-    // ===================== 6. TẠO VÀ XÓA WORLD =====================
 
     /**
      * New Game: nếu đã có world thì hỏi xác nhận, xóa rồi tạo lại; chưa có thì tạo luôn.
@@ -296,8 +308,6 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
             mc.createWorldOpenFlows().loadLevel(this, WORLD_NAME);
         }
     }
-
-    // ===================== 7. LAYOUT VÀ TIỆN ÍCH =====================
 
     /**
      * Tạo world mới {@link #WORLD_NAME} rồi vào chơi ngay. Overworld dùng preset void,
@@ -369,62 +379,63 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
         return addRenderableWidget(Button.builder(label, action).bounds(layout.buttonX(), y, layout.buttonWidth(), layout.buttonHeight()).build());
     }
 
-    // ===================== 8. KIỂU DỮ LIỆU =====================
-
     /**
-     * Gói các số đo layout thành một khối bất biến.
-     * panelWidth: rộng panel; buttonX / buttonWidth: vị trí và rộng nút;
-     * buttonTop: Y của nút đầu; buttonHeight / buttonGap: cao nút và khoảng hở.
+     * Tính hình chữ nhật bao quanh tiêu đề và cột nút.
      */
-    private record Layout(int panelWidth, int buttonX, int buttonWidth, int buttonTop, int buttonHeight,
-                          int buttonGap) {
+    private Box panelBox() {
+        // Cạnh trái/phải: bám theo cột nút, chừa đệm 12px mỗi bên
+        int x0 = layout.buttonX() - PANEL_PAD;
+        int x1 = layout.buttonX() + layout.buttonWidth() + PANEL_PAD;
+
+        // Cạnh trên: đỉnh của khối tiêu đề (đã tính sẵn), trừ đệm
+        int y0 = titleTop() - PANEL_PAD;
+
+        // Cạnh dưới: đáy hàng icon, cộng đệm
+        // Hàng icon nằm ngay sau 4 nút chính, giống công thức iconY trong init()
+        int iconY = layout.buttonTop() + MAIN_BUTTON_COUNT * (layout.buttonHeight() + layout.buttonGap());
+        int y1 = iconY + ICON_SIZE + PANEL_PAD;
+
+        return new Box(x0, y0, x1, y1);
     }
-
-    // ===== Khung bao quanh logo và cột nút =====
-// Hằng số: khoảng đệm quanh khung (px)
-    private static final int PANEL_PAD = 12;
-
-// Tính vị trí khung từ layout hiện có:
-//   x0 = buttonX - PAD          x1 = buttonX + buttonWidth + PAD
-//   y0 = đỉnh logo - PAD        y1 = đáy hàng icon + PAD
-//   đỉnh logo  = buttonTop - logoH - 12        (logoH = buttonWidth / 4)
-//   đáy icon   = buttonTop + MAIN_BUTTON_COUNT * (buttonHeight + buttonGap) + iconSize
-// Gợi ý: viết một hàm riêng trả về 4 số, hoặc một record nhỏ.
 
     private void renderPanel(GuiGraphics g) {
-        // Tính x0, y0, x1, y1 theo công thức trên
-        // Vẽ hình chữ nhật đen mờ 50%: g.fill(x0, y0, x1, y1, 0x80000000)
-        // (tuỳ chọn) viền: g.renderOutline(x0, y0, x1 - x0, y1 - y0, màu ARGB)
+        Box b = panelBox();
+
+        // Đen với alpha 0x80 = 128/255 ≈ 50% độ mờ
+        g.fill(b.x0(), b.y0(), b.x1(), b.y1(), 0x80000000);
+
+        // Viền trắng mờ (~25%). renderOutline nhận (x, y, rộng, cao), không nhận góc phải dưới
+        g.renderOutline(b.x0(), b.y0(), b.x1() - b.x0(), b.y1() - b.y0(), 0x40FFFFFF);
     }
 
-    // Logo Minecraft gốc (vanilla): vùng vẽ 256x44 trong file 256x64
-    private static final ResourceLocation VANILLA_LOGO =
-            ResourceLocation.tryParse("minecraft:textures/gui/title/minecraft.png");
-    private static final int VANILLA_LOGO_W = 256;
-    private static final int VANILLA_LOGO_H = 44;
-    private static final int VANILLA_TEX_H = 64;
-    // Logo mod đè lên đáy logo vanilla bao nhiêu px (vanilla dùng 7px ở kích thước gốc)
-    private static final int TITLE_OVERLAP = 4;
-
-    /** Chiều cao logo vanilla khi co theo chiều rộng nút (giữ tỉ lệ). */
+    /**
+     * Chiều cao logo vanilla khi co theo chiều rộng nút (giữ tỉ lệ).
+     */
     private int vanillaLogoHeight() {
         return layout.buttonWidth() * VANILLA_LOGO_H / VANILLA_LOGO_W;
     }
 
-    /** Chiều cao logo mod (tỉ lệ 4:1). */
+    /**
+     * Chiều cao logo mod (tỉ lệ 4:1).
+     */
     private int modLogoHeight() {
         return layout.buttonWidth() / 4;
     }
 
-    /** Tổng chiều cao khối tiêu đề, đã trừ phần chồng lên nhau. */
+    /**
+     * Tổng chiều cao khối tiêu đề, đã trừ phần chồng lên nhau.
+     */
     private int titleHeight() {
         return vanillaLogoHeight() + modLogoHeight() - TITLE_OVERLAP;
     }
 
-    /** Y đỉnh khối tiêu đề khi đã đứng yên, ngay trên cột nút. */
+    /**
+     * Y đỉnh khối tiêu đề khi đã đứng yên, ngay trên cột nút.
+     */
     private int titleTop() {
         return layout.buttonTop() - titleHeight() - 12;
     }
+
     private void renderTitle(GuiGraphics g) {
         // Chuyển động rơi nhẹ (giống renderModLogo cũ)
         float t = Math.min(1f, (System.currentTimeMillis() - openedAt) / (float) LOGO_ANIM_MS);
@@ -437,11 +448,22 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
         int vH = vanillaLogoHeight();
 
         // 1. Logo Minecraft: co theo chiều rộng nút
-        g.blit(VANILLA_LOGO, x, top, w, vH,
-                0, 0, VANILLA_LOGO_W, VANILLA_LOGO_H, VANILLA_LOGO_W, VANILLA_TEX_H);
+        g.blit(VANILLA_LOGO, x, top, w, vH, 0, 0, VANILLA_LOGO_W, VANILLA_LOGO_H, VANILLA_LOGO_W, VANILLA_TEX_H);
 
         // 2. Logo mod: đặt ở vị trí của Edition, chồng lên đáy logo vanilla
-        g.blit(MOD_LOGO, x, top + vH - TITLE_OVERLAP, w, modLogoHeight(),
-                0, 0, 1024, 256, 1024, 256);
+        g.blit(MOD_LOGO, x, top + vH - TITLE_OVERLAP, w, modLogoHeight(), 0, 0, 1024, 256, 1024, 256);
+    }
+
+    /**
+     * Gói các số đo layout thành một khối bất biến.
+     * panelWidth: rộng panel; buttonX / buttonWidth: vị trí và rộng nút;
+     * buttonTop: Y của nút đầu; buttonHeight / buttonGap: cao nút và khoảng hở.
+     */
+    private record Layout(int panelWidth, int buttonX, int buttonWidth, int buttonTop, int buttonHeight,
+                          int buttonGap) {
+    }
+
+    // Record nhỏ gói 4 số của khung, thay vì trả về 4 biến rời rạc
+    private record Box(int x0, int y0, int x1, int y1) {
     }
 }
