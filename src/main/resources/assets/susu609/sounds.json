@@ -2,36 +2,96 @@
   "entity.clawd.ambient": {
     "subtitle": "subtitles.susu609.entity.clawd.ambient",
     "sounds": [
-      {"name": "susu609:entity/clawd/ambient1"},
-      {"name": "susu609:entity/clawd/ambient2"},
-      {"name": "susu609:entity/clawd/ambient3"}
+      {
+        "name": "susu609:entity/clawd/ambient1"
+      },
+      {
+        "name": "susu609:entity/clawd/ambient2"
+      },
+      {
+        "name": "susu609:entity/clawd/ambient3"
+      },
+      {
+        "name": "susu609:entity/clawd/ambient4"
+      }
+    ]
+  },
+  "entity.clawd.death": {
+    "subtitle": "subtitles.susu609.entity.clawd.death",
+    "sounds": [
+      {
+        "name": "susu609:entity/clawd/death1"
+      },
+      {
+        "name": "susu609:entity/clawd/death2"
+      }
+    ]
+  },
+  "entity.clawd.happy": {
+    "subtitle": "subtitles.susu609.entity.clawd.happy",
+    "sounds": [
+      {
+        "name": "susu609:entity/clawd/happy1"
+      },
+      {
+        "name": "susu609:entity/clawd/happy2"
+      }
     ]
   },
   "entity.clawd.hurt": {
     "subtitle": "subtitles.susu609.entity.clawd.hurt",
-    "sounds": [{"name": "susu609:entity/clawd/hurt"}]
-  },
-  "entity.clawd.death": {
-    "subtitle": "subtitles.susu609.entity.clawd.death",
-    "sounds": [{"name": "susu609:entity/clawd/death"}]
+    "sounds": [
+      {
+        "name": "susu609:entity/clawd/hurt1"
+      },
+      {
+        "name": "susu609:entity/clawd/hurt2"
+      },
+      {
+        "name": "susu609:entity/clawd/hurt3"
+      }
+    ]
   },
   "entity.clawd.step": {
     "subtitle": "subtitles.susu609.entity.clawd.step",
     "sounds": [
-      {"name": "susu609:entity/clawd/step1"},
-      {"name": "susu609:entity/clawd/step2"}
+      {
+        "name": "susu609:entity/clawd/step1"
+      },
+      {
+        "name": "susu609:entity/clawd/step2"
+      },
+      {
+        "name": "susu609:entity/clawd/step3"
+      },
+      {
+        "name": "susu609:entity/clawd/step4"
+      }
+    ]
+  },
+  "entity.clawd.think": {
+    "subtitle": "subtitles.susu609.entity.clawd.think",
+    "sounds": [
+      {
+        "name": "susu609:entity/clawd/think1"
+      },
+      {
+        "name": "susu609:entity/clawd/think2"
+      }
     ]
   },
   "entity.clawd.work": {
     "subtitle": "subtitles.susu609.entity.clawd.work",
-    "sounds": [{"name": "susu609:entity/clawd/work"}]
-  },
-  "entity.clawd.think": {
-    "subtitle": "subtitles.susu609.entity.clawd.think",
-    "sounds": [{"name": "susu609:entity/clawd/think"}]
-  },
-  "entity.clawd.happy": {
-    "subtitle": "subtitles.susu609.entity.clawd.happy",
-    "sounds": [{"name": "susu609:entity/clawd/happy"}]
+    "sounds": [
+      {
+        "name": "susu609:entity/clawd/work1"
+      },
+      {
+        "name": "susu609:entity/clawd/work2"
+      },
+      {
+        "name": "susu609:entity/clawd/work3"
+      }
+    ]
   }
 }

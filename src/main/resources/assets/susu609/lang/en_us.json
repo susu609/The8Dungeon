@@ -1,1 +1,11 @@
-{}
+{
+  "entity.susu609.clawd_agent": "Clawd",
+  "item.susu609.clawd_spawn_egg": "Clawd Spawn Egg",
+  "subtitles.susu609.entity.clawd.ambient": "Clawd chirps",
+  "subtitles.susu609.entity.clawd.hurt": "Clawd hurts",
+  "subtitles.susu609.entity.clawd.death": "Clawd powers down",
+  "subtitles.susu609.entity.clawd.step": "Clawd steps",
+  "subtitles.susu609.entity.clawd.work": "Clawd works",
+  "subtitles.susu609.entity.clawd.think": "Clawd thinks",
+  "subtitles.susu609.entity.clawd.happy": "Clawd cheers"
+}

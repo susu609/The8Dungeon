@@ -52,6 +52,7 @@ public class Susu609Mod {
 		net.susu609.the8dungeon.init.ModEntitiesRegistry.register(bus);
 		net.susu609.the8dungeon.init.ModEntityRenderers.register(bus);
 		net.susu609.the8dungeon.init.ModSoundsRegistry.register(bus);
+		net.susu609.the8dungeon.init.ModItemsRegistry.register(bus);
 		// End of user code block mod init
 	}
 
