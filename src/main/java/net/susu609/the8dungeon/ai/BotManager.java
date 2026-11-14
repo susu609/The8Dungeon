@@ -3,16 +3,22 @@ package net.susu609.the8dungeon.ai;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.network.PacketDistributor;
+import net.susu609.the8dungeon.Susu609Mod;
+import net.susu609.the8dungeon.network.BotStatusPacket;
 
 /**
  * Quản lý các người chơi máy: lệnh /bot và hồi sinh khi bot chết.
@@ -21,6 +27,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 public final class BotManager {
 
     private static final Map<String, BotPlayer> BOTS = new LinkedHashMap<>();
+    private static final Map<UUID, BotInfo> LAST_SENT = new HashMap<>();
 
     private BotManager() {}
 
@@ -43,6 +50,7 @@ public final class BotManager {
     public static void onTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || BOTS.isEmpty()) return;
         MinecraftServer server = event.getServer();
+        if (server.getTickCount() % 10 == 0) sendToSpectators(server);
         if (server.getTickCount() % 20 != 0) return;
         for (Map.Entry<String, BotPlayer> e : new ArrayList<>(BOTS.entrySet())) {
             BotPlayer bot = e.getValue();
@@ -55,9 +63,39 @@ public final class BotManager {
         }
     }
 
+    /** Chỉ gửi cho người đang spectator; ưu tiên bot mà họ đang nhìn qua camera, không thì bot gần nhất. */
+    private static void sendToSpectators(MinecraftServer server) {
+        for (ServerPlayer p : server.getPlayerList().getPlayers()) {
+            if (!p.isSpectator() || p instanceof BotPlayer) continue;
+            BotPlayer target = p.getCamera() instanceof BotPlayer cam ? cam : nearest(p);
+            if (target == null || !target.isAlive()) continue;
+            BotInfo info = target.info();
+            // Gửi khi có thay đổi, hoặc mỗi 2 giây để HUD không tự ẩn
+            if (!info.equals(LAST_SENT.get(p.getUUID())) || server.getTickCount() % 40 == 0) {
+                LAST_SENT.put(p.getUUID(), info);
+                Susu609Mod.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> p), new BotStatusPacket(info));
+            }
+        }
+    }
+
+    private static BotPlayer nearest(ServerPlayer p) {
+        BotPlayer best = null;
+        double bestD = Double.MAX_VALUE;
+        for (BotPlayer b : BOTS.values()) {
+            if (b.level() != p.level()) continue;
+            double d = b.distanceToSqr(p);
+            if (d < bestD) {
+                bestD = d;
+                best = b;
+            }
+        }
+        return best;
+    }
+
     @SubscribeEvent
     public static void onStopping(ServerStoppingEvent event) {
         BOTS.clear();
+        LAST_SENT.clear();
     }
 
     private static int spawn(CommandContext<CommandSourceStack> c, String name) {

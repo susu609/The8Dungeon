@@ -49,6 +49,10 @@ public final class BotPlayer extends ServerPlayer {
         return bot;
     }
 
+    public BotInfo info() {
+        return brain.info(getGameProfile().getName());
+    }
+
     public String status() {
         return brain.status();
     }

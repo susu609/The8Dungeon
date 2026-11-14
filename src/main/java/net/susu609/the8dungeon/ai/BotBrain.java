@@ -73,6 +73,11 @@ final class BotBrain {
                 + (sheltered ? " [trú ẩn]" : "");
     }
 
+    BotInfo info(String name) {
+        return new BotInfo(name, goal.name(), bot.getHealth(), bot.getFoodData().getFoodLevel(),
+                logs + planks / 4, cobble, pickRank, sheltered, senses.hostile != null);
+    }
+
     // ===== Vòng lặp chính =====
 
     void tick() {

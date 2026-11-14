@@ -49,6 +49,10 @@ public class Susu609Mod {
 		IEventBus bus = context.getModEventBus();
 		// Start of user code block mod init
 		MinecraftForge.EVENT_BUS.register(net.susu609.the8dungeon.ai.BotManager.class);
+		addNetworkMessage(net.susu609.the8dungeon.network.BotStatusPacket.class,
+				net.susu609.the8dungeon.network.BotStatusPacket::encode,
+				net.susu609.the8dungeon.network.BotStatusPacket::decode,
+				net.susu609.the8dungeon.network.BotStatusPacket::handle);
 
 		// End of user code block mod init
 	}
