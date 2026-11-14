@@ -112,6 +112,7 @@ final class BotNav {
             }
         }
         helper.moveTo(bot.getX(), bot.getY(), bot.getZ());
+        helper.setOnGround(true); // createPath từ chối khi mob không đứng trên đất, mà helper không bao giờ được tick
         return helper.getNavigation().createPath(target, 1);
     }
 }
