@@ -10,12 +10,12 @@ import net.minecraft.world.level.block.WallTorchBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * Thời gian cháy và việc đổi khối của đuốc: torch (sáng) -> torch_dim (leo lét) -> torch_off (tắt).
+ * Thời gian cháy và việc đổi khối của đuốc: torch (sáng) -> torch_off (tắt).
  * Đuốc đứng và đuốc tường dùng chung các hàm này.
  */
 public final class TorchBurn {
 
-    /** Số tick đuốc sáng đầy trước khi chuyển sang leo lét. */
+    /** Số tick đuốc cháy trước khi tắt hẳn: 12000 tick = 10 phút. */
     public static final int LIT_TICKS = 12000;
 
     private TorchBurn() {}
@@ -25,7 +25,7 @@ public final class TorchBurn {
      *
      * @param standingTo khối đích nếu khối hiện tại là đuốc đứng
      * @param wallTo     khối đích nếu khối hiện tại là đuốc tường
-     * @param extinguish true thì phát tiếng xì và hạt khói (lúc tắt hẳn)
+     * @param extinguish true thì phát tiếng xì và hạt khói
      */
     public static void convert(ServerLevel level, BlockPos pos, BlockState from,
                                Block standingTo, Block wallTo, boolean extinguish) {

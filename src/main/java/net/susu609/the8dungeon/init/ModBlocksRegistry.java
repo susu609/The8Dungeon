@@ -15,8 +15,8 @@ import net.susu609.the8dungeon.world.torch.ModUnlitWallTorchBlock;
 
 /**
  * Toàn bộ đăng ký khối của mod nằm ở đây.
- * Đuốc cháy theo chuỗi: torch (vanilla, sáng 14) -> torch_dim (sáng 7) -> torch_off (sáng 0).
- * Mỗi bậc có bản đứng và bản gắn tường, như đuốc vanilla.
+ * Đuốc vanilla (torch, wall_torch) cháy hết thì đổi thành torch_off / wall_torch_off.
+ * Logic cháy nằm trong mixin ModBlockBehaviour; ở đây chỉ đăng ký hai khối đã tắt.
  */
 public final class ModBlocksRegistry {
 
@@ -25,18 +25,18 @@ public final class ModBlocksRegistry {
 
     // Đuốc đã tắt: không sáng, không hạt
     public static final RegistryObject<Block> TORCH_OFF = BLOCKS.register("torch_off",
-            () -> new ModUnlitTorchBlock(torchProperties(0), ParticleTypes.SMOKE));
+            () -> new ModUnlitTorchBlock(torchProperties(), ParticleTypes.SMOKE));
     public static final RegistryObject<Block> WALL_TORCH_OFF = BLOCKS.register("wall_torch_off",
-            () -> new ModUnlitWallTorchBlock(torchProperties(0), ParticleTypes.SMOKE));
+            () -> new ModUnlitWallTorchBlock(torchProperties(), ParticleTypes.SMOKE));
 
     private ModBlocksRegistry() {}
 
-    /** Thuộc tính giống đuốc vanilla, chỉ khác mức sáng. */
-    private static BlockBehaviour.Properties torchProperties(int lightLevel) {
+    /** Thuộc tính giống đuốc vanilla, chỉ khác là không phát sáng. */
+    private static BlockBehaviour.Properties torchProperties() {
         return BlockBehaviour.Properties.of()
                 .noCollission()
                 .instabreak()
-                .lightLevel(state -> lightLevel)
+                .lightLevel(state -> 0)
                 .sound(SoundType.WOOD)
                 .pushReaction(PushReaction.DESTROY);
     }

@@ -6,7 +6,6 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import net.susu609.the8dungeon.Susu609Mod;
-import net.susu609.the8dungeon.world.level.block.entity.ModTorchBlockEntity;
 
 public final class ModBlockEntitiesRegistry {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =

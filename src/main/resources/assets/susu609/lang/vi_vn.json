@@ -8,8 +8,7 @@
   "subtitles.susu609.entity.clawd.work": "Clawd làm việc",
   "subtitles.susu609.entity.clawd.think": "Clawd suy nghĩ",
   "subtitles.susu609.entity.clawd.happy": "Clawd vui vẻ",
-  "block.susu609.torch_dim": "Đuốc leo lét",
-  "block.susu609.wall_torch_dim": "Đuốc tường leo lét",
   "block.susu609.torch_off": "Đuốc đã tắt",
-  "block.susu609.wall_torch_off": "Đuốc tường đã tắt"
+  "block.susu609.wall_torch_off": "Đuốc tường đã tắt",
+  "itemGroup.susu609": "The8Dungeons"
 }
