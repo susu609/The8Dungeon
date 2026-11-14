@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 42 class/kiểu Java, 3421 dòng, 90 phụ thuộc nội bộ
+- 40 class/kiểu Java, 3321 dòng, 86 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -49,7 +49,7 @@ flowchart LR
     RoomPreset["RoomPreset<br/><small>enum · 40 dòng</small>"]
   end
   subgraph pkg_init["init"]
-    ModBlockEntitiesRegistry["ModBlockEntitiesRegistry<br/><small>class · 25 dòng</small>"]
+    ModBlockEntitiesRegistry["ModBlockEntitiesRegistry<br/><small>class · 24 dòng</small>"]
     ModBlocksRegistry["ModBlocksRegistry<br/><small>class · 49 dòng</small>"]
     ModCreativeTabsRegistry["ModCreativeTabsRegistry<br/><small>class · 31 dòng</small>"]
     ModEntitiesRegistry["ModEntitiesRegistry<br/><small>class · 42 dòng</small>"]
@@ -74,13 +74,9 @@ flowchart LR
   subgraph pkg_world_item["world.item"]
     ClawdSpawnEggItem["ClawdSpawnEggItem<br/><small>class · 84 dòng</small>"]
   end
-  subgraph pkg_world_level_block_entity["world.level.block.entity"]
-    ModTorchBlockEntity["ModTorchBlockEntity<br/><small>class · 55 dòng</small>"]
-  end
   subgraph pkg_world_torch["world.torch"]
     ModUnlitTorchBlock["ModUnlitTorchBlock<br/><small>class · 22 dòng</small>"]
     ModUnlitWallTorchBlock["ModUnlitWallTorchBlock<br/><small>class · 22 dòng</small>"]
-    ModWallTorchBlock["ModWallTorchBlock<br/><small>class · 44 dòng</small>"]
     TorchBurn["TorchBurn<br/><small>class · 47 dòng</small>"]
   end
   ClawdBrain --> ClawdEntity
@@ -136,7 +132,6 @@ flowchart LR
   ModBlockBehaviour --> ModBlocksRegistry
   ModBlockBehaviour --> TorchBurn
   ModBlockEntitiesRegistry --> ModBlocksRegistry
-  ModBlockEntitiesRegistry --> ModTorchBlockEntity
   ModBlockEntitiesRegistry --> Susu609Mod
   ModBlocksRegistry --> ModUnlitTorchBlock
   ModBlocksRegistry --> ModUnlitWallTorchBlock
@@ -159,9 +154,6 @@ flowchart LR
   ModTitleScreen --> ScreenUtil
   ModTitleScreen --> Susu609Mod
   ModTitleScreen --> TitleScreenInterface
-  ModTorchBlockEntity --> ModBlockEntitiesRegistry
-  ModTorchBlockEntity --> ModWallTorchBlock
-  ModWallTorchBlock --> ModTorchBlockEntity
   ScreenInspector --> Susu609Mod
   Susu609Mod --> ModBlocksRegistry
   Susu609Mod --> ModCreativeTabsRegistry
@@ -244,7 +236,7 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `ModBlockEntitiesRegistry` | class | 25 | ModBlocksRegistry, ModTorchBlockEntity, Susu609Mod | - |
+| `ModBlockEntitiesRegistry` | class | 24 | ModBlocksRegistry, Susu609Mod | - |
 | `ModBlocksRegistry` | class | 49 | ModUnlitTorchBlock, ModUnlitWallTorchBlock, Susu609Mod | - |
 | `ModCreativeTabsRegistry` | class | 31 | ModItemsRegistry, Susu609Mod | - |
 | `ModEntitiesRegistry` | class | 42 | ClawdEntity, Susu609Mod | EntityAttributeCreationEvent |
@@ -284,28 +276,18 @@ flowchart LR
 |---|---|---|---|---|
 | `ClawdSpawnEggItem` | class | 84 | ClawdEntity, ModEntitiesRegistry | - |
 
-### world.level.block.entity
-
-| Class | Loại | Dòng | Dùng tới | Event Forge |
-|---|---|---|---|---|
-| `ModTorchBlockEntity` | class | 55 | ModBlockEntitiesRegistry, ModWallTorchBlock | - |
-
 ### world.torch
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
 | `ModUnlitTorchBlock` | class | 22 | - | - |
 | `ModUnlitWallTorchBlock` | class | 22 | - | - |
-| `ModWallTorchBlock` | class | 44 | ModTorchBlockEntity | - |
 | `TorchBurn` | class | 47 | - | - |
 
 ## Tài nguyên
 
 - `META-INF/mods.toml`
-- `assets/susu609/blockstates/dungeon_torch.json`
-- `assets/susu609/blockstates/torch.json`
 - `assets/susu609/blockstates/torch_off.json`
-- `assets/susu609/blockstates/wall_torch_dim.json`
 - `assets/susu609/blockstates/wall_torch_off.json`
 - `assets/susu609/lang/en_us.json`
 - `assets/susu609/lang/vi_vn.json`
@@ -340,7 +322,6 @@ flowchart LR
 - `assets/susu609/sounds/entity/clawd/work2.ogg`
 - `assets/susu609/sounds/entity/clawd/work3.ogg`
 - `assets/susu609/sounds.json`
-- `assets/susu609/textures/block/torch_off.png`
 - `assets/susu609/textures/entity/clawd_agent.png`
 - `assets/susu609/textures/gui/title/mod_title.png`
 - `assets/susu609/textures/map/minimap_icons.png`
