@@ -1,13 +1,13 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "net.susu609.the8dungeons.mixin",
+  "package": "net.susu609.the8dungeon.mixin",
   "compatibilityLevel": "JAVA_8",
   "refmap": "susu609.refmap.json",
   "mixins": [
+    "ModBlockBehaviour"
   ],
-  "client": [
-  ],
+  "client": [],
   "injectors": {
     "defaultRequire": 1
   },

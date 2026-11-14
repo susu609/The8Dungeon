@@ -51,11 +51,11 @@ public class Susu609Mod {
 
 		net.susu609.the8dungeon.init.ModEntitiesRegistry.register(bus);
 		net.susu609.the8dungeon.init.ModBlocksRegistry.register(bus);
-		net.susu609.the8dungeon.init.ModBlockEntitiesRegistry.register(bus);
 		net.susu609.the8dungeon.init.ModEntityRenderersRegistry.register(bus);
 		net.susu609.the8dungeon.init.ModSoundsRegistry.register(bus);
 		net.susu609.the8dungeon.init.ModItemsRegistry.register(bus);
 		net.susu609.the8dungeon.init.ModGameEventsRegistry.register();
+		net.susu609.the8dungeon.init.ModCreativeTabsRegistry.register(bus);
 		// End of user code block mod init
 	}
 

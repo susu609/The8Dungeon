@@ -1,9 +1,9 @@
 package net.susu609.the8dungeon.init;
 
-import net.minecraft.world.item.BlockItem;
+import net.minecraft.core.Direction;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.item.StandingAndWallBlockItem;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -21,8 +21,12 @@ public final class ModItemsRegistry {
     // Nền cam #D97757, chấm đen #1C1412 theo mắt Clawd
     public static final RegistryObject<Item> CLAWD_SPAWN_EGG = ITEMS.register("clawd_spawn_egg",
             () -> new ClawdSpawnEggItem(ModEntitiesRegistry.CLAWD_AGENT, 0xD97757, 0x1C1412, new Item.Properties()));
-    public static final RegistryObject<Item> TORCH_ITEM =
-            registerBlockItem("torch", ModBlocksRegistry.TORCH);
+
+    // Đuốc đã tắt: đặt được trên sàn (torch_off) hoặc gắn tường (wall_torch_off)
+    public static final RegistryObject<Item> TORCH_OFF = ITEMS.register("torch_off",
+            () -> new StandingAndWallBlockItem(ModBlocksRegistry.TORCH_OFF.get(),
+                    ModBlocksRegistry.WALL_TORCH_OFF.get(), new Item.Properties(), Direction.DOWN));
+
     private ModItemsRegistry() {}
 
     /** Gọi một lần trong constructor của mod, với mod event bus. */
@@ -35,10 +39,8 @@ public final class ModItemsRegistry {
         if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS) {
             event.accept(CLAWD_SPAWN_EGG.get());
         }
-    }
-
-    // Đăng ký BlockItem cho một khối, cùng tên ID
-    public static RegistryObject<Item> registerBlockItem(String name, RegistryObject<Block> block) {
-        return ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
+        if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
+            event.accept(TORCH_OFF.get());
+        }
     }
 }

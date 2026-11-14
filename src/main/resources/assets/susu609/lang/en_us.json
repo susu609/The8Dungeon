@@ -7,5 +7,9 @@
   "subtitles.susu609.entity.clawd.step": "Clawd steps",
   "subtitles.susu609.entity.clawd.work": "Clawd works",
   "subtitles.susu609.entity.clawd.think": "Clawd thinks",
-  "subtitles.susu609.entity.clawd.happy": "Clawd cheers"
+  "subtitles.susu609.entity.clawd.happy": "Clawd cheers",
+  "block.susu609.torch_dim": "Dim Torch",
+  "block.susu609.wall_torch_dim": "Dim Wall Torch",
+  "block.susu609.torch_off": "Burnt-out Torch",
+  "block.susu609.wall_torch_off": "Burnt-out Wall Torch"
 }

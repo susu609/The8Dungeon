@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "susu609:block/wall_torch_dim"
+    },
+    "facing=south": {
+      "model": "susu609:block/wall_torch_dim",
+      "y": 90
+    },
+    "facing=west": {
+      "model": "susu609:block/wall_torch_dim",
+      "y": 180
+    },
+    "facing=north": {
+      "model": "susu609:block/wall_torch_dim",
+      "y": 270
+    }
+  }
+}
