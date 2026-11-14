@@ -48,6 +48,7 @@ public class Susu609Mod {
 		// (đăng ký item, block, entity... sẽ gắn vào bus này)
 		IEventBus bus = context.getModEventBus();
 		// Start of user code block mod init
+		MinecraftForge.EVENT_BUS.register(net.susu609.the8dungeon.ai.BotManager.class);
 
 		// End of user code block mod init
 	}
