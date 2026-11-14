@@ -17,6 +17,9 @@ import net.minecraftforge.fml.util.thread.SidedThreadGroups;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
+import net.susu609.the8dungeon.init.ModBlockEntitiesRegistry;
+import net.susu609.the8dungeon.init.ModBlocksRegistry;
+import net.susu609.the8dungeon.init.ModEntityRenderersRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -50,10 +53,12 @@ public class Susu609Mod {
 		// Start of user code block mod init
 
 		net.susu609.the8dungeon.init.ModEntitiesRegistry.register(bus);
-		net.susu609.the8dungeon.init.ModEntityRenderers.register(bus);
+		ModEntityRenderersRegistry.register(bus);
 		net.susu609.the8dungeon.init.ModSoundsRegistry.register(bus);
 		net.susu609.the8dungeon.init.ModItemsRegistry.register(bus);
 		net.susu609.the8dungeon.init.ModGameEventsRegistry.register();
+		ModBlocksRegistry.register(bus);
+		ModBlockEntitiesRegistry.register(bus);
 		// End of user code block mod init
 	}
 

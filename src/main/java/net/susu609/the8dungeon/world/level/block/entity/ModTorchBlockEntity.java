@@ -7,7 +7,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.susu609.the8dungeon.init.ModBlockEntities;
+import net.susu609.the8dungeon.init.ModBlockEntitiesRegistry;
 import org.jetbrains.annotations.NotNull;
 
 import static net.susu609.the8dungeon.world.torch.ModWallTorchBlock.FUEL;
@@ -24,7 +24,7 @@ public class ModTorchBlockEntity extends BlockEntity {
         super(type, pos, state);
     }
     public ModTorchBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.TORCH.get(), pos, state);
+        super(ModBlockEntitiesRegistry.TORCH.get(), pos, state);
     }
     public static void tick(Level level, BlockPos pos, BlockState state, ModTorchBlockEntity be) {
         if (level.isClientSide()) return;        // chỉ server đếm

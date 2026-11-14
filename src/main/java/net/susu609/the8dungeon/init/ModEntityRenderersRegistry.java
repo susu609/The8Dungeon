@@ -10,9 +10,9 @@ import net.susu609.the8dungeon.client.renderer.entity.ClawdRenderer;
 /**
  * Đăng ký renderer và layer model của entity. Chỉ chạy phía client.
  */
-public final class ModEntityRenderers {
+public final class ModEntityRenderersRegistry {
 
-    private ModEntityRenderers() {
+    private ModEntityRenderersRegistry() {
     }
 
     /**
@@ -20,8 +20,8 @@ public final class ModEntityRenderers {
      */
     public static void register(IEventBus modBus) {
         if (FMLEnvironment.dist != Dist.CLIENT) return;
-        modBus.addListener(ModEntityRenderers::onRegisterRenderers);
-        modBus.addListener(ModEntityRenderers::onRegisterLayers);
+        modBus.addListener(ModEntityRenderersRegistry::onRegisterRenderers);
+        modBus.addListener(ModEntityRenderersRegistry::onRegisterLayers);
     }
 
     private static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
