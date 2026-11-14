@@ -16,9 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public final class TorchBurn {
 
     /** Số tick đuốc sáng đầy trước khi chuyển sang leo lét. */
-    public static final int LIT_TICKS = 8000;
-    /** Số tick đuốc leo lét trước khi tắt hẳn. Tổng LIT + DIM = 12000 tick (10 phút). */
-    public static final int DIM_TICKS = 4000;
+    public static final int LIT_TICKS = 12000;
 
     private TorchBurn() {}
 

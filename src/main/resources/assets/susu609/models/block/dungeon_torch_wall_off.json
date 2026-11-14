@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:block/template_torch_wall",
-  "textures": {
-    "torch": "susu609:block/torch_off"
-  }
-}

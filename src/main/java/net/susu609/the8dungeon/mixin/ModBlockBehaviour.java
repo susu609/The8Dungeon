@@ -23,22 +23,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(BlockBehaviour.class)
 public abstract class ModBlockBehaviour {
 
-    /** Khi đuốc vanilla vừa được đặt ở server, lên lịch tick để chuyển sang leo lét. */
+    /** Khi đuốc vanilla vừa được đặt ở server, lên lịch tick để đuốc cháy hết sau LIT_TICKS. */
     @Inject(method = "onPlace", at = @At("HEAD"))
-    private void susu609$scheduleDim(BlockState state, Level level, BlockPos pos,
-                                     BlockState oldState, boolean moving, CallbackInfo ci) {
+    private void susu609$scheduleBurnOut(BlockState state, Level level, BlockPos pos,
+                                         BlockState oldState, boolean moving, CallbackInfo ci) {
         if (level.isClientSide) return;
         if (!state.is(Blocks.TORCH) && !state.is(Blocks.WALL_TORCH)) return;
         if (oldState.is(state.getBlock())) return;
         level.scheduleTick(pos, state.getBlock(), TorchBurn.LIT_TICKS);
     }
 
-    /** Khi tick đến hạn, đổi đuốc vanilla thành torch_dim (giữ hướng nếu là đuốc tường). */
+    /** Khi tick đến hạn, đổi đuốc vanilla thành đuốc tắt (giữ hướng nếu là đuốc tường). */
     @Inject(method = "tick", at = @At("HEAD"))
-    private void susu609$dim(BlockState state, ServerLevel level, BlockPos pos,
-                             RandomSource random, CallbackInfo ci) {
+    private void susu609$burnOut(BlockState state, ServerLevel level, BlockPos pos,
+                                 RandomSource random, CallbackInfo ci) {
         if (!state.is(Blocks.TORCH) && !state.is(Blocks.WALL_TORCH)) return;
         TorchBurn.convert(level, pos, state,
-                ModBlocksRegistry.TORCH_DIM.get(), ModBlocksRegistry.WALL_TORCH_DIM.get(), false);
+                ModBlocksRegistry.TORCH_OFF.get(), ModBlocksRegistry.WALL_TORCH_OFF.get(), true);
     }
 }
