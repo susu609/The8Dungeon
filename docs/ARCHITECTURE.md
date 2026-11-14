@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 33 class/kiểu Java, 3069 dòng, 74 phụ thuộc nội bộ
+- 37 class/kiểu Java, 3222 dòng, 82 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -49,6 +49,8 @@ flowchart LR
     RoomPreset["RoomPreset<br/><small>enum · 40 dòng</small>"]
   end
   subgraph pkg_init["init"]
+    ModBlockEntities["ModBlockEntities<br/><small>class · 25 dòng</small>"]
+    ModBlocks["ModBlocks<br/><small>class · 29 dòng</small>"]
     ModEntitiesRegistry["ModEntitiesRegistry<br/><small>class · 42 dòng</small>"]
     ModEntityRenderers["ModEntityRenderers<br/><small>class · 34 dòng</small>"]
     ModGameEventsRegistry["ModGameEventsRegistry<br/><small>class · 44 dòng</small>"]
@@ -67,6 +69,12 @@ flowchart LR
   end
   subgraph pkg_world_item["world.item"]
     ClawdSpawnEggItem["ClawdSpawnEggItem<br/><small>class · 84 dòng</small>"]
+  end
+  subgraph pkg_world_level_block_entity["world.level.block.entity"]
+    ModTorchBlockEntity["ModTorchBlockEntity<br/><small>class · 55 dòng</small>"]
+  end
+  subgraph pkg_world_torch["world.torch"]
+    ModWallTorchBlock["ModWallTorchBlock<br/><small>class · 44 dòng</small>"]
   end
   ClawdBrain --> ClawdEntity
   ClawdBrain --> ClawdKeyStore
@@ -118,6 +126,11 @@ flowchart LR
   DungeonLayout --> WorldRandom
   DungeonParams --> DungeonLayout
   DungeonParams --> RoomPreset
+  ModBlockEntities --> ModBlocks
+  ModBlockEntities --> ModTorchBlockEntity
+  ModBlockEntities --> Susu609Mod
+  ModBlocks --> ModWallTorchBlock
+  ModBlocks --> Susu609Mod
   ModEntitiesRegistry --> ClawdEntity
   ModEntitiesRegistry --> Susu609Mod
   ModEntityRenderers --> ClawdModel
@@ -133,6 +146,9 @@ flowchart LR
   ModTitleScreen --> ScreenUtil
   ModTitleScreen --> Susu609Mod
   ModTitleScreen --> TitleScreenInterface
+  ModTorchBlockEntity --> ModBlockEntities
+  ModTorchBlockEntity --> ModWallTorchBlock
+  ModWallTorchBlock --> ModTorchBlockEntity
   ScreenInspector --> Susu609Mod
   Susu609Mod --> ModEntitiesRegistry
   Susu609Mod --> ModEntityRenderers
@@ -213,6 +229,8 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
+| `ModBlockEntities` | class | 25 | ModBlocks, ModTorchBlockEntity, Susu609Mod | - |
+| `ModBlocks` | class | 29 | ModWallTorchBlock, Susu609Mod | - |
 | `ModEntitiesRegistry` | class | 42 | ClawdEntity, Susu609Mod | EntityAttributeCreationEvent |
 | `ModEntityRenderers` | class | 34 | ClawdModel, ClawdRenderer, ModEntitiesRegistry | EntityRenderersEvent, EntityRenderersEvent.RegisterLayerDefinitions, EntityRenderersEvent.RegisterRenderers |
 | `ModGameEventsRegistry` | class | 44 | ClawdChat, ClawdKeyStore, ClawdWorker | RegisterCommandsEvent |
@@ -244,11 +262,27 @@ flowchart LR
 |---|---|---|---|---|
 | `ClawdSpawnEggItem` | class | 84 | ClawdEntity, ModEntitiesRegistry | - |
 
+### world.level.block.entity
+
+| Class | Loại | Dòng | Dùng tới | Event Forge |
+|---|---|---|---|---|
+| `ModTorchBlockEntity` | class | 55 | ModBlockEntities, ModWallTorchBlock | - |
+
+### world.torch
+
+| Class | Loại | Dòng | Dùng tới | Event Forge |
+|---|---|---|---|---|
+| `ModWallTorchBlock` | class | 44 | ModTorchBlockEntity | - |
+
 ## Tài nguyên
 
 - `META-INF/mods.toml`
+- `assets/susu609/blockstates/dungeon_torch.json`
 - `assets/susu609/lang/en_us.json`
 - `assets/susu609/lang/vi_vn.json`
+- `assets/susu609/models/block/dungeon_torch_wall.json`
+- `assets/susu609/models/block/dungeon_torch_wall_off.json`
+- `assets/susu609/models/block/torch_off.json`
 - `assets/susu609/models/item/clawd_spawn_egg.json`
 - `assets/susu609/sounds/entity/clawd/ambient1.ogg`
 - `assets/susu609/sounds/entity/clawd/ambient2.ogg`
@@ -276,6 +310,7 @@ flowchart LR
 - `assets/susu609/sounds/entity/clawd/work2.ogg`
 - `assets/susu609/sounds/entity/clawd/work3.ogg`
 - `assets/susu609/sounds.json`
+- `assets/susu609/textures/block/torch_off.png`
 - `assets/susu609/textures/entity/clawd_agent.png`
 - `assets/susu609/textures/gui/title/mod_title.png`
 - `assets/susu609/textures/map/minimap_icons.png`
