@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 37 class/kiểu Java, 3236 dòng, 85 phụ thuộc nội bộ
+- 44 class/kiểu Java, 3502 dòng, 96 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -50,12 +50,16 @@ flowchart LR
   end
   subgraph pkg_init["init"]
     ModBlockEntitiesRegistry["ModBlockEntitiesRegistry<br/><small>class · 25 dòng</small>"]
-    ModBlocksRegistry["ModBlocksRegistry<br/><small>class · 33 dòng</small>"]
+    ModBlocksRegistry["ModBlocksRegistry<br/><small>class · 57 dòng</small>"]
+    ModCreativeTabsRegistry["ModCreativeTabsRegistry<br/><small>class · 31 dòng</small>"]
     ModEntitiesRegistry["ModEntitiesRegistry<br/><small>class · 42 dòng</small>"]
     ModEntityRenderersRegistry["ModEntityRenderersRegistry<br/><small>class · 34 dòng</small>"]
     ModGameEventsRegistry["ModGameEventsRegistry<br/><small>class · 44 dòng</small>"]
-    ModItemsRegistry["ModItemsRegistry<br/><small>class · 45 dòng</small>"]
+    ModItemsRegistry["ModItemsRegistry<br/><small>class · 47 dòng</small>"]
     ModSoundsRegistry["ModSoundsRegistry<br/><small>class · 35 dòng</small>"]
+  end
+  subgraph pkg_mixin["mixin"]
+    ModBlockBehaviour["ModBlockBehaviour<br/><small>class · 45 dòng</small>"]
   end
   subgraph pkg_network["network"]
     ClientboundDungeonSeedPacket["ClientboundDungeonSeedPacket<br/><small>class · 44 dòng</small>"]
@@ -74,7 +78,12 @@ flowchart LR
     ModTorchBlockEntity["ModTorchBlockEntity<br/><small>class · 55 dòng</small>"]
   end
   subgraph pkg_world_torch["world.torch"]
+    ModDimTorchBlock["ModDimTorchBlock<br/><small>class · 36 dòng</small>"]
+    ModDimWallTorchBlock["ModDimWallTorchBlock<br/><small>class · 35 dòng</small>"]
+    ModUnlitTorchBlock["ModUnlitTorchBlock<br/><small>class · 22 dòng</small>"]
+    ModUnlitWallTorchBlock["ModUnlitWallTorchBlock<br/><small>class · 22 dòng</small>"]
     ModWallTorchBlock["ModWallTorchBlock<br/><small>class · 44 dòng</small>"]
+    TorchBurn["TorchBurn<br/><small>class · 49 dòng</small>"]
   end
   ClawdBrain --> ClawdEntity
   ClawdBrain --> ClawdKeyStore
@@ -126,11 +135,22 @@ flowchart LR
   DungeonLayout --> WorldRandom
   DungeonParams --> DungeonLayout
   DungeonParams --> RoomPreset
+  ModBlockBehaviour --> ModBlocksRegistry
+  ModBlockBehaviour --> TorchBurn
   ModBlockEntitiesRegistry --> ModBlocksRegistry
   ModBlockEntitiesRegistry --> ModTorchBlockEntity
   ModBlockEntitiesRegistry --> Susu609Mod
-  ModBlocksRegistry --> ModWallTorchBlock
+  ModBlocksRegistry --> ModDimTorchBlock
+  ModBlocksRegistry --> ModDimWallTorchBlock
+  ModBlocksRegistry --> ModUnlitTorchBlock
+  ModBlocksRegistry --> ModUnlitWallTorchBlock
   ModBlocksRegistry --> Susu609Mod
+  ModCreativeTabsRegistry --> ModItemsRegistry
+  ModCreativeTabsRegistry --> Susu609Mod
+  ModDimTorchBlock --> ModBlocksRegistry
+  ModDimTorchBlock --> TorchBurn
+  ModDimWallTorchBlock --> ModBlocksRegistry
+  ModDimWallTorchBlock --> TorchBurn
   ModEntitiesRegistry --> ClawdEntity
   ModEntitiesRegistry --> Susu609Mod
   ModEntityRenderersRegistry --> ClawdModel
@@ -151,8 +171,8 @@ flowchart LR
   ModTorchBlockEntity --> ModWallTorchBlock
   ModWallTorchBlock --> ModTorchBlockEntity
   ScreenInspector --> Susu609Mod
-  Susu609Mod --> ModBlockEntitiesRegistry
   Susu609Mod --> ModBlocksRegistry
+  Susu609Mod --> ModCreativeTabsRegistry
   Susu609Mod --> ModEntitiesRegistry
   Susu609Mod --> ModEntityRenderersRegistry
   Susu609Mod --> ModGameEventsRegistry
@@ -169,7 +189,7 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `Susu609Mod` | class | 123 | ModBlockEntitiesRegistry, ModBlocksRegistry, ModEntitiesRegistry, ModEntityRenderersRegistry, ModGameEventsRegistry, ModItemsRegistry, ModSoundsRegistry | NetworkEvent, NetworkEvent.Context, TickEvent, TickEvent.Phase, TickEvent.ServerTickEvent |
+| `Susu609Mod` | class | 123 | ModBlocksRegistry, ModCreativeTabsRegistry, ModEntitiesRegistry, ModEntityRenderersRegistry, ModGameEventsRegistry, ModItemsRegistry, ModSoundsRegistry | NetworkEvent, NetworkEvent.Context, TickEvent, TickEvent.Phase, TickEvent.ServerTickEvent |
 
 ### ai
 
@@ -233,12 +253,19 @@ flowchart LR
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
 | `ModBlockEntitiesRegistry` | class | 25 | ModBlocksRegistry, ModTorchBlockEntity, Susu609Mod | - |
-| `ModBlocksRegistry` | class | 33 | ModWallTorchBlock, Susu609Mod | - |
+| `ModBlocksRegistry` | class | 57 | ModDimTorchBlock, ModDimWallTorchBlock, ModUnlitTorchBlock, ModUnlitWallTorchBlock, Susu609Mod | - |
+| `ModCreativeTabsRegistry` | class | 31 | ModItemsRegistry, Susu609Mod | - |
 | `ModEntitiesRegistry` | class | 42 | ClawdEntity, Susu609Mod | EntityAttributeCreationEvent |
 | `ModEntityRenderersRegistry` | class | 34 | ClawdModel, ClawdRenderer, ModEntitiesRegistry | EntityRenderersEvent, EntityRenderersEvent.RegisterLayerDefinitions, EntityRenderersEvent.RegisterRenderers |
 | `ModGameEventsRegistry` | class | 44 | ClawdChat, ClawdKeyStore, ClawdWorker | RegisterCommandsEvent |
-| `ModItemsRegistry` | class | 45 | ClawdSpawnEggItem, ModBlocksRegistry, ModEntitiesRegistry, Susu609Mod | BuildCreativeModeTabContentsEvent |
+| `ModItemsRegistry` | class | 47 | ClawdSpawnEggItem, ModBlocksRegistry, ModEntitiesRegistry, Susu609Mod | BuildCreativeModeTabContentsEvent |
 | `ModSoundsRegistry` | class | 35 | Susu609Mod | SoundEvent, SoundEvent.createVariableRangeEvent |
+
+### mixin
+
+| Class | Loại | Dòng | Dùng tới | Event Forge |
+|---|---|---|---|---|
+| `ModBlockBehaviour` | class | 45 | ModBlocksRegistry, TorchBurn | - |
 
 ### network
 
@@ -275,22 +302,35 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
+| `ModDimTorchBlock` | class | 36 | ModBlocksRegistry, TorchBurn | - |
+| `ModDimWallTorchBlock` | class | 35 | ModBlocksRegistry, TorchBurn | - |
+| `ModUnlitTorchBlock` | class | 22 | - | - |
+| `ModUnlitWallTorchBlock` | class | 22 | - | - |
 | `ModWallTorchBlock` | class | 44 | ModTorchBlockEntity | - |
+| `TorchBurn` | class | 49 | - | - |
 
 ## Tài nguyên
 
 - `META-INF/mods.toml`
 - `assets/susu609/blockstates/dungeon_torch.json`
 - `assets/susu609/blockstates/torch.json`
+- `assets/susu609/blockstates/torch_dim.json`
+- `assets/susu609/blockstates/torch_off.json`
+- `assets/susu609/blockstates/wall_torch_dim.json`
+- `assets/susu609/blockstates/wall_torch_off.json`
 - `assets/susu609/lang/en_us.json`
 - `assets/susu609/lang/vi_vn.json`
 - `assets/susu609/models/block/dungeon_torch_wall.json`
 - `assets/susu609/models/block/dungeon_torch_wall_off.json`
+- `assets/susu609/models/block/torch_dim.json`
 - `assets/susu609/models/block/torch_off.json`
 - `assets/susu609/models/block/torch_wall.json`
 - `assets/susu609/models/block/torch_wall_off.json`
+- `assets/susu609/models/block/wall_torch_dim.json`
+- `assets/susu609/models/block/wall_torch_off.json`
 - `assets/susu609/models/item/clawd_spawn_egg.json`
 - `assets/susu609/models/item/torch.json`
+- `assets/susu609/models/item/torch_off.json`
 - `assets/susu609/sounds/entity/clawd/ambient1.ogg`
 - `assets/susu609/sounds/entity/clawd/ambient2.ogg`
 - `assets/susu609/sounds/entity/clawd/ambient3.ogg`
@@ -322,6 +362,10 @@ flowchart LR
 - `assets/susu609/textures/entity/clawd_agent.png`
 - `assets/susu609/textures/gui/title/mod_title.png`
 - `assets/susu609/textures/map/minimap_icons.png`
+- `data/susu609/loot_tables/blocks/torch_dim.json`
+- `data/susu609/loot_tables/blocks/torch_off.json`
+- `data/susu609/loot_tables/blocks/wall_torch_dim.json`
+- `data/susu609/loot_tables/blocks/wall_torch_off.json`
 - `data/susu609/worldgen/world_preset/void.json`
 - `pack.mcmeta`
 - `susu609.mixins.json`
