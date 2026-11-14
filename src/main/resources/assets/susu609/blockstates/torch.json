@@ -1,0 +1,24 @@
+{
+  "variants": {
+    "facing=north,fuel=0": { "model": "susu609:block/torch_wall_off" },
+    "facing=north,fuel=1": { "model": "susu609:block/torch_wall" },
+    "facing=north,fuel=2": { "model": "susu609:block/torch_wall" },
+    "facing=north,fuel=3": { "model": "susu609:block/torch_wall" },
+    "facing=north,fuel=4": { "model": "susu609:block/torch_wall" },
+    "facing=east,fuel=0": { "model": "susu609:block/torch_wall_off", "y": 90 },
+    "facing=east,fuel=1": { "model": "susu609:block/torch_wall", "y": 90 },
+    "facing=east,fuel=2": { "model": "susu609:block/torch_wall", "y": 90 },
+    "facing=east,fuel=3": { "model": "susu609:block/torch_wall", "y": 90 },
+    "facing=east,fuel=4": { "model": "susu609:block/torch_wall", "y": 90 },
+    "facing=south,fuel=0": { "model": "susu609:block/torch_wall_off", "y": 180 },
+    "facing=south,fuel=1": { "model": "susu609:block/torch_wall", "y": 180 },
+    "facing=south,fuel=2": { "model": "susu609:block/torch_wall", "y": 180 },
+    "facing=south,fuel=3": { "model": "susu609:block/torch_wall", "y": 180 },
+    "facing=south,fuel=4": { "model": "susu609:block/torch_wall", "y": 180 },
+    "facing=west,fuel=0": { "model": "susu609:block/torch_wall_off", "y": 270 },
+    "facing=west,fuel=1": { "model": "susu609:block/torch_wall", "y": 270 },
+    "facing=west,fuel=2": { "model": "susu609:block/torch_wall", "y": 270 },
+    "facing=west,fuel=3": { "model": "susu609:block/torch_wall", "y": 270 },
+    "facing=west,fuel=4": { "model": "susu609:block/torch_wall", "y": 270 }
+  }
+}
