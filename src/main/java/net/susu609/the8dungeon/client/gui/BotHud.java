@@ -88,6 +88,7 @@ public final class BotHud {
             case "STONE" -> "Đang đào đá";
             case "DIRT" -> "Đang đào đất";
             case "EXPLORE" -> "Đang khám phá";
+            case "HOME" -> "Đang về nhà";
             default -> "Đang nghỉ";
         };
     }

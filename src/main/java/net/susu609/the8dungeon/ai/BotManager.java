@@ -26,6 +26,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.network.PacketDistributor;
 import net.susu609.the8dungeon.Susu609Mod;
 import net.susu609.the8dungeon.network.BotStatusPacket;
+import net.susu609.the8dungeon.network.RulesSyncPacket;
 
 /**
  * Quản lý các người chơi máy: lệnh /bot và hồi sinh khi bot chết.
@@ -34,6 +35,21 @@ import net.susu609.the8dungeon.network.BotStatusPacket;
 public final class BotManager {
 
     private static final Map<String, BotPlayer> BOTS = new LinkedHashMap<>();
+    /** Số bot tối đa. Mỗi bot nên có khoảng 1 GB heap (chủ yếu là chunk quanh nó). */
+    public static final int MAX_BOTS = 4;
+    private static boolean reduced;
+    private static boolean humans = true;
+
+    /** true khi heap gần đầy: bot suy nghĩ thưa hơn, quét ít hơn, và không cho thêm bot. */
+    public static boolean reduced() {
+        return reduced;
+    }
+
+    /** true nếu có ít nhất một người chơi thật trên server. */
+    public static boolean humansOnline() {
+        return humans;
+    }
+
     private static final Map<UUID, BotInfo> LAST_SENT = new HashMap<>();
 
     private BotManager() {}
@@ -51,6 +67,15 @@ public final class BotManager {
                         .then(Commands.argument("name", StringArgumentType.word())
                                 .executes(c -> kill(c, StringArgumentType.getString(c, "name")))))
                 .then(Commands.literal("status").executes(BotManager::status))
+                .then(Commands.literal("rule")
+                        .then(Commands.argument("target", StringArgumentType.word())
+                                .then(Commands.argument("key", StringArgumentType.word())
+                                        .then(Commands.argument("value", StringArgumentType.word())
+                                                .executes(BotManager::setRule)))))
+                .then(Commands.literal("gui").executes(c -> {
+                    sendRules(c.getSource().getPlayerOrException(), true);
+                    return 1;
+                }))
                 .then(Commands.literal("debug")
                         .then(Commands.literal("on").executes(c -> debug(c, true)))
                         .then(Commands.literal("off").executes(c -> debug(c, false))))
@@ -70,6 +95,11 @@ public final class BotManager {
         MinecraftServer server = event.getServer();
         if (server.getTickCount() % 10 == 0) sendToSpectators(server);
         if (server.getTickCount() % 20 != 0) return;
+        humans = server.getPlayerList().getPlayers().stream().anyMatch(p -> !(p instanceof BotPlayer));
+        Runtime rt = Runtime.getRuntime();
+        double ratio = (double) (rt.totalMemory() - rt.freeMemory()) / rt.maxMemory();
+        if (!reduced && ratio > 0.90D) reduced = true;       // có độ trễ: vào ở 90%, ra ở 75%
+        else if (reduced && ratio < 0.75D) reduced = false;
         for (Map.Entry<String, BotPlayer> e : new ArrayList<>(BOTS.entrySet())) {
             BotPlayer bot = e.getValue();
             if (bot.isRemoved() && bot.isAlive()) {
@@ -145,6 +175,14 @@ public final class BotManager {
 
     private static int spawn(CommandContext<CommandSourceStack> c, String name) {
         MinecraftServer server = c.getSource().getServer();
+        if (BOTS.size() >= MAX_BOTS) {
+            c.getSource().sendFailure(Component.literal("Tối đa " + MAX_BOTS + " bot (mỗi bot ~1 GB RAM)"));
+            return 0;
+        }
+        if (reduced) {
+            c.getSource().sendFailure(Component.literal("Heap server gần đầy, chưa thêm bot được"));
+            return 0;
+        }
         if (BOTS.containsKey(name) || server.getPlayerList().getPlayerByName(name) != null) {
             c.getSource().sendFailure(Component.literal("Đã có người chơi tên " + name));
             return 0;
@@ -169,6 +207,81 @@ public final class BotManager {
         int removed = n;
         c.getSource().sendSuccess(() -> Component.literal("Đã gỡ " + removed + " bot"), true);
         return n;
+    }
+
+    // ===== Luật =====
+
+    /** Áp dụng luật từ client (đã kiểm quyền). target rỗng = luật chung; bot không tồn tại thì bỏ qua. */
+    public static void applyRules(String target, boolean inherit, BotRules rules) {
+        MinecraftServer server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server == null) return;
+        BotRules r = rules.copy();
+        r.clamp();
+        BotRulesStore store = BotRulesStore.get(server);
+        if (target.isEmpty()) store.setGlobal(r);
+        else if (BOTS.containsKey(target)) store.setBot(target, inherit, r);
+    }
+
+    /** Gửi luật hiện tại và thống kê hiệu năng cho một người chơi; open=true thì mở màn hình. */
+    public static void sendRules(ServerPlayer to, boolean open) {
+        MinecraftServer server = to.getServer();
+        if (server == null) return;
+        BotRulesStore store = BotRulesStore.get(server);
+        java.util.List<RulesSyncPacket.BotRow> rows = new ArrayList<>();
+        for (Map.Entry<String, BotPlayer> e : BOTS.entrySet()) {
+            BotRulesStore.Entry en = store.entry(e.getKey());
+            boolean inherit = en == null || en.inherit;
+            BotRules shown = en != null ? en.rules : store.global();
+            rows.add(new RulesSyncPacket.BotRow(e.getKey(), inherit, shown,
+                    (int) (e.getValue().avgNanos / 1000L), e.getValue().info().goal()));
+        }
+        Runtime rt = Runtime.getRuntime();
+        int used = (int) ((rt.totalMemory() - rt.freeMemory()) >> 20);
+        int max = (int) (rt.maxMemory() >> 20);
+        int chunks = to.serverLevel().getChunkSource().getLoadedChunksCount();
+        Susu609Mod.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> to),
+                new RulesSyncPacket(open, store.global(), rows, used, max, chunks, MAX_BOTS, reduced));
+    }
+
+    /** /bot rule <all|tên bot> <khóa> <giá trị>, ví dụ: /bot rule all fight false, /bot rule Bot roam 96 */
+    private static int setRule(CommandContext<CommandSourceStack> c) {
+        String target = StringArgumentType.getString(c, "target");
+        String key = StringArgumentType.getString(c, "key");
+        String value = StringArgumentType.getString(c, "value");
+        boolean global = target.equals("all");
+        if (!global && !BOTS.containsKey(target)) {
+            c.getSource().sendFailure(Component.literal("Không có bot tên " + target));
+            return 0;
+        }
+        BotRulesStore store = BotRulesStore.get(c.getSource().getServer());
+        BotRules r = (global ? store.global() : store.effective(target)).copy();
+        try {
+            boolean b = Boolean.parseBoolean(value);
+            switch (key) {
+                case "fight" -> r.fight = b;
+                case "hunt" -> r.hunt = b;
+                case "mine" -> r.mine = b;
+                case "shelter" -> r.shelter = b;
+                case "explore" -> r.explore = b;
+                case "collect" -> r.collect = b;
+                case "pause" -> r.pauseWhenAlone = b;
+                case "flee" -> r.fleeHpPct = Integer.parseInt(value);
+                case "eat" -> r.eatBelow = Integer.parseInt(value);
+                case "roam" -> r.roam = Integer.parseInt(value);
+                case "think" -> r.thinkEvery = Integer.parseInt(value);
+                case "budget" -> r.scanBudget = Integer.parseInt(value);
+                default -> {
+                    c.getSource().sendFailure(Component.literal("Khóa hợp lệ: fight hunt mine shelter explore collect pause flee eat roam think budget"));
+                    return 0;
+                }
+            }
+        } catch (NumberFormatException e) {
+            c.getSource().sendFailure(Component.literal("Giá trị không phải số: " + value));
+            return 0;
+        }
+        applyRules(global ? "" : target, false, r);
+        c.getSource().sendSuccess(() -> Component.literal("Đã đặt " + key + "=" + value + " cho " + target), true);
+        return 1;
     }
 
     private static int debug(CommandContext<CommandSourceStack> c, boolean on) {

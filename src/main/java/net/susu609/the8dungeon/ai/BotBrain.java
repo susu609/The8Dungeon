@@ -31,15 +31,15 @@ import net.minecraft.world.phys.Vec3;
  */
 final class BotBrain {
 
-    private enum Goal { IDLE, FLEE, FIGHT, EAT, HUNT, COLLECT, SHELTER, WOOD, STONE, DIRT, EXPLORE }
+    private enum Goal { IDLE, FLEE, FIGHT, EAT, HUNT, COLLECT, SHELTER, WOOD, STONE, DIRT, EXPLORE, HOME }
 
-    private static final int THINK_EVERY = 10;
     private static final double REACH = 4.0D;
 
     private final BotPlayer bot;
     private final BotSenses senses = new BotSenses();
     private final BotNav nav;
 
+    private BotRules rules = new BotRules();
     private int age;
     private boolean rethink;
     private int cannotFleeUntil; // không chạy được thì đánh, tránh đổi qua lại chạy/đánh
@@ -87,9 +87,14 @@ final class BotBrain {
         age++;
         bot.setJumping(bot.isInWater() || bot.isInLava()); // luôn bơi lên, kể cả khi đang đứng yên đào
         if (age % 5 == 0 && bot.isInWall()) unstick();
-        if (age % THINK_EVERY == 0 || rethink) {
+        int every = rules.thinkEvery * (BotManager.reduced() ? 2 : 1); // RAM gần đầy thì suy nghĩ thưa hơn
+        if (age % every == 0 || rethink) {
             rethink = false;
             think();
+        }
+        if (rules.pauseWhenAlone && !BotManager.humansOnline()) { // vắng người chơi thật: đứng yên cho nhẹ
+            nav.stop();
+            return;
         }
         if (age % 200 == 0) {
             BotLog.log(bot, "BEAT", () -> status() + " pos=" + bot.blockPosition().toShortString()
@@ -98,14 +103,19 @@ final class BotBrain {
         act();
     }
 
+    private boolean inRoam(BlockPos p) {
+        return rules.roam <= 0 || bot.home().distSqr(p) <= (double) rules.roam * rules.roam;
+    }
+
     private void think() {
+        rules = BotRulesStore.get(bot.getServer()).effective(bot.getGameProfile().getName());
         for (int i = 0; i < 6 && BotCrafting.step(bot); i++) {
             // chế liên tục tới khi hết việc
         }
         snapshotInventory();
 
         boolean inShelter = sheltered && isNight();
-        senses.update(bot, age, !inShelter);
+        senses.update(bot, age, !inShelter, rules.scanBudget / (BotManager.reduced() ? 2 : 1));
 
         float hp = bot.getHealth() / bot.getMaxHealth();
         int food = bot.getFoodData().getFoodLevel();
@@ -124,25 +134,38 @@ final class BotBrain {
 
         float[] sc = new float[Goal.values().length];
         if ((h != null || creeper) && !inShelter) {
-            if (canFlee && (creeper || hp < (fleeing ? 0.55F : 0.4F))) sc[Goal.FLEE.ordinal()] = 0.95F;
-            else if (h != null && hd <= 16.0D) sc[Goal.FIGHT.ordinal()] = hd < 6.0D ? 0.85F : 0.6F;
+            float fleeHp = rules.fleeHpPct / 100.0F;
+            if (canFlee && (creeper || hp < (fleeing ? fleeHp + 0.15F : fleeHp))) sc[Goal.FLEE.ordinal()] = 0.95F;
+            else if (rules.fight && h != null && hd <= 16.0D) sc[Goal.FIGHT.ordinal()] = hd < 6.0D ? 0.85F : 0.6F;
         }
-        if (!foodStack.isEmpty() && (food <= 14 || (hp < 0.7F && food < 20)) && (h == null || hd > 5.0D || inShelter)) {
+        if (!foodStack.isEmpty() && (food <= rules.eatBelow || (hp < 0.7F && food < 20)) && (h == null || hd > 5.0D || inShelter)) {
             sc[Goal.EAT.ordinal()] = food <= 6 ? 1.0F : 0.8F;
         }
         if (!inShelter) {
-            if (senses.prey != null && foodCount < 2 && food <= 16) sc[Goal.HUNT.ordinal()] = 0.6F + (20 - food) / 80.0F;
-            if (senses.item != null) sc[Goal.COLLECT.ordinal()] = 0.65F;
-            boolean needWood = logs * 4 + planks < 20 || pickRank == 0;
-            if (senses.best(BotSenses.LOG) != null && needWood) sc[Goal.WOOD.ordinal()] = pickRank == 0 ? 0.65F : 0.5F;
-            boolean shortOnBlocks = placeable < 9 && (dusk || night);
-            if (pickRank >= 1 && senses.best(BotSenses.STONE) != null && (cobble < 24 || shortOnBlocks)) {
-                sc[Goal.STONE.ordinal()] = shortOnBlocks ? 0.75F : 0.45F;
+            if (rules.hunt && senses.prey != null && inRoam(senses.prey.blockPosition()) && foodCount < 2 && food <= 16) {
+                sc[Goal.HUNT.ordinal()] = 0.6F + (20 - food) / 80.0F;
             }
-            if (shortOnBlocks && senses.best(BotSenses.DIRT) != null) sc[Goal.DIRT.ordinal()] = 0.7F;
-            sc[Goal.EXPLORE.ordinal()] = 0.2F;
+            if (rules.collect && senses.item != null && inRoam(senses.item.blockPosition())) sc[Goal.COLLECT.ordinal()] = 0.65F;
+            if (rules.mine) {
+                BlockPos log = senses.best(BotSenses.LOG);
+                BlockPos stone = senses.best(BotSenses.STONE);
+                BlockPos dirt = senses.best(BotSenses.DIRT);
+                boolean needWood = logs * 4 + planks < 20 || pickRank == 0;
+                if (log != null && inRoam(log) && needWood) sc[Goal.WOOD.ordinal()] = pickRank == 0 ? 0.65F : 0.5F;
+                boolean shortOnBlocks = placeable < 9 && (dusk || night);
+                if (pickRank >= 1 && stone != null && inRoam(stone) && (cobble < 24 || shortOnBlocks)) {
+                    sc[Goal.STONE.ordinal()] = shortOnBlocks ? 0.75F : 0.45F;
+                }
+                if (shortOnBlocks && dirt != null && inRoam(dirt)) sc[Goal.DIRT.ordinal()] = 0.7F;
+            }
+            if (rules.explore) sc[Goal.EXPLORE.ordinal()] = 0.2F;
+            if (rules.roam > 0) { // ra xa quá bán kính thì quay về, có độ trễ để khỏi đổi qua lại
+                double d2 = bot.home().distSqr(bot.blockPosition());
+                double lim = goal == Goal.HOME ? rules.roam * 0.6D : rules.roam;
+                if (d2 > lim * lim) sc[Goal.HOME.ordinal()] = 0.7F;
+            }
         }
-        if (night && !shelterDone && (placeable >= 9 || !shelterPlan.isEmpty())) sc[Goal.SHELTER.ordinal()] = 0.8F;
+        if (rules.shelter && night && !shelterDone && (placeable >= 9 || !shelterPlan.isEmpty())) sc[Goal.SHELTER.ordinal()] = 0.8F;
         else if (!night && !shelterPlan.isEmpty()) sc[Goal.SHELTER.ordinal()] = 0.9F; // phải phá chỗ trú để ra
         if (!night && !dusk && shelterPlan.isEmpty()) shelterDone = false;
 
@@ -247,6 +270,7 @@ final class BotBrain {
             case STONE -> actMine(BotSenses.STONE);
             case DIRT -> actMine(BotSenses.DIRT);
             case EXPLORE -> actExplore();
+            case HOME -> nav.moveTo(bot.home(), age, false);
             default -> nav.stop();
         }
     }
@@ -377,7 +401,7 @@ final class BotBrain {
             double z = bot.getZ() + Math.sin(heading) * dist;
             if (!level.hasChunk(Mth.floor(x) >> 4, Mth.floor(z) >> 4)) continue;
             BlockPos p = surface(x, z);
-            if (level.getFluidState(p.below()).isEmpty() && level.getFluidState(p).isEmpty()) return p;
+            if (inRoam(p) && level.getFluidState(p.below()).isEmpty() && level.getFluidState(p).isEmpty()) return p;
         }
         heading += Math.PI; // bí đường thì quay đầu
         return null;

@@ -17,6 +17,9 @@ public final class BotPlayer extends ServerPlayer {
 
     private final BotBrain brain = new BotBrain(this);
     int deadTicks;
+    private BlockPos home = BlockPos.ZERO;
+    /** Thời gian trung bình (ns) của brain.tick(), trung bình trượt, dùng cho thống kê hiệu năng. */
+    long avgNanos;
     private double lastX, lastY, lastZ;
 
     private BotPlayer(MinecraftServer server, ServerLevel level, GameProfile profile) {
@@ -43,10 +46,16 @@ public final class BotPlayer extends ServerPlayer {
         BlockPos top = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, level.getSharedSpawnPos());
         bot.teleportTo(level, top.getX() + 0.5D, top.getY(), top.getZ() + 0.5D, 0.0F, 0.0F);
         bot.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+        bot.home = bot.blockPosition();
         bot.lastX = bot.getX();
         bot.lastY = bot.getY();
         bot.lastZ = bot.getZ();
         return bot;
+    }
+
+    /** Điểm nhà (nơi sinh ra), dùng cho luật bán kính. */
+    public BlockPos home() {
+        return home;
     }
 
     public BotInfo info() {
@@ -64,7 +73,9 @@ public final class BotPlayer extends ServerPlayer {
             this.serverLevel().getChunkSource().move(this); // giữ chunk quanh bot được tải
         }
         if (this.isAlive()) {
+            long t0 = System.nanoTime();
             brain.tick();
+            avgNanos += ((System.nanoTime() - t0) - avgNanos) / 64L;
         }
         super.tick();
         this.doTick(); // không có gói tin của client nên phải tự gọi

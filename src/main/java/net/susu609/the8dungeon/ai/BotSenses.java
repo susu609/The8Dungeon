@@ -22,7 +22,7 @@ import net.minecraft.world.phys.AABB;
 
 /**
  * Giác quan của bot, thiết kế để rẻ:
- * - quét khối theo ngân sách (BUDGET khối mỗi lần suy nghĩ), không bao giờ quét cả vùng trong một tick;
+ * - quét khối theo ngân sách (theo luật scanBudget mỗi lần suy nghĩ), không bao giờ quét cả vùng trong một tick;
  * - kết quả được kiểm tra lại khi dùng, nên dữ liệu hơi cũ cũng không sai;
  * - truy vấn thực thể trong hộp nhỏ, chỉ mỗi vài tick.
  */
@@ -32,7 +32,6 @@ final class BotSenses {
 
     private static final int R = 16, RY = 6;
     private static final int W = 2 * R + 1, H = 2 * RY + 1, TOTAL = W * W * H;
-    private static final int BUDGET = 700;
 
     private final BlockPos[] best = new BlockPos[3];
     private final Long2IntOpenHashMap banned = new Long2IntOpenHashMap(); // vị trí -> tick hết hạn cấm
@@ -65,12 +64,12 @@ final class BotSenses {
     }
 
     /** Cập nhật giác quan. blocks=false khi đang trú ẩn để tiết kiệm CPU. */
-    void update(BotPlayer bot, int now, boolean blocks) {
+    void update(BotPlayer bot, int now, boolean blocks, int budget) {
         ServerLevel level = bot.serverLevel();
         entities(bot, level, now);
         if (blocks) {
             validate(level, now);
-            scan(bot, level, now);
+            scan(bot, level, now, budget);
         }
     }
 
@@ -138,12 +137,12 @@ final class BotSenses {
     }
 
     /** Quét tiếp phần còn lại của khối lập phương quanh bot, tối đa BUDGET khối. */
-    private void scan(BotPlayer bot, ServerLevel level, int now) {
+    private void scan(BotPlayer bot, ServerLevel level, int now, int budget) {
         if (cursor >= TOTAL) {
             cursor = 0;
             center = bot.blockPosition();
         }
-        int end = Math.min(TOTAL, cursor + BUDGET);
+        int end = Math.min(TOTAL, cursor + budget);
         BlockPos here = bot.blockPosition();
         for (; cursor < end; cursor++) {
             int i = cursor;
