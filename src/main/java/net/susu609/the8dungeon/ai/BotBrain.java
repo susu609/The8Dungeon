@@ -33,7 +33,7 @@ import net.minecraft.world.phys.Vec3;
  */
 final class BotBrain {
 
-    private enum Goal { IDLE, FLEE, FIGHT, EAT, HUNT, COLLECT, SHELTER, WOOD, STONE, DIRT, EXPLORE, HOME, COOK, GROUP, SHARE }
+    private enum Goal { IDLE, FLEE, FIGHT, EAT, HUNT, COLLECT, SHELTER, WOOD, STONE, DIRT, EXPLORE, HOME, COOK, GROUP, SHARE, SLEEP }
 
     private static final double REACH = 4.0D;
 
@@ -80,6 +80,7 @@ final class BotBrain {
     private BlockPos myCell;          // ô đứng của mình trong hầm
     private boolean shelterAbandoned; // hết vật liệu vá / bị đánh lúc máu thấp: bỏ hầm tới sáng
     private int shelterStuckSince = -1;
+    private int bedRetryAt;           // giường vừa không nằm được: thử lại sau
     // Hợp tác
     private final List<net.minecraft.world.entity.player.Player> allies = new ArrayList<>();
     private net.minecraft.world.entity.player.Player nearestAlly;
@@ -403,6 +404,12 @@ final class BotBrain {
         boolean groupShelter = rules.coop && BotManager.sharedShelterNear(bot) != null;
         boolean canShelter = shelter != null || placeable >= 9 || groupShelter || (allyBotNear(16.0D) && placeable >= 6);
         if (rules.shelter && night && !shelterDone && !shelterAbandoned && canShelter) sc[Goal.SHELTER.ordinal()] = 0.8F;
+        // Có giường trống (nhà trong làng...) thì ngủ giường tốt hơn tự dựng hầm
+        BlockPos bed = senses.best(BotSenses.BED);
+        if (rules.shelter && night && shelter == null && age >= bedRetryAt && (bot.isSleeping()
+                || (bed != null && inRoam(bed) && bed.distSqr(bot.blockPosition()) < 48 * 48))) {
+            sc[Goal.SLEEP.ordinal()] = 0.85F;
+        }
         else if (!night && shelter != null) sc[Goal.SHELTER.ordinal()] = 0.9F; // phải mở hầm để ra
         if (!night && !dusk && shelter == null) {
             shelterDone = false;
@@ -528,6 +535,10 @@ final class BotBrain {
     // ===== Hành động =====
 
     private void act() {
+        if (bot.isSleeping() && goal != Goal.SLEEP) { // có việc gấp (bị đánh, chạy...) thì dậy
+            bot.stopSleepInBed(false, true);
+            BotLog.log(bot, "SLEEP", () -> "thức dậy vì " + goal);
+        }
         switch (goal) {
             case FLEE -> actFlee();
             case FIGHT -> chase(fightTarget);
@@ -542,6 +553,7 @@ final class BotBrain {
             case COOK -> actCook();
             case GROUP -> actGroup();
             case SHARE -> actShare();
+            case SLEEP -> actSleep();
             case HOME -> nav.moveTo(bot.home(), age, false);
             default -> nav.stop();
         }
@@ -1007,6 +1019,35 @@ final class BotBrain {
         shelter = null;
         myCell = null;
         shelterDone = true;
+    }
+
+    // ===== Ngủ giường =====
+
+    private void actSleep() {
+        if (bot.isSleeping()) {
+            nav.stop();
+            return;
+        }
+        BlockPos bed = senses.best(BotSenses.BED);
+        if (bed == null) {
+            nav.stop();
+            rethink = true;
+            return;
+        }
+        if (bot.position().distanceToSqr(Vec3.atBottomCenterOf(bed)) > 2.0D * 2.0D) {
+            nav.moveTo(bed, age, false);
+            if (nav.failed) {
+                senses.ban(bed, age + 2400);
+                BotLog.log(bot, "SLEEP", () -> "không tới được giường " + bed.toShortString());
+            }
+            return;
+        }
+        nav.stop();
+        bot.startSleepInBed(bed).ifLeft(problem -> {
+            BotLog.log(bot, "SLEEP", () -> "không ngủ được ở " + bed.toShortString() + ": " + problem);
+            senses.ban(bed, age + 1200);
+            bedRetryAt = age + 200;
+        }).ifRight(ok -> BotLog.log(bot, "SLEEP", () -> "nằm ngủ tại " + bed.toShortString()));
     }
 
     // ===== Hợp tác =====

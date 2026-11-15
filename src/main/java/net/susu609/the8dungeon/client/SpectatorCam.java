@@ -83,6 +83,12 @@ public final class SpectatorCam {
     private static Player target;              // bot đang theo dõi (null nếu không hoạt động)
     private static double dist = FAR;
     private static double prevDist = FAR; // để nội suy khoảng cách theo khung hình
+    // Bay mượt tới bot khác (bấm mặt bot trên overlay)
+    private static final long FLY_MS = 1000L;
+    private static String flyTarget;      // tên bot đang chờ bay tới
+    private static Vec3 flyFrom;          // vị trí camera lúc bắt đầu bay
+    private static long flyStart;
+    private static Vec3 lastCamPos;
     private static int ticks;
 
     private SpectatorCam() {}
@@ -180,12 +186,39 @@ public final class SpectatorCam {
         LocalPlayer p = Minecraft.getInstance().player;
         if (bot == null || p == null || mode == Mode.FREE) return null;
         double d = Mth.lerp(partialTick, prevDist, dist);
-        return bot.getEyePosition(partialTick).add(direction(p).scale(d));
+        Vec3 pos = bot.getEyePosition(partialTick).add(direction(p).scale(d));
+        if (flyTarget != null && bot.getGameProfile().getName().equals(flyTarget)) {
+            long now = net.minecraft.Util.getMillis();
+            if (flyStart < 0L) {
+                // quá xa (bot ngoài vùng đã tải, server dịch chuyển mình tới) thì khỏi bay
+                if (flyFrom == null || flyFrom.distanceTo(pos) > 96.0D) flyTarget = null;
+                else flyStart = now;
+            }
+            if (flyTarget != null) {
+                double t = Math.min(1.0D, (now - flyStart) / (double) FLY_MS);
+                double e = t * t * (3.0D - 2.0D * t); // smoothstep: chậm - nhanh - chậm
+                pos = flyFrom.lerp(pos, e);
+                if (t >= 1.0D) flyTarget = null;
+            }
+        }
+        lastCamPos = pos;
+        return pos;
     }
 
     /** Chế độ trên xuống: khóa nhìn thẳng xuống. */
     public static boolean lockPitchDown() {
         return target != null && mode == Mode.TOP;
+    }
+
+    /** Bấm mặt bot trên overlay: chọn bot đó và cho camera bay mượt tới (bot quá xa thì dịch chuyển thẳng). */
+    public static void flyTo(String name) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || !mc.player.isSpectator()) return;
+        if (mode == Mode.FREE) setMode(Mode.ORBIT);
+        flyTarget = name;
+        flyFrom = lastCamPos != null ? lastCamPos : mc.gameRenderer.getMainCamera().getPosition();
+        flyStart = -1L; // bắt đầu tính khi bot mới đã thành mục tiêu
+        Susu609Mod.PACKET_HANDLER.sendToServer(new net.susu609.the8dungeon.network.WatchBotPacket(name));
     }
 
     /** Chuyển sang bot trước/sau trong danh sách; server ghi nhớ lựa chọn và dịch chuyển tới nếu bot ở xa. */

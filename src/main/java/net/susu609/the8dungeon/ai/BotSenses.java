@@ -28,12 +28,13 @@ import net.minecraft.world.phys.AABB;
  */
 final class BotSenses {
 
-    static final int LOG = 0, STONE = 1, DIRT = 2;
+    static final int LOG = 0, STONE = 1, DIRT = 2, BED = 3;
+    private static final int KINDS = 4;
 
     private static final int R = 16, RY = 6;
     private static final int W = 2 * R + 1, H = 2 * RY + 1, TOTAL = W * W * H;
 
-    private final BlockPos[] best = new BlockPos[3];
+    private final BlockPos[] best = new BlockPos[KINDS];
     private final Long2IntOpenHashMap banned = new Long2IntOpenHashMap(); // vị trí -> tick hết hạn cấm
     private final Int2IntOpenHashMap ignoredItems = new Int2IntOpenHashMap();
     private final BlockPos.MutableBlockPos cursorPos = new BlockPos.MutableBlockPos();
@@ -164,7 +165,11 @@ final class BotSenses {
         return switch (kind) {
             case LOG -> s.is(BlockTags.LOGS);
             case STONE -> s.is(Blocks.STONE) || s.is(Blocks.COBBLESTONE);
-            default -> s.is(Blocks.DIRT) || s.is(Blocks.GRASS_BLOCK) || s.is(Blocks.COARSE_DIRT);
+            case DIRT -> s.is(Blocks.DIRT) || s.is(Blocks.GRASS_BLOCK) || s.is(Blocks.COARSE_DIRT);
+            // giường trống: chỉ lấy phần đầu giường (vị trí dùng để nằm)
+            default -> s.is(BlockTags.BEDS) && s.getValue(net.minecraft.world.level.block.BedBlock.PART)
+                    == net.minecraft.world.level.block.state.properties.BedPart.HEAD
+                    && !s.getValue(net.minecraft.world.level.block.BedBlock.OCCUPIED);
         };
     }
 
@@ -193,7 +198,7 @@ final class BotSenses {
             if (!level.hasChunkAt(cursorPos)) continue;
             BlockState s = level.getBlockState(cursorPos);
             if (s.isAir()) continue;
-            for (int k = 0; k < 3; k++) {
+            for (int k = 0; k < KINDS; k++) {
                 if (matches(k, s)) consider(k, level, here, now);
             }
         }
@@ -210,7 +215,7 @@ final class BotSenses {
                     m.set(here.getX() + dx, here.getY() + dy, here.getZ() + dz);
                     BlockState s = level.getBlockState(m);
                     if (s.isAir()) continue;
-                    for (int k = 0; k < 3; k++) {
+                    for (int k = 0; k < KINDS; k++) {
                         if (matches(k, s)) {
                             cursorPos.set(m);
                             consider(k, level, here, now);
@@ -226,7 +231,7 @@ final class BotSenses {
         if (banned.containsKey(pos.asLong())) return;
         BlockPos cur = best[kind];
         if (cur != null && cur.distSqr(here) <= pos.distSqr(here)) return;
-        if (!safeAndExposed(level, pos)) return;
+        if (kind != BED && !safeAndExposed(level, pos)) return;
         best[kind] = pos.immutable();
     }
 

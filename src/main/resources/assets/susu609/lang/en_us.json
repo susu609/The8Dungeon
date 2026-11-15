@@ -14,5 +14,6 @@
   "key.susu609.camera": "Bot camera: free / follow (spectator)",
   "key.categories.susu609": "The8Dungeon",
   "key.susu609.bot_prev": "Bot camera: previous bot",
-  "key.susu609.bot_next": "Bot camera: next bot"
+  "key.susu609.bot_next": "Bot camera: next bot",
+  "key.susu609.cursor": "Bot overlay: show cursor (hold)"
 }

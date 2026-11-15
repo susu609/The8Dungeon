@@ -1,8 +1,13 @@
 package net.susu609.the8dungeon.client.gui;
 
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.PlayerFaceRenderer;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.resources.DefaultPlayerSkin;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
@@ -10,23 +15,43 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.susu609.the8dungeon.Susu609Mod;
 import net.susu609.the8dungeon.ai.BotInfo;
+import net.susu609.the8dungeon.client.SpectatorCam;
 
 /**
- * Bảng nhỏ ở góc phải trên: chỉ hiện khi bạn đang ở chế độ spectator,
- * cho biết bot đang làm gì. Tự ẩn nếu 3 giây không có dữ liệu mới.
+ * Overlay cho người xem (góc phải trên):
+ * - Bảng bot đang theo dõi: việc đang làm, máu, đói, gỗ/đá/cuốc, chế độ camera.
+ * - Hàng mặt mọi bot (kèm thanh máu); giữ Alt để có con trỏ: trỏ vào xem chỉ số, bấm để camera bay tới.
+ * - Nút "Bỏ qua đêm" khi mọi bot đã ngủ (hiện cả cho người ở Sáng tạo).
+ * Tự ẩn nếu 3 giây không có dữ liệu mới.
  */
 @Mod.EventBusSubscriber(modid = Susu609Mod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class BotHud {
 
-    private static BotInfo info;
-    private static java.util.List<String> names = java.util.List.of();
+    static final int PANEL_W = 150, PANEL_H = 69, FACE = 16, FACE_GAP = 4, MARGIN = 6;
+
+    private static BotInfo info;                 // bot đang theo dõi (null ở Sáng tạo)
+    private static List<BotInfo> all = List.of();
+    private static boolean canSkipNight;
     private static long receivedAt;
 
     private BotHud() {}
 
-    /** Tên mọi bot trên server (để chuyển bằng phím [ ]). */
-    public static java.util.List<String> botNames() {
-        return isActive() ? names : java.util.List.of();
+    public static void accept(BotInfo focus, List<BotInfo> bots, boolean skip) {
+        info = focus;
+        all = bots;
+        canSkipNight = skip;
+        Minecraft mc = Minecraft.getInstance();
+        receivedAt = mc.level != null ? mc.level.getGameTime() : 0L;
+    }
+
+    private static boolean fresh() {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.level != null && mc.level.getGameTime() - receivedAt <= 60L;
+    }
+
+    /** true khi đang có dữ liệu bot mới (người xem đang theo dõi một bot). */
+    public static boolean isActive() {
+        return info != null && fresh();
     }
 
     /** Tên bot đang hiện trên HUD (null nếu chưa có hoặc dữ liệu đã cũ). */
@@ -34,18 +59,59 @@ public final class BotHud {
         return isActive() ? info.name() : null;
     }
 
-    public static void accept(BotInfo data, java.util.List<String> bots) {
-        info = data;
-        names = bots;
-        Minecraft mc = Minecraft.getInstance();
-        receivedAt = mc.level != null ? mc.level.getGameTime() : 0L;
+    /** Tên mọi bot (để chuyển bằng phím [ ]). */
+    public static List<String> botNames() {
+        return isActive() ? all.stream().map(BotInfo::name).toList() : List.of();
     }
 
-    /** true khi đang có dữ liệu bot mới (nghĩa là người chơi đang theo dõi một bot). */
-    public static boolean isActive() {
-        Minecraft mc = Minecraft.getInstance();
-        return info != null && mc.level != null && mc.level.getGameTime() - receivedAt <= 60L;
+    static List<BotInfo> allBots() {
+        return fresh() ? all : List.of();
     }
+
+    static boolean skipVisible() {
+        Minecraft mc = Minecraft.getInstance();
+        return canSkipNight && fresh() && mc.player != null && (mc.player.isSpectator() || mc.player.isCreative());
+    }
+
+    // ===== Bố cục (dùng chung với BotBarScreen để biết chỗ trỏ chuột) =====
+
+    static int panelX(int width) {
+        return width - PANEL_W - MARGIN;
+    }
+
+    static boolean showPanel() {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.player != null && mc.player.isSpectator() && isActive();
+    }
+
+    static int facesY() {
+        return MARGIN + (showPanel() ? PANEL_H + 4 : 0);
+    }
+
+    /** Ô mặt thứ i: {x, y}. Mặt xếp hàng từ phải sang trái dưới bảng. */
+    static int[] faceRect(int width, int i) {
+        int x = width - MARGIN - FACE - i * (FACE + FACE_GAP);
+        return new int[] {x, facesY()};
+    }
+
+    static boolean showFaces() {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.player != null && mc.player.isSpectator() && !allBots().isEmpty();
+    }
+
+    /** Nút bỏ qua đêm: {x, y, w, h}. */
+    static int[] skipRect(int width) {
+        int y = facesY() + (showFaces() ? FACE + 8 : 0);
+        return new int[] {width - MARGIN - 90, y, 90, 14};
+    }
+
+    static ResourceLocation skinOf(String name) {
+        Minecraft mc = Minecraft.getInstance();
+        PlayerInfo pi = mc.getConnection() != null ? mc.getConnection().getPlayerInfo(name) : null;
+        return pi != null ? pi.getSkinLocation() : DefaultPlayerSkin.getDefaultSkin();
+    }
+
+    // ===== Vẽ =====
 
     @SubscribeEvent
     public static void onOverlays(RegisterGuiOverlaysEvent event) {
@@ -54,37 +120,59 @@ public final class BotHud {
 
     private static void render(ForgeGui gui, GuiGraphics g, float partialTick, int width, int height) {
         Minecraft mc = Minecraft.getInstance();
-        if (info == null || mc.player == null || mc.level == null || mc.options.hideGui) return;
-        if (!mc.player.isSpectator() || mc.level.getGameTime() - receivedAt > 60L) return;
-
+        if (mc.player == null || mc.level == null || mc.options.hideGui) return;
         Font font = mc.font;
-        BotInfo i = info;
-        int w = 150, h = 69;
-        int x = width - w - 6, y = 6;
-        g.fill(x, y, x + w, y + h, 0x90000000);
-        g.fill(x, y, x + 2, y + h, i.danger() ? 0xFFE05050 : 0xFF50C878); // vạch màu: đỏ khi có quái
 
-        int idx = names.indexOf(i.name());
-        String pos = names.size() > 1 && idx >= 0 ? "  (" + (idx + 1) + "/" + names.size() + ")" : "";
-        g.drawString(font, "Bot: " + i.name() + pos, x + 7, y + 4, 0xFFFFFF, false);
-        g.drawString(font, label(i.goal()) + (i.sheltered() ? " (trú)" : ""), x + 7, y + 15, 0xFFE9A5, false);
+        if (showPanel()) {
+            BotInfo i = info;
+            int x = panelX(width), y = MARGIN;
+            g.fill(x, y, x + PANEL_W, y + PANEL_H, 0x90000000);
+            g.fill(x, y, x + 2, y + PANEL_H, i.danger() ? 0xFFE05050 : 0xFF50C878); // đỏ khi có quái
+            List<String> names = botNames();
+            int idx = names.indexOf(i.name());
+            String pos = names.size() > 1 && idx >= 0 ? "  (" + (idx + 1) + "/" + names.size() + ")" : "";
+            g.drawString(font, "Bot: " + i.name() + pos, x + 7, y + 4, 0xFFFFFF, false);
+            g.drawString(font, label(i.goal()) + (i.sheltered() ? " (trú)" : ""), x + 7, y + 15, 0xFFE9A5, false);
+            bar(g, x + 7, y + 27, 54, i.hp() / 20.0F, 0xFFD03030);
+            bar(g, x + 70, y + 27, 54, i.food() / 20.0F, 0xFFC8803C);
+            g.drawString(font, "Gỗ " + i.wood() + "  Đá " + i.stone() + "  Cuốc: " + pick(i.pick()),
+                    x + 7, y + 40, 0xC8C8C8, false);
+            String key = SpectatorCam.KEY.getTranslatedKeyMessage().getString();
+            g.drawString(font, "Camera: " + SpectatorCam.modeLabel() + " [" + key + "]", x + 7, y + 51, 0x9FB4FF, false);
+        }
 
-        bar(g, x + 7, y + 27, 54, i.hp() / 20.0F, 0xFFD03030);
-        bar(g, x + 70, y + 27, 54, i.food() / 20.0F, 0xFFC8803C);
-        String key = net.susu609.the8dungeon.client.SpectatorCam.KEY.getTranslatedKeyMessage().getString();
-        g.drawString(font, "Camera: " + net.susu609.the8dungeon.client.SpectatorCam.modeLabel()
-                + " [" + key + "]", x + 7, y + 51, 0x9FB4FF, false);
-        g.drawString(font, "Gỗ " + i.wood() + "  Đá " + i.stone() + "  Cuốc: " + pick(i.pick()),
-                x + 7, y + 40, 0xC8C8C8, false);
+        if (showFaces()) {
+            List<BotInfo> bots = allBots();
+            for (int k = 0; k < bots.size(); k++) {
+                BotInfo b = bots.get(k);
+                int[] r = faceRect(width, k);
+                boolean focused = info != null && b.name().equals(info.name());
+                g.fill(r[0] - 1, r[1] - 1, r[0] + FACE + 1, r[1] + FACE + 1, focused ? 0xFFFFE070 : 0x90000000);
+                PlayerFaceRenderer.draw(g, skinOf(b.name()), r[0], r[1], FACE);
+                bar(g, r[0], r[1] + FACE + 2, FACE, b.hp() / 20.0F, b.danger() ? 0xFFE05050 : 0xFFD03030);
+                if (b.goal().equals("SLEEP")) g.drawString(font, "z", r[0] + FACE - 4, r[1] - 2, 0xFFFFFF, true);
+            }
+            if (!(mc.screen instanceof BotBarScreen)) {
+                String alt = BotBarScreen.KEY.getTranslatedKeyMessage().getString();
+                int[] r = faceRect(width, bots.size() - 1);
+                g.drawString(font, "[" + alt + "]", r[0] - font.width("[" + alt + "]") - 4, r[1] + 4, 0x808080, false);
+            }
+        }
+
+        if (skipVisible()) {
+            int[] r = skipRect(width);
+            g.fill(r[0], r[1], r[0] + r[2], r[1] + r[3], 0xC0304060);
+            g.drawCenteredString(font, "Bỏ qua đêm", r[0] + r[2] / 2, r[1] + 3, 0xFFFFFF);
+        }
     }
 
-    private static void bar(GuiGraphics g, int x, int y, int w, float frac, int color) {
+    static void bar(GuiGraphics g, int x, int y, int w, float frac, int color) {
         int fill = Math.round(w * Math.max(0.0F, Math.min(1.0F, frac)));
-        g.fill(x, y, x + w, y + 6, 0xFF303030);
-        g.fill(x, y, x + fill, y + 6, color);
+        g.fill(x, y, x + w, y + 3, 0xFF303030);
+        g.fill(x, y, x + fill, y + 3, color);
     }
 
-    private static String pick(int rank) {
+    static String pick(int rank) {
         return switch (rank) {
             case 0 -> "không";
             case 1 -> "gỗ";
@@ -93,10 +181,10 @@ public final class BotHud {
         };
     }
 
-    private static String label(String goal) {
+    static String label(String goal) {
         return switch (goal) {
             case "FLEE" -> "Đang chạy trốn";
-            case "FIGHT" -> "Đang đánh quái";
+            case "FIGHT" -> "Đang đánh";
             case "EAT" -> "Đang ăn";
             case "HUNT" -> "Đang săn thức ăn";
             case "COLLECT" -> "Đang nhặt đồ";
@@ -109,6 +197,7 @@ public final class BotHud {
             case "COOK" -> "Đang nấu ăn";
             case "GROUP" -> "Đang về với nhóm";
             case "SHARE" -> "Đang chia đồ";
+            case "SLEEP" -> "Đang ngủ";
             default -> "Đang nghỉ";
         };
     }

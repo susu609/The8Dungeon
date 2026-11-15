@@ -52,7 +52,7 @@ public final class BotManager {
 
     private static final java.util.List<ShelterPlan> SHARED_SHELTERS = new ArrayList<>();
     private static final Map<UUID, String> WATCH = new HashMap<>(); // spectator -> bot đã chọn bằng [ ]
-    private static final Map<UUID, BotInfo> LAST_SENT = new HashMap<>();
+    private static final Map<UUID, Object> LAST_SENT = new HashMap<>();
 
     private BotManager() {}
 
@@ -204,19 +204,60 @@ public final class BotManager {
         }
     }
 
-    /** Chỉ gửi cho người đang spectator; ưu tiên bot mà họ đang nhìn qua camera, không thì bot gần nhất. */
+    /** Mọi bot còn sống ở overworld đều đang ngủ, và đang là đêm. */
+    static boolean allBotsAsleep(MinecraftServer server) {
+        if (BOTS.isEmpty()) return false;
+        long t = server.overworld().getDayTime() % 24000L;
+        if (t < 12542L || t > 23460L) return false;
+        boolean any = false;
+        for (BotPlayer b : BOTS.values()) {
+            if (!b.isAlive() || b.level() != server.overworld()) continue;
+            if (!b.isSleeping()) return false;
+            any = true;
+        }
+        return any;
+    }
+
+    /** Người chơi thật ở Sáng tạo/Người xem bấm "Bỏ qua đêm": chỉ khi mọi bot đã ngủ. */
+    public static void skipNight(ServerPlayer who) {
+        MinecraftServer server = who.getServer();
+        if (server == null || !(who.isCreative() || who.isSpectator()) || !allBotsAsleep(server)) return;
+        var level = server.overworld();
+        long t = level.getDayTime();
+        level.setDayTime(t + (24000L - t % 24000L)); // sang sáng hôm sau
+        for (BotPlayer b : BOTS.values()) {
+            if (b.isSleeping()) b.stopSleepInBed(false, true);
+        }
+        server.getPlayerList().broadcastSystemMessage(
+                Component.literal(who.getGameProfile().getName() + " đã cho qua đêm (mọi bot đều đã ngủ)"), false);
+    }
+
+    /**
+     * Gửi overlay: người xem nhận bot đang theo dõi (bot nhìn qua camera, bot đã chọn bằng [ ], hoặc gần nhất)
+     * cùng hàng mặt mọi bot; người ở Sáng tạo chỉ cần biết có hiện nút "Bỏ qua đêm" không.
+     */
     private static void sendToSpectators(MinecraftServer server) {
+        boolean skip = allBotsAsleep(server);
+        java.util.List<BotInfo> all = new ArrayList<>();
+        for (BotPlayer b : BOTS.values()) if (b.isAlive()) all.add(b.info());
         for (ServerPlayer p : server.getPlayerList().getPlayers()) {
-            if (!p.isSpectator() || p instanceof BotPlayer) continue;
-            BotPlayer watched = BOTS.get(WATCH.get(p.getUUID()));
-            BotPlayer target = p.getCamera() instanceof BotPlayer cam ? cam
-                    : watched != null && watched.isAlive() && watched.level() == p.level() ? watched : nearest(p);
-            if (target == null || !target.isAlive()) continue;
-            BotInfo info = target.info();
-            // Gửi khi có thay đổi, hoặc mỗi 2 giây để HUD không tự ẩn
-            if (!info.equals(LAST_SENT.get(p.getUUID())) || server.getTickCount() % 40 == 0) {
-                LAST_SENT.put(p.getUUID(), info);
-                Susu609Mod.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> p), new BotStatusPacket(info, new ArrayList<>(BOTS.keySet())));
+            if (p instanceof BotPlayer || !(p.isSpectator() || p.isCreative())) continue;
+            BotInfo focus = null;
+            if (p.isSpectator()) {
+                BotPlayer watched = BOTS.get(WATCH.get(p.getUUID()));
+                BotPlayer target = p.getCamera() instanceof BotPlayer cam ? cam
+                        : watched != null && watched.isAlive() && watched.level() == p.level() ? watched : nearest(p);
+                if (target == null || !target.isAlive()) continue;
+                focus = target.info();
+            } else if (!skip && !LAST_SENT.containsKey(p.getUUID())) {
+                continue; // Sáng tạo: chỉ gửi khi có nút bỏ qua đêm (và một lần để ẩn nút khi hết)
+            }
+            Object state = java.util.List.of(focus == null ? "" : focus, all, skip);
+            // Gửi khi có thay đổi, hoặc mỗi 2 giây để overlay không tự ẩn
+            if (!state.equals(LAST_SENT.get(p.getUUID())) || server.getTickCount() % 40 == 0) {
+                if (p.isCreative() && !skip) LAST_SENT.remove(p.getUUID());
+                else LAST_SENT.put(p.getUUID(), state);
+                Susu609Mod.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> p), new BotStatusPacket(focus, all, skip));
             }
         }
     }
