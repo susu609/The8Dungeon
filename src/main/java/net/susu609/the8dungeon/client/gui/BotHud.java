@@ -52,7 +52,7 @@ public final class BotHud {
 
         Font font = mc.font;
         BotInfo i = info;
-        int w = 132, h = 69;
+        int w = 150, h = 69;
         int x = width - w - 6, y = 6;
         g.fill(x, y, x + w, y + h, 0x90000000);
         g.fill(x, y, x + 2, y + h, i.danger() ? 0xFFE05050 : 0xFF50C878); // vạch màu: đỏ khi có quái
@@ -63,7 +63,7 @@ public final class BotHud {
         bar(g, x + 7, y + 27, 54, i.hp() / 20.0F, 0xFFD03030);
         bar(g, x + 70, y + 27, 54, i.food() / 20.0F, 0xFFC8803C);
         String key = net.susu609.the8dungeon.client.SpectatorCam.KEY.getTranslatedKeyMessage().getString();
-        g.drawString(font, "Camera: " + (net.susu609.the8dungeon.client.SpectatorCam.following() ? "theo dõi" : "tự do")
+        g.drawString(font, "Camera: " + net.susu609.the8dungeon.client.SpectatorCam.modeLabel()
                 + " [" + key + "]", x + 7, y + 51, 0x9FB4FF, false);
         g.drawString(font, "Gỗ " + i.wood() + "  Đá " + i.stone() + "  Cuốc: " + pick(i.pick()),
                 x + 7, y + 40, 0xC8C8C8, false);

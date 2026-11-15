@@ -2,6 +2,7 @@ package net.susu609.the8dungeon.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -17,9 +18,12 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
@@ -35,39 +39,69 @@ import net.susu609.the8dungeon.client.gui.BotHud;
 import org.lwjgl.glfw.GLFW;
 
 /**
- * Camera cho người ở chế độ spectator: Tự do (vanilla) hoặc Theo dõi bot nhìn từ trên xuống.
- * Khi theo dõi mà bot đi vào hang/nhà (có khối che phía trên), camera hạ dần từ 12 xuống 6 khối;
- * tới 6 khối mà vẫn bị che thì các khối chắn giữa camera và bot bị cắt khỏi hình và vẽ lại mờ.
- * Đổi chế độ: phím V (đổi được trong Controls) hoặc lệnh /botcam follow|free.
+ * Camera cho người ở chế độ spectator, 3 chế độ (phím V xoay vòng, hoặc /botcam free|top|orbit):
+ * - Tự do: vanilla.
+ * - Theo dõi trên xuống: camera cao 12 khối, nhìn thẳng xuống bot.
+ * - Theo dõi xoay tự do: camera quay quanh bot theo chuột, cách 12 khối.
+ * Khi giữa camera và bot có khối che (hang, mái nhà...), camera tiến dần lại còn 6 khối; tới 6 khối
+ * mà vẫn bị che thì các khối chắn bị cắt khỏi hình và vẽ lại mờ. Bot đang theo dõi có viền sáng
+ * (nhìn xuyên khối). Độ mờ và độ rộng vùng cắt chỉnh bằng /botcam alpha <0-255>, /botcam radius <1-4>.
  */
 @Mod.EventBusSubscriber(modid = Susu609Mod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public final class SpectatorCam {
 
+    public enum Mode {
+        FREE("tự do"), TOP("theo dõi, trên xuống"), ORBIT("theo dõi, xoay tự do");
+
+        final String label;
+
+        Mode(String label) {
+            this.label = label;
+        }
+    }
+
     public static final KeyMapping KEY = new KeyMapping("key.susu609.camera", InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_V, "key.categories.susu609");
 
-    private static final double FAR = 12.0D;   // độ cao camera bình thường
-    private static final double NEAR = 6.0D;   // độ cao khi bị che, bắt đầu làm mờ ở mức này
-    private static final int RADIUS = 2;       // cắt khối trong cột 5x5 quanh bot
-    private static final int GHOST_ALPHA = 70; // độ mờ của khối bị cắt (0..255)
+    private static final double FAR = 12.0D;   // khoảng cách bình thường
+    private static final double NEAR = 6.0D;   // khoảng cách khi bị che; bắt đầu làm mờ ở mức này
+    private static final int MAX_HIDDEN = 600;
 
-    private static boolean follow = Boolean.getBoolean("susu609.followCam");
-    private static boolean active;             // tick này có đang đặt camera theo bot không
-    private static double height = FAR;
+    /** Chế độ lúc khởi động; -Dsusu609.cam=top|orbit để bật sẵn (tiện khi thử nghiệm). */
+    private static Mode mode = switch (System.getProperty("susu609.cam", "")) {
+        case "top" -> Mode.TOP;
+        case "orbit" -> Mode.ORBIT;
+        default -> Mode.FREE;
+    };
+    private static int ghostAlpha = 35;        // độ đậm khối bị cắt (0 = vô hình, 255 = đặc)
+    private static int radius = 2;             // độ rộng vùng cắt quanh đường nhìn
+    private static Player target;              // bot đang theo dõi (null nếu không hoạt động)
+    private static double dist = FAR;
     private static int ticks;
 
     private SpectatorCam() {}
 
     public static boolean following() {
-        return follow;
+        return mode != Mode.FREE;
     }
 
-    public static void setFollow(boolean on) {
-        follow = on;
-        if (!on) {
-            active = false;
+    public static String modeLabel() {
+        return mode.label;
+    }
+
+    /** Dùng bởi mixin viền sáng: bot đang được theo dõi thì luôn có viền. */
+    public static boolean isFollowTarget(Entity e) {
+        return target != null && e == target;
+    }
+
+    public static void setMode(Mode m) {
+        mode = m;
+        if (m == Mode.FREE) {
+            target = null;
             CutawayState.clear();
         }
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null) mc.player.displayClientMessage(Component.literal("Camera: " + m.label), true);
     }
 
     @Mod.EventBusSubscriber(modid = Susu609Mod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -81,17 +115,17 @@ public final class SpectatorCam {
     @SubscribeEvent
     public static void onClientCommands(RegisterClientCommandsEvent event) {
         event.getDispatcher().register(Commands.literal("botcam")
-                .then(Commands.literal("follow").executes(c -> {
-                    setFollow(true);
-                    return 1;
-                }))
-                .then(Commands.literal("free").executes(c -> {
-                    setFollow(false);
-                    return 1;
-                })));
+                .then(Commands.literal("free").executes(c -> { setMode(Mode.FREE); return 1; }))
+                .then(Commands.literal("top").executes(c -> { setMode(Mode.TOP); return 1; }))
+                .then(Commands.literal("follow").executes(c -> { setMode(Mode.TOP); return 1; }))
+                .then(Commands.literal("orbit").executes(c -> { setMode(Mode.ORBIT); return 1; }))
+                .then(Commands.literal("alpha").then(Commands.argument("value", IntegerArgumentType.integer(0, 255))
+                        .executes(c -> { ghostAlpha = IntegerArgumentType.getInteger(c, "value"); return 1; })))
+                .then(Commands.literal("radius").then(Commands.argument("value", IntegerArgumentType.integer(1, 4))
+                        .executes(c -> { radius = IntegerArgumentType.getInteger(c, "value"); return 1; }))));
     }
 
-    // ===== Mỗi tick: đặt camera và cập nhật khối bị cắt =====
+    // ===== Mỗi tick: chọn bot, tính khoảng cách, cập nhật khối bị cắt =====
 
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
@@ -99,40 +133,56 @@ public final class SpectatorCam {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer p = mc.player;
         while (KEY.consumeClick()) {
-            if (p != null && p.isSpectator()) {
-                setFollow(!follow);
-                p.displayClientMessage(Component.literal(follow
-                        ? "Camera: theo dõi bot (nhìn từ trên xuống)" : "Camera: tự do"), true);
-            }
+            if (p != null && p.isSpectator()) setMode(Mode.values()[(mode.ordinal() + 1) % Mode.values().length]);
         }
-        active = false;
-        if (!follow || p == null || mc.level == null) {
-            CutawayState.clear();
-            return;
-        }
-        if (!p.isSpectator()) { // giữ lựa chọn, chỉ tạm không áp dụng khi không ở spectator
-            CutawayState.clear();
+        target = null;
+        if (mode == Mode.FREE || p == null || mc.level == null || !p.isSpectator() || mc.getCameraEntity() != p) {
+            CutawayState.clear(); // không ở spectator thì giữ lựa chọn nhưng tạm không áp dụng
             return;
         }
         Player bot = findBot(mc.level);
-        if (mc.getCameraEntity() != p || bot == null) { // đang nhập vào góc nhìn bot của vanilla, hoặc chưa thấy bot
+        if (bot == null) {
             CutawayState.clear();
             return;
         }
-        active = true;
+        target = bot;
         Vec3 eye = bot.getEyePosition();
-        boolean covered = covered(mc.level, bot);
-        double target = covered ? NEAR : FAR;
-        height += (target - height) * 0.25D; // hạ/nâng camera mượt
-        p.setPos(bot.getX(), eye.y + height, bot.getZ());
-        p.setDeltaMovement(Vec3.ZERO);
-        p.setXRot(90.0F);
+        Vec3 dir = direction(p);
+        boolean covered = mc.level.clip(new ClipContext(eye, eye.add(dir.scale(FAR)),
+                ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, bot)).getType() == HitResult.Type.BLOCK;
+        dist += ((covered ? NEAR : FAR) - dist) * 0.25D; // tiến/lùi camera mượt
+        place(p, eye.add(dir.scale(dist)));
 
-        if (covered && height <= NEAR + 0.5D) {
-            if (++ticks % 4 == 0) CutawayState.update(occluders(mc.level, bot, eye.y + height));
+        if (covered && dist <= NEAR + 0.5D) {
+            if (++ticks % 4 == 0) CutawayState.update(occluders(mc.level, bot, eye, dir, dist));
         } else {
             CutawayState.clear();
         }
+    }
+
+    /** Mỗi khung hình đặt lại camera theo vị trí nội suy của bot, để camera không bị giật. */
+    @SubscribeEvent
+    public static void onRenderTick(TickEvent.RenderTickEvent event) {
+        if (event.phase != TickEvent.Phase.START || target == null) return;
+        LocalPlayer p = Minecraft.getInstance().player;
+        if (p == null) return;
+        Vec3 cam = target.getEyePosition(event.renderTickTime).add(direction(p).scale(dist));
+        place(p, cam);
+        p.xo = cam.x;
+        p.yo = cam.y;
+        p.zo = cam.z;
+    }
+
+    /** Hướng từ bot tới camera: thẳng lên (trên xuống) hoặc ngược hướng nhìn của chuột (xoay tự do). */
+    private static Vec3 direction(LocalPlayer p) {
+        if (mode == Mode.TOP) return new Vec3(0.0D, 1.0D, 0.0D);
+        return Vec3.directionFromRotation(p.getXRot(), p.getYRot()).scale(-1.0D);
+    }
+
+    private static void place(LocalPlayer p, Vec3 cam) {
+        p.setPos(cam.x, cam.y - p.getEyeHeight(), cam.z);
+        p.setDeltaMovement(Vec3.ZERO);
+        if (mode == Mode.TOP) p.setXRot(90.0F);
     }
 
     /** Bot đang xem trên HUD (bot mình đang nhìn qua camera hoặc bot gần nhất). */
@@ -145,41 +195,33 @@ public final class SpectatorCam {
         return null;
     }
 
-    /** Có khối che ngay trên đầu bot trong khoảng FAR không (hang, mái nhà, tán cây...). */
-    private static boolean covered(ClientLevel level, Player bot) {
-        BlockPos base = bot.blockPosition();
-        BlockPos.MutableBlockPos m = new BlockPos.MutableBlockPos();
-        for (int dy = 2; dy <= (int) FAR; dy++) {
-            m.set(base.getX(), base.getY() + dy, base.getZ());
-            BlockState s = level.getBlockState(m);
-            if (!s.isAir() && s.getFluidState().isEmpty()) return true;
-        }
-        return false;
-    }
-
-    /** Các khối nằm giữa camera và bot trong cột (2*RADIUS+1)^2, từ trên đầu bot tới camera. */
-    private static LongOpenHashSet occluders(ClientLevel level, Player bot, double camY) {
+    /** Khối nằm quanh đường nhìn từ bot tới camera (ống rộng radius), không tính sàn dưới chân bot. */
+    private static LongOpenHashSet occluders(ClientLevel level, Player bot, Vec3 eye, Vec3 dir, double len) {
         LongOpenHashSet set = new LongOpenHashSet();
-        BlockPos base = bot.blockPosition();
-        int top = Mth.floor(camY);
+        int floorY = bot.blockPosition().getY();
         BlockPos.MutableBlockPos m = new BlockPos.MutableBlockPos();
-        for (int y = base.getY() + 2; y <= top; y++) {
-            for (int dx = -RADIUS; dx <= RADIUS; dx++) {
-                for (int dz = -RADIUS; dz <= RADIUS; dz++) {
-                    m.set(base.getX() + dx, y, base.getZ() + dz);
-                    BlockState s = level.getBlockState(m);
-                    if (!s.isAir() && s.getFluidState().isEmpty()) set.add(m.asLong());
+        for (double t = 1.0D; t <= len + 0.5D && set.size() < MAX_HIDDEN; t += 0.5D) {
+            Vec3 pt = eye.add(dir.scale(t));
+            int cx = Mth.floor(pt.x), cy = Mth.floor(pt.y), cz = Mth.floor(pt.z);
+            for (int dx = -radius; dx <= radius; dx++) {
+                for (int dy = -radius; dy <= radius; dy++) {
+                    for (int dz = -radius; dz <= radius; dz++) {
+                        if (cy + dy < floorY) continue; // giữ sàn để không thấy hố đen
+                        m.set(cx + dx, cy + dy, cz + dz);
+                        BlockState s = level.getBlockState(m);
+                        if (!s.isAir() && s.getFluidState().isEmpty()) set.add(m.asLong());
+                    }
                 }
             }
         }
         return set;
     }
 
-    // ===== Góc nhìn: khóa nhìn thẳng xuống khi đang theo dõi =====
+    // ===== Góc nhìn: khóa nhìn thẳng xuống ở chế độ trên xuống =====
 
     @SubscribeEvent
     public static void onCameraAngles(ViewportEvent.ComputeCameraAngles event) {
-        if (active) event.setPitch(90.0F);
+        if (target != null && mode == Mode.TOP) event.setPitch(90.0F);
     }
 
     // ===== Vẽ lại các khối bị cắt ở dạng mờ =====
@@ -189,12 +231,12 @@ public final class SpectatorCam {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) return;
         long[] hidden = CutawayState.positions();
         Minecraft mc = Minecraft.getInstance();
-        if (hidden.length == 0 || mc.level == null) return;
+        if (hidden.length == 0 || mc.level == null || ghostAlpha <= 0) return;
 
         PoseStack ps = event.getPoseStack();
         Vec3 cam = event.getCamera().getPosition();
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
-        AlphaVertexConsumer ghost = new AlphaVertexConsumer(buffers.getBuffer(RenderType.translucent()), GHOST_ALPHA);
+        AlphaVertexConsumer ghost = new AlphaVertexConsumer(buffers.getBuffer(RenderType.translucent()), ghostAlpha);
         MultiBufferSource source = type -> ghost;
         BlockRenderDispatcher dispatcher = mc.getBlockRenderer();
         BlockPos.MutableBlockPos m = new BlockPos.MutableBlockPos();
@@ -204,7 +246,6 @@ public final class SpectatorCam {
             if (s.getRenderShape() != RenderShape.MODEL) continue;
             ps.pushPose();
             ps.translate(m.getX() - cam.x, m.getY() - cam.y, m.getZ() - cam.z);
-            // ánh sáng lấy từ ô phía trên (ô của khối đặc luôn tối)
             dispatcher.renderSingleBlock(s, ps, source, LevelRenderer.getLightColor(mc.level, m.above()),
                     OverlayTexture.NO_OVERLAY, ModelData.EMPTY, null);
             ps.popPose();

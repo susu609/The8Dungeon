@@ -6,7 +6,8 @@
   "refmap": "susu609.refmap.json",
   "mixins": [],
   "client": [
-    "RenderChunkRegionMixin"
+    "RenderChunkRegionMixin",
+    "MinecraftGlowMixin"
   ],
   "injectors": {
     "defaultRequire": 1
