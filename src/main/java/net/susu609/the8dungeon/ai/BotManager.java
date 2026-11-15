@@ -193,6 +193,7 @@ public final class BotManager {
             c.getSource().sendSuccess(() -> Component.literal("Chưa có bot. Dùng /bot spawn"), false);
             return 0;
         }
+        c.getSource().sendSuccess(() -> Component.literal("Build: " + net.susu609.the8dungeon.BuildInfo.line()), false);
         BOTS.forEach((name, bot) -> c.getSource().sendSuccess(
                 () -> Component.literal(name + ": " + bot.status()), false));
         return BOTS.size();

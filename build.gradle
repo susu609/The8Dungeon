@@ -50,6 +50,37 @@ mixin {
     }
 }
 
+
+// ===== Thông tin bản build: nhánh + commit, in ra log build và log game =====
+def gitText = { String... args ->
+    providers.exec {
+        commandLine(['git'] + args.toList())
+        ignoreExitValue = true
+    }.standardOutput.asText.map { it.trim() }.orElse('')
+}
+def gitBranch = gitText('rev-parse', '--abbrev-ref', 'HEAD')
+def gitCommit = gitText('rev-parse', '--short', 'HEAD')
+def gitDirty = gitText('status', '--porcelain')
+def buildInfoDir = layout.buildDirectory.dir('generated/buildinfo')
+
+tasks.register('generateBuildInfo') {
+    def outFile = buildInfoDir.map { it.file('susu609_build.properties') }
+    outputs.file(outFile)
+    outputs.upToDateWhen { false } // luôn ghi lại để thời gian và commit đúng
+    doLast {
+        def branch = gitBranch.get() ?: 'unknown'
+        def commit = gitCommit.get() ?: 'unknown'
+        def state = gitDirty.get() ? 'có thay đổi chưa commit' : 'sạch'
+        def time = new Date().format('yyyy-MM-dd HH:mm:ss')
+        def f = outFile.get().asFile
+        f.parentFile.mkdirs()
+        f.setText("branch=${branch}\ncommit=${commit}\nstate=${state}\ntime=${time}\n", 'UTF-8')
+        println "BUILD_INFO: ${branch} @ ${commit} (${state}) build ${time}"
+    }
+}
+sourceSets.main.resources.srcDir(buildInfoDir)
+tasks.named('processResources') { dependsOn 'generateBuildInfo' }
+
 dependencies {
     compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0"))
     implementation(jarJar("io.github.llamalad7:mixinextras-forge:0.5.0"))

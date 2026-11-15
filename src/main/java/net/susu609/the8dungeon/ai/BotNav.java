@@ -3,6 +3,7 @@ package net.susu609.the8dungeon.ai;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
 
@@ -125,6 +126,7 @@ final class BotNav {
             if (helper.getNavigation() instanceof GroundPathNavigation ground) {
                 ground.setCanOpenDoors(true);
                 ground.setCanFloat(true);
+                helper.setPathfindingMalus(BlockPathTypes.WATER, 8.0F); // đi được nhưng ưu tiên tránh nước
             }
         }
         helper.moveTo(bot.getX(), bot.getY(), bot.getZ());

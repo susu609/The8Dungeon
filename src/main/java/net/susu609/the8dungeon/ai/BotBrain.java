@@ -43,6 +43,7 @@ final class BotBrain {
 
     private int age;
     private boolean rethink;
+    private int cannotFleeUntil; // không chạy được thì đánh, tránh đổi qua lại chạy/đánh
     private int mineStartAge;
     private float[] lastScores = new float[Goal.values().length];
     private Goal goal = Goal.IDLE;
@@ -85,7 +86,8 @@ final class BotBrain {
 
     void tick() {
         age++;
-        bot.setJumping(false);
+        bot.setJumping(bot.isInWater() || bot.isInLava()); // luôn bơi lên, kể cả khi đang đứng yên đào
+        if (age % 5 == 0 && bot.isInWall()) unstick();
         if (age % THINK_EVERY == 0 || rethink) {
             rethink = false;
             think();
@@ -112,12 +114,15 @@ final class BotBrain {
         double hd = senses.hostileDist;
         boolean night = isNight();
         boolean dusk = isDusk();
-        boolean creeper = h instanceof Creeper && hd < 6.5D;
+        // Độ trễ: đã chạy trốn thì phải an toàn hơn mới thôi, tránh đổi qua lại ở sát ngưỡng
+        boolean fleeing = goal == Goal.FLEE;
+        boolean creeper = h instanceof Creeper && hd < (fleeing ? 9.5D : 6.5D);
+        boolean canFlee = age >= cannotFleeUntil;
         ItemStack foodStack = BotItems.bestFood(bot, food <= 6);
 
         float[] sc = new float[Goal.values().length];
         if (h != null && !inShelter) {
-            if (creeper || hp < 0.4F) sc[Goal.FLEE.ordinal()] = 0.95F;
+            if (canFlee && (creeper || hp < (fleeing ? 0.55F : 0.4F))) sc[Goal.FLEE.ordinal()] = 0.95F;
             else if (hd <= 16.0D) sc[Goal.FIGHT.ordinal()] = hd < 6.0D ? 0.85F : 0.6F;
         }
         if (!foodStack.isEmpty() && (food <= 14 || (hp < 0.7F && food < 20)) && (h == null || hd > 5.0D || inShelter)) {
@@ -154,10 +159,16 @@ final class BotBrain {
             boolean dwell = age - goalSince < 30 && sc[goal.ordinal()] > 0.0F && bestScore < 0.9F;
             if (!dwell) switchGoal(pick);
         }
-        if (goal == Goal.FLEE && h != null) {
+        if (goal == Goal.FLEE && h != null && fleeTarget == null) {
             fleeTarget = awayFrom(h);
-            BotLog.log(bot, "FLEE", () -> "tránh " + h.getType().getDescriptionId() + " cách " + (int) hd
-                    + " -> " + fleeTarget.toShortString());
+            if (fleeTarget == null) { // không có đường lùi (hang cụt...): quay lại đánh
+                cannotFleeUntil = age + 100;
+                BotLog.log(bot, "FLEE", () -> "không có chỗ để chạy khỏi " + h.getType().getDescriptionId() + ", chuyển sang đánh");
+                switchGoal(Goal.FIGHT);
+            } else {
+                BotLog.log(bot, "FLEE", () -> "tránh " + h.getType().getDescriptionId() + " cách " + (int) hd
+                        + " -> " + fleeTarget.toShortString());
+            }
         }
     }
 
@@ -206,6 +217,20 @@ final class BotBrain {
         return t >= 11000L && t < 12700L;
     }
 
+    /** Cấp cứu: đầu/chân kẹt trong khối đặc (cát rơi, khối đặt nhầm...) thì phá ngay khối đó. */
+    private void unstick() {
+        ServerLevel level = bot.serverLevel();
+        BlockPos feet = bot.blockPosition();
+        BlockPos eye = BlockPos.containing(bot.getEyePosition());
+        for (BlockPos p : new BlockPos[] {eye, feet}) {
+            BlockState s = level.getBlockState(p);
+            if (!s.isAir() && s.getDestroySpeed(level, p) >= 0.0F && s.isSuffocating(level, p)) {
+                BotLog.log(bot, "UNSTICK", () -> "kẹt trong " + s.getBlock().getDescriptionId() + " tại " + p.toShortString() + ", phá ra");
+                level.destroyBlock(p, true, bot);
+            }
+        }
+    }
+
     // ===== Hành động =====
 
     private void act() {
@@ -232,11 +257,46 @@ final class BotBrain {
         if (nav.moveTo(fleeTarget, age, true) || nav.failed) fleeTarget = null;
     }
 
+    /**
+     * Chỗ để chạy: thử nhiều hướng quanh hướng ngược với mối đe dọa, ở cùng độ cao với bot
+     * (không nhảy lên mặt đất khi bot đang ở dưới hang). Trả null nếu không có chỗ nào xa hơn.
+     */
     private BlockPos awayFrom(LivingEntity threat) {
         Vec3 dir = bot.position().subtract(threat.position()).multiply(1.0D, 0.0D, 1.0D);
         if (dir.lengthSqr() < 1.0E-4D) dir = new Vec3(1.0D, 0.0D, 0.0D);
-        dir = dir.normalize().scale(14.0D);
-        return surface(bot.getX() + dir.x, bot.getZ() + dir.z);
+        double base = Math.atan2(dir.z, dir.x);
+        double[] turns = {0.0D, 0.7D, -0.7D, 1.4D, -1.4D};
+        double[] dists = {14.0D, 10.0D, 6.0D};
+        BlockPos here = bot.blockPosition();
+        BlockPos from = threat.blockPosition();
+        for (double d : dists) {
+            for (double t : turns) {
+                int x = Mth.floor(bot.getX() + Math.cos(base + t) * d);
+                int z = Mth.floor(bot.getZ() + Math.sin(base + t) * d);
+                BlockPos p = standable(x, here.getY(), z);
+                if (p != null && p.distSqr(from) > here.distSqr(from)) return p;
+            }
+        }
+        return null;
+    }
+
+    /** Ô đứng được gần độ cao nearY: chân và đầu trống, không chất lỏng, dưới chân là khối đặc. */
+    private BlockPos standable(int x, int nearY, int z) {
+        ServerLevel level = bot.serverLevel();
+        if (!level.hasChunk(x >> 4, z >> 4)) return null;
+        BlockPos.MutableBlockPos m = new BlockPos.MutableBlockPos();
+        for (int dy : new int[] {0, -1, 1, -2, 2, -3, 3}) {
+            m.set(x, nearY + dy, z);
+            BlockPos head = m.above();
+            BlockPos floor = m.below();
+            if (level.getBlockState(m).getCollisionShape(level, m).isEmpty()
+                    && level.getBlockState(head).getCollisionShape(level, head).isEmpty()
+                    && level.getFluidState(m).isEmpty()
+                    && level.getBlockState(floor).isFaceSturdy(level, floor, Direction.UP)) {
+                return m.immutable();
+            }
+        }
+        return null;
     }
 
     private void chase(LivingEntity e) {
@@ -469,6 +529,7 @@ final class BotBrain {
     private void placeBlock(BlockPos pos) {
         ServerLevel level = bot.serverLevel();
         if (!level.getBlockState(pos).canBeReplaced()) return;
+        if (bot.getBoundingBox().intersects(new net.minecraft.world.phys.AABB(pos))) return; // không tự chôn mình
         ItemStack stack = BotItems.findPlaceable(bot.getInventory());
         if (stack.isEmpty() || !(stack.getItem() instanceof BlockItem bi)) return;
         BlockState place = bi.getBlock().defaultBlockState();
