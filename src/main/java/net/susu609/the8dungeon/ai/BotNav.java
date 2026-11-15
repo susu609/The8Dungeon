@@ -25,6 +25,12 @@ final class BotNav {
     /** true nếu đích hiện tại không đi tới được. Reset khi đổi đích. */
     boolean failed;
 
+    /**
+     * true nếu đường tìm được là đường cụt: không tới được đích và điểm cuối còn cách đích hơn 2,5 khối
+     * (ví dụ món đồ rơi trên tán cây). Reset khi đổi đích.
+     */
+    boolean deadEnd;
+
     BotNav(BotPlayer bot) {
         this.bot = bot;
     }
@@ -33,6 +39,7 @@ final class BotNav {
         path = null;
         goal = null;
         failed = false;
+        deadEnd = false;
         stuck = 0;
         bot.zza = 0.0F;
         bot.xxa = 0.0F;
@@ -45,6 +52,7 @@ final class BotNav {
             goal = target.immutable();
             path = null;
             failed = false;
+            deadEnd = false;
             stuck = 0;
             repathAt = 0;
             checkAt = now + 20;
@@ -52,6 +60,8 @@ final class BotNav {
         }
         if (path == null || now >= repathAt) {
             path = computePath(goal);
+            deadEnd = path != null && !path.canReach()
+                    && (path.getEndNode() == null || path.getEndNode().asBlockPos().distSqr(goal) > 6.25D);
             final Path found = path;
             BotLog.log(bot, "NAV", () -> found == null ? "KHÔNG có đường tới " + goal.toShortString()
                     : "đường " + found.getNodeCount() + " nút tới " + goal.toShortString()

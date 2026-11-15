@@ -279,6 +279,13 @@ final class BotBrain {
             return;
         }
         nav.moveTo(item.blockPosition(), age, false);
+        if (nav.deadEnd) { // đường cụt: không cần chờ hết 160 tick mới bỏ
+            BotLog.log(bot, "COLLECT", () -> "bỏ qua sớm (đường cụt) " + item.getItem().getItem().getDescriptionId()
+                    + " tại " + item.blockPosition().toShortString());
+            senses.ignoreItem(item, age + 1200);
+            collectSince = 0;
+            nav.stop();
+        }
     }
 
     private void actExplore() {
