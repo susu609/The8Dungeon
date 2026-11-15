@@ -51,7 +51,7 @@ import org.lwjgl.glfw.GLFW;
 public final class SpectatorCam {
 
     public enum Mode {
-        FREE("tự do"), TOP("theo dõi, trên xuống"), ORBIT("theo dõi, xoay tự do");
+        FREE("tự do"), TOP("trên xuống"), ORBIT("xoay quanh bot");
 
         final String label;
 
