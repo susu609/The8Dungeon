@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 27 class/kiểu Java, 2163 dòng, 55 phụ thuộc nội bộ
+- 26 class/kiểu Java, 2095 dòng, 52 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -26,7 +26,6 @@ flowchart LR
     DungeonCommand["DungeonCommand<br/><small>class · 72 dòng</small>"]
     DungeonInspector["DungeonInspector<br/><small>class · 159 dòng</small>"]
     DungeonLayout["DungeonLayout<br/><small>class · 386 dòng</small>"]
-    DungeonNetwork["DungeonNetwork<br/><small>class · 68 dòng</small>"]
     DungeonParams["DungeonParams<br/><small>record · 46 dòng</small>"]
     DungeonSavedData["DungeonSavedData<br/><small>class · 55 dòng</small>"]
     RoomPreset["RoomPreset<br/><small>enum · 40 dòng</small>"]
@@ -81,9 +80,6 @@ flowchart LR
   DungeonLayout --> DungeonParams
   DungeonLayout --> RoomPreset
   DungeonLayout --> WorldRandom
-  DungeonNetwork --> DungeonClientState
-  DungeonNetwork --> DungeonSavedData
-  DungeonNetwork --> Susu609Mod
   DungeonParams --> DungeonLayout
   DungeonParams --> RoomPreset
   ModBlockBehaviour --> ModBlocksRegistry
@@ -142,7 +138,6 @@ flowchart LR
 | `DungeonCommand` | class | 72 | ClientboundDungeonSeedPacket, DungeonBuilder, DungeonLayout, DungeonParams, DungeonSavedData, RoomPreset, Susu609Mod, WorldRandom | RegisterCommandsEvent |
 | `DungeonInspector` | class | 159 | DungeonBuilder, DungeonClientState, DungeonLayout, RoomPreset, Susu609Mod | RegisterGuiOverlaysEvent, RenderLevelStageEvent, RenderLevelStageEvent.Stage |
 | `DungeonLayout` | class | 386 | DungeonParams, RoomPreset, WorldRandom | - |
-| `DungeonNetwork` | class | 68 | DungeonClientState, DungeonSavedData, Susu609Mod | NetworkEvent, NetworkEvent.Context, PlayerEvent, PlayerEvent.PlayerLoggedInEvent |
 | `DungeonParams` | record | 46 | DungeonLayout, RoomPreset | - |
 | `DungeonSavedData` | class | 55 | - | - |
 | `RoomPreset` | enum | 40 | - | - |
