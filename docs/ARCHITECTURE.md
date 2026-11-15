@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 27 class/kiểu Java, 2110 dòng, 52 phụ thuộc nội bộ
+- 27 class/kiểu Java, 2163 dòng, 55 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -21,9 +21,9 @@ flowchart LR
     TitleScreenInterface["TitleScreenInterface<br/><small>interface · 13 dòng</small>"]
   end
   subgraph pkg_dungeon["dungeon"]
-    DungeonBuilder["DungeonBuilder<br/><small>class · 120 dòng</small>"]
+    DungeonBuilder["DungeonBuilder<br/><small>class · 172 dòng</small>"]
     DungeonClientState["DungeonClientState<br/><small>class · 27 dòng</small>"]
-    DungeonCommand["DungeonCommand<br/><small>class · 71 dòng</small>"]
+    DungeonCommand["DungeonCommand<br/><small>class · 72 dòng</small>"]
     DungeonInspector["DungeonInspector<br/><small>class · 159 dòng</small>"]
     DungeonLayout["DungeonLayout<br/><small>class · 386 dòng</small>"]
     DungeonNetwork["DungeonNetwork<br/><small>class · 68 dòng</small>"]
@@ -58,7 +58,10 @@ flowchart LR
   ClientboundDungeonSeedPacket --> Susu609Mod
   DungeonBuilder --> DungeonLayout
   DungeonBuilder --> DungeonParams
+  DungeonBuilder --> ModBlocksRegistry
   DungeonBuilder --> RoomPreset
+  DungeonBuilder --> TorchBurn
+  DungeonBuilder --> WorldRandom
   DungeonClientState --> DungeonLayout
   DungeonClientState --> DungeonParams
   DungeonClientState --> WorldRandom
@@ -134,9 +137,9 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `DungeonBuilder` | class | 120 | DungeonLayout, DungeonParams, RoomPreset | - |
+| `DungeonBuilder` | class | 172 | DungeonLayout, DungeonParams, ModBlocksRegistry, RoomPreset, TorchBurn, WorldRandom | - |
 | `DungeonClientState` | class | 27 | DungeonLayout, DungeonParams, WorldRandom | - |
-| `DungeonCommand` | class | 71 | ClientboundDungeonSeedPacket, DungeonBuilder, DungeonLayout, DungeonParams, DungeonSavedData, RoomPreset, Susu609Mod, WorldRandom | RegisterCommandsEvent |
+| `DungeonCommand` | class | 72 | ClientboundDungeonSeedPacket, DungeonBuilder, DungeonLayout, DungeonParams, DungeonSavedData, RoomPreset, Susu609Mod, WorldRandom | RegisterCommandsEvent |
 | `DungeonInspector` | class | 159 | DungeonBuilder, DungeonClientState, DungeonLayout, RoomPreset, Susu609Mod | RegisterGuiOverlaysEvent, RenderLevelStageEvent, RenderLevelStageEvent.Stage |
 | `DungeonLayout` | class | 386 | DungeonParams, RoomPreset, WorldRandom | - |
 | `DungeonNetwork` | class | 68 | DungeonClientState, DungeonSavedData, Susu609Mod | NetworkEvent, NetworkEvent.Context, PlayerEvent, PlayerEvent.PlayerLoggedInEvent |
