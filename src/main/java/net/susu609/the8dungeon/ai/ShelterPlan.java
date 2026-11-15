@@ -43,6 +43,26 @@ final class ShelterPlan {
         return p;
     }
 
+    /** Tìm chỗ đặt hầm nhóm 2x2 quanh feet (lệch tối đa 3 khối ngang, 1 khối dọc). null nếu không có. */
+    static ShelterPlan sharedNear(ServerLevel level, BlockPos feet) {
+        ShelterPlan best = null;
+        double bestD = Double.MAX_VALUE;
+        for (int dy = -1; dy <= 1; dy++) {
+            for (int dx = -3; dx <= 3; dx++) {
+                for (int dz = -3; dz <= 3; dz++) {
+                    double d = dx * dx + dz * dz + dy * dy * 4;
+                    if (d >= bestD) continue;
+                    ShelterPlan p = shared(level, feet.offset(dx, dy, dz));
+                    if (p != null) {
+                        best = p;
+                        bestD = d;
+                    }
+                }
+            }
+        }
+        return best;
+    }
+
     /** Hầm nhóm 2x2 bắt đầu từ feet (góc tây-bắc). null nếu địa hình không đứng được cả 4 ô. */
     static ShelterPlan shared(ServerLevel level, BlockPos feet) {
         ShelterPlan p = new ShelterPlan(true, level.dimension(), feet);

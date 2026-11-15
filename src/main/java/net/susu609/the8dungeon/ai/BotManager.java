@@ -264,7 +264,7 @@ public final class BotManager {
         ShelterPlan near = sharedShelterNear(bot);
         if (near != null) return near;
         if (groupNearby) {
-            ShelterPlan s = ShelterPlan.shared(bot.serverLevel(), bot.blockPosition());
+            ShelterPlan s = ShelterPlan.sharedNear(bot.serverLevel(), bot.blockPosition());
             if (s != null) {
                 SHARED_SHELTERS.add(s);
                 return s;

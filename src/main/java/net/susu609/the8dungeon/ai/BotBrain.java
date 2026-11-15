@@ -413,7 +413,10 @@ final class BotBrain {
             double lim = goal == Goal.GROUP ? 12.0D : 24.0D; // độ trễ: về tới 12 khối mới thôi
             if (nearestAlly != null && nearestAllyDist > lim) sc[Goal.GROUP.ordinal()] = 0.55F;
             if (age % 100 == 0 || goal == Goal.SHARE) findShareTarget();
-            if (shareWith != null && h == null) sc[Goal.SHARE.ordinal()] = 0.7F;
+            if (shareWith != null && h == null) {
+                // đồng đội sắp chết đói thì ưu tiên hơn cả việc trú ẩn
+                sc[Goal.SHARE.ordinal()] = shareWith.getFoodData().getFoodLevel() <= 6 ? 0.85F : 0.7F;
+            }
         }
 
         lastScores = sc;
@@ -1048,7 +1051,9 @@ final class BotBrain {
     private boolean placeBlock(BlockPos pos) {
         ServerLevel level = bot.serverLevel();
         if (!level.getBlockState(pos).canBeReplaced()) return true;
-        if (bot.getBoundingBox().intersects(new net.minecraft.world.phys.AABB(pos))) return true; // không tự chôn mình
+        if (!level.getEntitiesOfClass(LivingEntity.class, new net.minecraft.world.phys.AABB(pos)).isEmpty()) {
+            return true; // có sinh vật (kể cả chính mình) đứng ở đó: không chôn ai trong khối
+        }
         ItemStack stack = BotItems.findPlaceable(bot.getInventory());
         if (stack.isEmpty() || !(stack.getItem() instanceof BlockItem bi)) return false;
         BlockState place = bi.getBlock().defaultBlockState();
