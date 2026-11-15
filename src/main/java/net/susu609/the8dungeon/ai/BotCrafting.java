@@ -34,13 +34,13 @@ final class BotCrafting {
      * Công thức lưới 2x2 (chế ngay trong túi như người chơi): ván, gậy, bàn chế tạo.
      * Luôn giữ một bàn trong túi để chế đồ 3x3 ở bất cứ đâu.
      */
-    static boolean stepInventory(BotPlayer bot, boolean wantFurnace) {
+    static boolean stepInventory(BotPlayer bot, boolean wantFurnace, boolean tablePlaced) {
         Inventory inv = bot.getInventory();
         int logs = BotItems.count(inv, LOG);
         int planks = BotItems.count(inv, PLANK);
         int sticks = BotItems.count(inv, STICK);
         boolean tools = wantTools(inv);
-        boolean hasTable = BotItems.count(inv, TABLE) > 0;
+        boolean hasTable = tablePlaced || BotItems.count(inv, TABLE) > 0; // bàn đang đặt dưới đất cũng tính
         if ((tools || wantFurnace) && !hasTable && planks >= 4) {
             BotItems.take(inv, PLANK, 4);
             BotItems.give(bot, new ItemStack(Items.CRAFTING_TABLE));

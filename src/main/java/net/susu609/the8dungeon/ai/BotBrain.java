@@ -288,7 +288,7 @@ final class BotBrain {
         snapshotInventory();
         wantFurnace = rules.cook && rawFood > 0 && furnacePos == null
                 && BotItems.count(bot.getInventory(), st -> st.is(Items.FURNACE)) == 0;
-        for (int i = 0; i < 6 && BotCrafting.stepInventory(bot, wantFurnace); i++) {
+        for (int i = 0; i < 6 && BotCrafting.stepInventory(bot, wantFurnace, tableUse != null); i++) {
             // công thức 2x2 chế liền trong túi
         }
         snapshotInventory();
