@@ -33,7 +33,7 @@ import net.minecraft.world.phys.Vec3;
  */
 final class BotBrain {
 
-    private enum Goal { IDLE, FLEE, FIGHT, EAT, HUNT, COLLECT, SHELTER, WOOD, STONE, DIRT, EXPLORE, HOME, COOK }
+    private enum Goal { IDLE, FLEE, FIGHT, EAT, HUNT, COLLECT, SHELTER, WOOD, STONE, DIRT, EXPLORE, HOME, COOK, GROUP, SHARE }
 
     private static final double REACH = 4.0D;
 
@@ -76,8 +76,20 @@ final class BotBrain {
     private BlockPos exploreTarget;
     private double heading = Math.random() * Math.PI * 2.0D;
     private int collectSince;
-    private final List<BlockPos> shelterPlan = new ArrayList<>();
-    private int shelterIdx;
+    private ShelterPlan shelter;      // hầm đang dùng (riêng hoặc chung với nhóm)
+    private BlockPos myCell;          // ô đứng của mình trong hầm
+    private boolean shelterAbandoned; // hết vật liệu vá / bị đánh lúc máu thấp: bỏ hầm tới sáng
+    private int shelterStuckSince = -1;
+    // Hợp tác
+    private final List<net.minecraft.world.entity.player.Player> allies = new ArrayList<>();
+    private net.minecraft.world.entity.player.Player nearestAlly;
+    private double nearestAllyDist = Double.MAX_VALUE;
+    private Vec3 groupCenter;
+    private LivingEntity helpTarget;  // kẻ đang tấn công đồng đội
+    private int helpUntil;
+    private net.minecraft.world.entity.player.Player shareWith;
+    private ItemStack shareKind = ItemStack.EMPTY; // loại đồ định cho
+    private final java.util.Map<java.util.UUID, Integer> shareCooldown = new java.util.HashMap<>();
     private boolean sheltered;
     private boolean shelterDone;
 
@@ -112,6 +124,18 @@ final class BotBrain {
     void onSound(Vec3 pos, int kind) {
         senses.hear(pos, kind, age);
         if (kind == BotSenses.SOUND_DANGER) rethink = true;
+    }
+
+    /** Đồng đội bị tấn công gần đây (BotManager báo). Giúp nếu nạn nhân là đồng đội và kẻ đánh không phải đồng đội. */
+    void onAllyAttacked(net.minecraft.world.entity.player.Player victim, LivingEntity attacker) {
+        if (!rules.coop || !social.isAlly(victim)) return;
+        if (attacker instanceof net.minecraft.world.entity.player.Player ap && (ap == bot || social.isAlly(ap))) return;
+        helpTarget = attacker;
+        helpUntil = age + 200;
+        senses.remember(attacker, age);
+        BotLog.log(bot, "COOP", () -> victim.getGameProfile().getName() + " bị " + attacker.getType().getDescriptionId()
+                + " tấn công, đi giúp");
+        rethink = true;
     }
 
     boolean acceptPeaceInFight(BotPlayer from) {
@@ -188,7 +212,71 @@ final class BotBrain {
     }
 
     private boolean inRoam(BlockPos p) {
-        return rules.roam <= 0 || bot.home().distSqr(p) <= (double) rules.roam * rules.roam;
+        boolean roamOk = rules.roam <= 0 || bot.home().distSqr(p) <= (double) rules.roam * rules.roam;
+        // Đi cùng nhóm: chỉ chọn việc trong vòng 32 khối quanh tâm nhóm
+        boolean groupOk = groupCenter == null || Vec3.atCenterOf(p).distanceToSqr(groupCenter) <= 32.0D * 32.0D;
+        return roamOk && groupOk;
+    }
+
+    /** Cập nhật danh sách đồng đội trong 64 khối, đồng đội gần nhất và tâm nhóm. */
+    private void updateAllies() {
+        allies.clear();
+        nearestAlly = null;
+        nearestAllyDist = Double.MAX_VALUE;
+        groupCenter = null;
+        if (!rules.coop) return;
+        double sx = 0, sy = 0, sz = 0;
+        for (net.minecraft.world.entity.player.Player p : bot.serverLevel().players()) {
+            if (p == bot || !p.isAlive() || p.isSpectator()) continue;
+            double d = p.distanceTo(bot);
+            if (d > 64.0D || !social.isAlly(p)) continue;
+            allies.add(p);
+            sx += p.getX();
+            sy += p.getY();
+            sz += p.getZ();
+            if (d < nearestAllyDist) {
+                nearestAllyDist = d;
+                nearestAlly = p;
+            }
+        }
+        if (!allies.isEmpty()) {
+            // tâm nhóm tính cả bản thân để không bị kéo hẳn về phía người khác
+            int n = allies.size() + 1;
+            groupCenter = new Vec3((sx + bot.getX()) / n, (sy + bot.getY()) / n, (sz + bot.getZ()) / n);
+        }
+    }
+
+    /** Tìm đồng đội cần đồ (đói mà hết đồ ăn, hoặc chưa có cuốc) mà mình có dư để cho. */
+    private void findShareTarget() {
+        shareWith = null;
+        shareKind = ItemStack.EMPTY;
+        if (!rules.coop) return;
+        Inventory inv = bot.getInventory();
+        int myPicks = BotItems.count(inv, st -> st.getItem() instanceof PickaxeItem);
+        for (net.minecraft.world.entity.player.Player p : allies) {
+            if (p.distanceTo(bot) > 24.0D || shareCooldown.getOrDefault(p.getUUID(), -1) > age) continue;
+            Inventory theirs = p.getInventory();
+            boolean hungry = p.getFoodData().getFoodLevel() <= 10 && BotItems.count(theirs, ItemStack::isEdible) == 0;
+            if (hungry && foodCount >= 3) {
+                ItemStack food = BotItems.bestFood(bot, false);
+                if (!food.isEmpty()) {
+                    shareWith = p;
+                    shareKind = food;
+                    return;
+                }
+            }
+            if (myPicks >= 2 && BotItems.rank(theirs, PickaxeItem.class) == 0) {
+                for (int i = 0; i < inv.getContainerSize(); i++) { // cho cái cuốc yếu nhất
+                    ItemStack st = inv.getItem(i);
+                    if (st.getItem() instanceof PickaxeItem pk && (shareKind.isEmpty()
+                            || pk.getTier().getLevel() < ((PickaxeItem) shareKind.getItem()).getTier().getLevel())) {
+                        shareKind = st;
+                    }
+                }
+                shareWith = p;
+                return;
+            }
+        }
     }
 
     private void think() {
@@ -198,7 +286,8 @@ final class BotBrain {
         }
         snapshotInventory();
 
-        boolean inShelter = sheltered && isNight();
+        updateAllies();
+        boolean inShelter = sheltered && isNight() && shelter != null;
         senses.update(bot, age, !inShelter, rules.scanBudget / (BotManager.reduced() ? 2 : 1));
 
         float hp = bot.getHealth() / bot.getMaxHealth();
@@ -243,17 +332,32 @@ final class BotBrain {
         double threatDist = threat == null ? 0.0D : threat.distanceTo(bot);
         Vec3 dangerFrom = hazard ? lastDamagePos : heardDanger ? senses.heardPos
                 : threat != null ? threat.position() : null;
-        fightTarget = grudge != null && fleeFrom == null ? grudge : revenge != null ? revenge : h;
+        LivingEntity help = helpTarget != null && helpTarget.isAlive() && age < helpUntil
+                && helpTarget.distanceTo(bot) < 20.0D ? helpTarget : null;
+        fightTarget = grudge != null && fleeFrom == null ? grudge : revenge != null ? revenge : help != null ? help : h;
 
         float[] sc = new float[Goal.values().length];
         if (hazard || heardDanger) {
             sc[Goal.FLEE.ordinal()] = 0.98F; // nguy hiểm môi trường/âm thanh: ưu tiên tuyệt đối (kể cả trong chỗ trú)
+        }
+        if (inShelter) {
+            // Đang trong hầm: kẻ đứng sát (đánh qua lỗ) thì đánh trả tại chỗ; bị đánh lúc máu thấp thì bỏ hầm chạy
+            LivingEntity close = revenge != null ? revenge : h;
+            if (recentHurt && lowHp) {
+                abandonShelter("bị đánh lúc máu thấp");
+                sc[Goal.FLEE.ordinal()] = 0.95F;
+            } else if (rules.fight && close != null && close.distanceTo(bot) < 3.5D) {
+                fightTarget = close;
+                sc[Goal.FIGHT.ordinal()] = 0.9F;
+            }
         }
         if (!inShelter) {
             if (canFlee && (creeper || fleeFrom != null || ((h != null || revenge != null) && lowHp))) {
                 sc[Goal.FLEE.ordinal()] = Math.max(sc[Goal.FLEE.ordinal()], 0.95F);
             } else if (rules.fight && revenge != null) {
                 sc[Goal.FIGHT.ordinal()] = 0.88F; // bị quái đánh (kể cả từ sau lưng): quay lại đánh
+            } else if (rules.fight && help != null && !lowHp) {
+                sc[Goal.FIGHT.ordinal()] = 0.86F; // đồng đội bị tấn công: đánh giúp
             } else if (rules.fight && grudge != null && fleeFrom == null) {
                 sc[Goal.FIGHT.ordinal()] = 0.9F; // đánh trả người/bot đã thành thù
             } else if (rules.fight && h != null && hd <= 16.0D) {
@@ -296,9 +400,21 @@ final class BotBrain {
                 if (d2 > lim * lim) sc[Goal.HOME.ordinal()] = 0.7F;
             }
         }
-        if (rules.shelter && night && !shelterDone && (placeable >= 9 || !shelterPlan.isEmpty())) sc[Goal.SHELTER.ordinal()] = 0.8F;
-        else if (!night && !shelterPlan.isEmpty()) sc[Goal.SHELTER.ordinal()] = 0.9F; // phải phá chỗ trú để ra
-        if (!night && !dusk && shelterPlan.isEmpty()) shelterDone = false;
+        boolean groupShelter = rules.coop && BotManager.sharedShelterNear(bot) != null;
+        boolean canShelter = shelter != null || placeable >= 9 || groupShelter || (allyBotNear(16.0D) && placeable >= 6);
+        if (rules.shelter && night && !shelterDone && !shelterAbandoned && canShelter) sc[Goal.SHELTER.ordinal()] = 0.8F;
+        else if (!night && shelter != null) sc[Goal.SHELTER.ordinal()] = 0.9F; // phải mở hầm để ra
+        if (!night && !dusk && shelter == null) {
+            shelterDone = false;
+            shelterAbandoned = false;
+        }
+        // Hợp tác: xa nhóm quá thì quay về; đồng đội thiếu đồ thì mang tới cho
+        if (!inShelter && rules.coop) {
+            double lim = goal == Goal.GROUP ? 12.0D : 24.0D; // độ trễ: về tới 12 khối mới thôi
+            if (nearestAlly != null && nearestAllyDist > lim) sc[Goal.GROUP.ordinal()] = 0.55F;
+            if (age % 100 == 0 || goal == Goal.SHARE) findShareTarget();
+            if (shareWith != null && h == null) sc[Goal.SHARE.ordinal()] = 0.7F;
+        }
 
         lastScores = sc;
         // Chọn điểm cao nhất, thêm quán tính cho mục tiêu hiện tại
@@ -421,6 +537,8 @@ final class BotBrain {
             case DIRT -> actMine(BotSenses.DIRT);
             case EXPLORE -> actExplore();
             case COOK -> actCook();
+            case GROUP -> actGroup();
+            case SHARE -> actShare();
             case HOME -> nav.moveTo(bot.home(), age, false);
             default -> nav.stop();
         }
@@ -510,7 +628,8 @@ final class BotBrain {
             return;
         }
         double d = bot.distanceTo(e);
-        if (d > 2.6D) nav.moveTo(e.blockPosition(), age, true);
+        boolean holdPosition = sheltered && shelter != null && isNight(); // trong hầm: đánh tại chỗ, không chạy ra
+        if (d > 2.6D && !holdPosition) nav.moveTo(e.blockPosition(), age, true);
         else nav.stop();
         if (d <= 3.2D) {
             bot.lookAt(EntityAnchorArgument.Anchor.EYES, e.getEyePosition());
@@ -810,61 +929,134 @@ final class BotBrain {
 
     // ===== Trú ẩn ban đêm =====
 
+    private boolean allyBotNear(double range) {
+        for (net.minecraft.world.entity.player.Player p : allies) {
+            if (p instanceof BotPlayer && p.distanceTo(bot) <= range) return true;
+        }
+        return false;
+    }
+
+    private void abandonShelter(String why) {
+        if (shelter == null || shelterAbandoned) return;
+        BotLog.log(bot, "SHELTER", () -> "bỏ hầm: " + why);
+        shelterAbandoned = true;
+        sheltered = false;
+        shelter = null;
+        myCell = null;
+    }
+
     private void actShelter() {
+        ServerLevel level = bot.serverLevel();
+        String name = bot.getGameProfile().getName();
         if (isNight()) {
+            if (shelter == null) {
+                shelter = BotManager.shelterFor(bot, rules.coop && allyBotNear(16.0D));
+                myCell = shelter.cellFor(name);
+                final ShelterPlan sp = shelter;
+                BotLog.log(bot, "SHELTER", () -> (sp.shared ? "vào hầm nhóm tại " : "dựng hầm riêng tại ")
+                        + sp.origin.toShortString() + ", ô " + myCell.toShortString());
+            }
+            // Về đúng ô của mình (có thể bị đẩy ra khi đánh nhau)
+            if (!bot.blockPosition().equals(myCell)) {
+                sheltered = false;
+                boolean arrived = nav.moveTo(myCell, age, false);
+                if ((arrived || nav.failed) && bot.blockPosition().distSqr(myCell) > 2) {
+                    if (shelterStuckSince < 0) shelterStuckSince = age;
+                    if (age - shelterStuckSince > 100) abandonShelter("không vào được ô của mình");
+                }
+                return;
+            }
+            shelterStuckSince = -1;
             nav.stop();
-            if (shelterPlan.isEmpty()) planShelter();
-            if (shelterIdx < shelterPlan.size()) {
-                if (age % 3 == 0) placeBlock(shelterPlan.get(shelterIdx++));
-            } else {
-                sheltered = true; // đứng yên trong hộp tới sáng
+            // Kiểm tra vỏ hầm: thiếu/bị phá thì vá (cả nhóm cùng vá)
+            BlockPos missing = shelter.nextMissing(level, bot, 4.5D);
+            if (missing != null) {
+                sheltered = false;
+                if (age % 3 == 0 && !placeBlock(missing)) {
+                    // hết đất/đá: hầm nhóm thì chờ đồng đội vá; hầm riêng thì bỏ
+                    if (!shelter.shared || !allyBotNear(4.0D)) abandonShelter("hết vật liệu để vá");
+                }
+                return;
+            }
+            if (!sheltered && shelter.complete(level)) {
+                sheltered = true;
+                BotLog.log(bot, "SHELTER", () -> "hầm đã kín");
+            } else if (sheltered && age % 20 == 0 && !shelter.complete(level)) {
+                sheltered = false; // có lỗ ngoài tầm với (hoặc đang có sinh vật chắn): chờ vá
+                BotLog.log(bot, "SHELTER", () -> "hầm bị thủng");
             }
             return;
         }
-        // Trời sáng: phá lại từng khối đã đặt để thu hồi vật liệu và đi ra
+        // Trời sáng: mở lối ra (hầm riêng: phá hết để lấy lại vật liệu; hầm nhóm: một lối cạnh ô mình)
         sheltered = false;
-        if (shelterPlan.isEmpty()) {
-            BotLog.log(bot, "SHELTER", () -> "đã phá xong hộp, ra ngoài");
+        if (shelter == null) {
             shelterDone = true;
             return;
         }
-        BlockPos p = shelterPlan.get(shelterPlan.size() - 1);
-        BlockState s = bot.level().getBlockState(p);
-        if (s.isAir() || !(s.is(Blocks.DIRT) || s.is(Blocks.COBBLESTONE) || s.is(Blocks.COARSE_DIRT))) {
-            shelterPlan.remove(shelterPlan.size() - 1);
-        } else if (mineTick(p)) {
-            shelterPlan.remove(shelterPlan.size() - 1);
+        for (BlockPos p : shelter.exitFor(myCell)) {
+            BlockState st = level.getBlockState(p);
+            if (st.is(Blocks.DIRT) || st.is(Blocks.COBBLESTONE) || st.is(Blocks.COARSE_DIRT)) {
+                mineTick(p);
+                return;
+            }
         }
-        if (shelterPlan.isEmpty()) {
-            shelterIdx = 0;
-            shelterDone = true;
-        }
+        BotLog.log(bot, "SHELTER", () -> "đã mở hầm, ra ngoài");
+        shelter = null;
+        myCell = null;
+        shelterDone = true;
     }
 
-    /** Hộp 1x1: 4 hướng x 2 tầng + nắp trên đầu = 9 khối. */
-    private void planShelter() {
-        BlockPos feet = bot.blockPosition();
-        shelterPlan.clear();
-        shelterIdx = 0;
-        BotLog.log(bot, "SHELTER", () -> "dựng hộp tại " + feet.toShortString() + " (đất/đá có " + placeable + ")");
-        for (Direction d : Direction.Plane.HORIZONTAL) {
-            shelterPlan.add(feet.relative(d));
-            shelterPlan.add(feet.relative(d).above());
+    // ===== Hợp tác =====
+
+    private void actGroup() {
+        if (nearestAlly == null) {
+            nav.stop();
+            return;
         }
-        shelterPlan.add(feet.above(2));
+        nav.moveTo(nearestAlly.blockPosition(), age, nearestAllyDist > 32.0D);
     }
 
-    private void placeBlock(BlockPos pos) {
+    private void actShare() {
+        net.minecraft.world.entity.player.Player to = shareWith;
+        if (to == null || !to.isAlive() || shareKind.isEmpty()) {
+            nav.stop();
+            return;
+        }
+        if (bot.distanceTo(to) > 3.0D) {
+            nav.moveTo(to.blockPosition(), age, false);
+            return;
+        }
+        nav.stop();
+        bot.lookAt(EntityAnchorArgument.Anchor.EYES, to.getEyePosition());
+        Inventory inv = bot.getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack st = inv.getItem(i);
+            if (st.isEmpty() || !ItemStack.isSameItem(st, shareKind)) continue;
+            ItemStack give = st.split(st.isEdible() ? Math.min(2, st.getCount()) : 1);
+            final String what = give.getCount() + " " + give.getItem().getDescriptionId();
+            bot.drop(give, false, true); // ném về phía đang nhìn, ghi tên người ném để người nhận biết là quà
+            BotLog.log(bot, "COOP", () -> "cho " + to.getGameProfile().getName() + " " + what);
+            break;
+        }
+        shareCooldown.put(to.getUUID(), age + 1200);
+        shareWith = null;
+        shareKind = ItemStack.EMPTY;
+        rethink = true;
+    }
+
+    /** Đặt một khối đất/đá. Trả false nếu hết vật liệu. */
+    private boolean placeBlock(BlockPos pos) {
         ServerLevel level = bot.serverLevel();
-        if (!level.getBlockState(pos).canBeReplaced()) return;
-        if (bot.getBoundingBox().intersects(new net.minecraft.world.phys.AABB(pos))) return; // không tự chôn mình
+        if (!level.getBlockState(pos).canBeReplaced()) return true;
+        if (bot.getBoundingBox().intersects(new net.minecraft.world.phys.AABB(pos))) return true; // không tự chôn mình
         ItemStack stack = BotItems.findPlaceable(bot.getInventory());
-        if (stack.isEmpty() || !(stack.getItem() instanceof BlockItem bi)) return;
+        if (stack.isEmpty() || !(stack.getItem() instanceof BlockItem bi)) return false;
         BlockState place = bi.getBlock().defaultBlockState();
         level.setBlock(pos, place, 3);
         BotLog.log(bot, "PLACE", () -> place.getBlock().getDescriptionId() + " tại " + pos.toShortString());
         level.playSound(null, pos, place.getSoundType().getPlaceSound(), SoundSource.BLOCKS, 1.0F, 0.8F);
         stack.shrink(1);
         bot.swing(InteractionHand.MAIN_HAND, true);
+        return true;
     }
 }

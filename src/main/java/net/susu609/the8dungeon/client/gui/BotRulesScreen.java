@@ -130,6 +130,7 @@ public final class BotRulesScreen extends Screen {
         slider(rx, y, "Nhịp suy nghĩ", 5, 40, 5, cur.thinkEvery, editable, v -> cur.thinkEvery = v, v -> v + " tick");
         y += 20;
         slider(lx, y, "Quét khối", 200, 1500, 100, cur.scanBudget, editable, v -> cur.scanBudget = v, v -> v + "/lần");
+        toggle(rx, y, "Hợp tác nhóm", cur.coop, editable, v -> cur.coop = v);
         statsY = y + 24;
     }
 

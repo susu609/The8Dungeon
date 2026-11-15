@@ -101,6 +101,10 @@ public final class BotPlayer extends ServerPlayer {
         return this.isAlive() && brain.acceptPeaceInFight(from);
     }
 
+    public void onAllyAttacked(net.minecraft.world.entity.player.Player victim, net.minecraft.world.entity.LivingEntity attacker) {
+        brain.onAllyAttacked(victim, attacker);
+    }
+
     public void onDamaged(net.minecraft.world.damagesource.DamageSource source) {
         brain.onDamaged(source);
     }

@@ -107,6 +107,8 @@ public final class BotHud {
             case "EXPLORE" -> "Đang khám phá";
             case "HOME" -> "Đang về nhà";
             case "COOK" -> "Đang nấu ăn";
+            case "GROUP" -> "Đang về với nhóm";
+            case "SHARE" -> "Đang chia đồ";
             default -> "Đang nghỉ";
         };
     }

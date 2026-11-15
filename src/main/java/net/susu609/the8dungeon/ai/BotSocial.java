@@ -86,6 +86,11 @@ final class BotSocial {
         return wasHostile && r.trust > HOSTILE;
     }
 
+    /** Đồng đội: mọi người chơi/bot không thù (điểm thân thiết từ 0 trở lên). */
+    boolean isAlly(Player p) {
+        return rel(p).trust >= 0.0F;
+    }
+
     float trust(Player p) {
         return rel(p).trust;
     }

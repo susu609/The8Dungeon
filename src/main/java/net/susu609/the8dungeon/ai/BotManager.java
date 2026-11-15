@@ -50,6 +50,7 @@ public final class BotManager {
         return humans;
     }
 
+    private static final java.util.List<ShelterPlan> SHARED_SHELTERS = new ArrayList<>();
     private static final Map<UUID, String> WATCH = new HashMap<>(); // spectator -> bot đã chọn bằng [ ]
     private static final Map<UUID, BotInfo> LAST_SENT = new HashMap<>();
 
@@ -106,6 +107,8 @@ public final class BotManager {
         if (server.getTickCount() % 10 == 0) sendToSpectators(server);
         if (server.getTickCount() % 20 != 0) return;
         humans = server.getPlayerList().getPlayers().stream().anyMatch(p -> !(p instanceof BotPlayer));
+        long day = server.overworld().getDayTime() % 24000L;
+        if (day < 11000L && !SHARED_SHELTERS.isEmpty()) SHARED_SHELTERS.clear(); // ban ngày: giải tán hầm nhóm
         Runtime rt = Runtime.getRuntime();
         double ratio = (double) (rt.totalMemory() - rt.freeMemory()) / rt.maxMemory();
         if (!reduced && ratio > 0.90D) reduced = true;       // có độ trễ: vào ở 90%, ra ở 75%
@@ -129,6 +132,17 @@ public final class BotManager {
 
     @SubscribeEvent
     public static void onHurt(net.minecraftforge.event.entity.living.LivingHurtEvent event) {
+        // Một người/bot bị tấn công: báo cho các bot trong 16 khối để giúp nếu là đồng đội
+        if (!BOTS.isEmpty() && event.getEntity() instanceof net.minecraft.world.entity.player.Player victim
+                && event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker
+                && attacker != victim) {
+            for (BotPlayer helper : BOTS.values()) {
+                if (helper != victim && helper.isAlive() && helper.level() == victim.level()
+                        && helper.distanceToSqr(victim) < 16.0D * 16.0D) {
+                    helper.onAllyAttacked(victim, attacker);
+                }
+            }
+        }
         if (!(event.getEntity() instanceof BotPlayer bot)) return;
         bot.onDamaged(event.getSource()); // mọi nguồn sát thương: quái, lửa, dung nham, nổ...
         if (!(event.getSource().getEntity() instanceof net.minecraft.world.entity.player.Player attacker) || attacker == bot) return;
@@ -229,6 +243,34 @@ public final class BotManager {
                     }
                 },
                 Component.literal("Kho đồ của " + bot.getGameProfile().getName())));
+    }
+
+    // ===== Hầm trú chung =====
+
+    /** Hầm nhóm còn chỗ trong 24 khối (hoặc hầm mình đã là thành viên), hoặc null. */
+    static ShelterPlan sharedShelterNear(BotPlayer bot) {
+        String name = bot.getGameProfile().getName();
+        for (ShelterPlan s : SHARED_SHELTERS) {
+            if (s.dim == bot.level().dimension() && s.origin.distSqr(bot.blockPosition()) < 24 * 24
+                    && (s.isMember(name) || s.hasFreeCell())) {
+                return s;
+            }
+        }
+        return null;
+    }
+
+    /** Chọn hầm cho bot: vào hầm nhóm gần đó, hoặc lập hầm nhóm mới nếu có bot đồng đội gần, không thì hầm riêng. */
+    static ShelterPlan shelterFor(BotPlayer bot, boolean groupNearby) {
+        ShelterPlan near = sharedShelterNear(bot);
+        if (near != null) return near;
+        if (groupNearby) {
+            ShelterPlan s = ShelterPlan.shared(bot.serverLevel(), bot.blockPosition());
+            if (s != null) {
+                SHARED_SHELTERS.add(s);
+                return s;
+            }
+        }
+        return ShelterPlan.solo(bot.level().dimension(), bot.blockPosition());
     }
 
     /** Spectator chọn bot để xem: ghi nhớ, đổi camera nếu đang nhập vào bot khác, dịch chuyển tới nếu bot ở xa. */
@@ -356,6 +398,7 @@ public final class BotManager {
                 case "explore" -> r.explore = b;
                 case "collect" -> r.collect = b;
                 case "cook" -> r.cook = b;
+                case "coop" -> r.coop = b;
                 case "pause" -> r.pauseWhenAlone = b;
                 case "flee" -> r.fleeHpPct = Integer.parseInt(value);
                 case "eat" -> r.eatBelow = Integer.parseInt(value);
@@ -363,7 +406,7 @@ public final class BotManager {
                 case "think" -> r.thinkEvery = Integer.parseInt(value);
                 case "budget" -> r.scanBudget = Integer.parseInt(value);
                 default -> {
-                    c.getSource().sendFailure(Component.literal("Khóa hợp lệ: fight hunt mine shelter explore collect cook pause flee eat roam think budget"));
+                    c.getSource().sendFailure(Component.literal("Khóa hợp lệ: fight hunt mine shelter explore collect cook coop pause flee eat roam think budget"));
                     return 0;
                 }
             }
