@@ -13,7 +13,7 @@ public final class BuildInfo {
 
     private BuildInfo() {}
 
-    /** Ví dụ: claude/player_ai @ a1b2c3d (sạch) build 2026-11-15 13:40:02 */
+    /** Ví dụ: claude/player_ai @ a1b2c3d (clean) build 2026-11-15 13:40:02 */
     public static String line() {
         return LINE;
     }

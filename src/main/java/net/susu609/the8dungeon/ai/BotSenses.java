@@ -12,6 +12,7 @@ import net.minecraft.world.entity.animal.Cow;
 import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
@@ -43,6 +44,8 @@ final class BotSenses {
     LivingEntity hostile;
     double hostileDist = Double.MAX_VALUE;
     LivingEntity prey;
+    LivingEntity creeper; // creeper gần nhất, tách riêng: không đánh, chỉ tránh
+    double creeperDist = Double.MAX_VALUE;
     ItemEntity item;
 
     BlockPos best(int kind) {
@@ -77,11 +80,18 @@ final class BotSenses {
         hostile = null;
         prey = null;
         hostileDist = Double.MAX_VALUE;
+        creeper = null;
+        creeperDist = Double.MAX_VALUE;
         double preyD = Double.MAX_VALUE;
         AABB box = bot.getBoundingBox().inflate(18.0D, 8.0D, 18.0D);
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box, x -> x != bot && x.isAlive())) {
             double d = e.distanceToSqr(bot);
-            if (e instanceof Enemy && !(e instanceof EnderMan) && !(e instanceof Player)) {
+            if (e instanceof Creeper) {
+                if (d < creeperDist) {
+                    creeperDist = d;
+                    creeper = e;
+                }
+            } else if (e instanceof Enemy && !(e instanceof EnderMan) && !(e instanceof Player)) {
                 if (d < hostileDist) {
                     hostileDist = d;
                     hostile = e;
@@ -94,6 +104,7 @@ final class BotSenses {
             }
         }
         if (hostile != null) hostileDist = Math.sqrt(hostileDist);
+        if (creeper != null) creeperDist = Math.sqrt(creeperDist);
 
         item = null;
         double itemD = Double.MAX_VALUE;

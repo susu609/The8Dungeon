@@ -70,7 +70,7 @@ tasks.register('generateBuildInfo') {
     doLast {
         def branch = gitBranch.get() ?: 'unknown'
         def commit = gitCommit.get() ?: 'unknown'
-        def state = gitDirty.get() ? 'có thay đổi chưa commit' : 'sạch'
+        def state = gitDirty.get() ? 'dirty' : 'clean'
         def time = new Date().format('yyyy-MM-dd HH:mm:ss')
         def f = outFile.get().asFile
         f.parentFile.mkdirs()

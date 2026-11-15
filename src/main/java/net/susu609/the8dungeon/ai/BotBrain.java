@@ -11,7 +11,6 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -116,14 +115,17 @@ final class BotBrain {
         boolean dusk = isDusk();
         // Độ trễ: đã chạy trốn thì phải an toàn hơn mới thôi, tránh đổi qua lại ở sát ngưỡng
         boolean fleeing = goal == Goal.FLEE;
-        boolean creeper = h instanceof Creeper && hd < (fleeing ? 9.5D : 6.5D);
+        LivingEntity cr = senses.creeper;
+        boolean creeper = cr != null && senses.creeperDist < (fleeing ? 9.5D : 6.5D);
+        LivingEntity threat = creeper ? cr : h;
+        double threatDist = creeper ? senses.creeperDist : hd;
         boolean canFlee = age >= cannotFleeUntil;
         ItemStack foodStack = BotItems.bestFood(bot, food <= 6);
 
         float[] sc = new float[Goal.values().length];
-        if (h != null && !inShelter) {
+        if ((h != null || creeper) && !inShelter) {
             if (canFlee && (creeper || hp < (fleeing ? 0.55F : 0.4F))) sc[Goal.FLEE.ordinal()] = 0.95F;
-            else if (hd <= 16.0D) sc[Goal.FIGHT.ordinal()] = hd < 6.0D ? 0.85F : 0.6F;
+            else if (h != null && hd <= 16.0D) sc[Goal.FIGHT.ordinal()] = hd < 6.0D ? 0.85F : 0.6F;
         }
         if (!foodStack.isEmpty() && (food <= 14 || (hp < 0.7F && food < 20)) && (h == null || hd > 5.0D || inShelter)) {
             sc[Goal.EAT.ordinal()] = food <= 6 ? 1.0F : 0.8F;
@@ -159,14 +161,14 @@ final class BotBrain {
             boolean dwell = age - goalSince < 30 && sc[goal.ordinal()] > 0.0F && bestScore < 0.9F;
             if (!dwell) switchGoal(pick);
         }
-        if (goal == Goal.FLEE && h != null && fleeTarget == null) {
-            fleeTarget = awayFrom(h);
+        if (goal == Goal.FLEE && threat != null && fleeTarget == null) {
+            fleeTarget = awayFrom(threat);
             if (fleeTarget == null) { // không có đường lùi (hang cụt...): quay lại đánh
                 cannotFleeUntil = age + 100;
-                BotLog.log(bot, "FLEE", () -> "không có chỗ để chạy khỏi " + h.getType().getDescriptionId() + ", chuyển sang đánh");
+                BotLog.log(bot, "FLEE", () -> "không có chỗ để chạy khỏi " + threat.getType().getDescriptionId() + ", chuyển sang đánh");
                 switchGoal(Goal.FIGHT);
             } else {
-                BotLog.log(bot, "FLEE", () -> "tránh " + h.getType().getDescriptionId() + " cách " + (int) hd
+                BotLog.log(bot, "FLEE", () -> "tránh " + threat.getType().getDescriptionId() + " cách " + (int) threatDist
                         + " -> " + fleeTarget.toShortString());
             }
         }
