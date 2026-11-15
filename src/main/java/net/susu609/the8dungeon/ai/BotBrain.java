@@ -42,6 +42,7 @@ final class BotBrain {
     private final BotNav nav;
 
     private int age;
+    private boolean rethink;
     private int mineStartAge;
     private float[] lastScores = new float[Goal.values().length];
     private Goal goal = Goal.IDLE;
@@ -85,7 +86,10 @@ final class BotBrain {
     void tick() {
         age++;
         bot.setJumping(false);
-        if (age % THINK_EVERY == 0) think();
+        if (age % THINK_EVERY == 0 || rethink) {
+            rethink = false;
+            think();
+        }
         if (age % 200 == 0) {
             BotLog.log(bot, "BEAT", () -> status() + " pos=" + bot.blockPosition().toShortString()
                     + " mục tiêu=" + goal + " đã=" + (age - goalSince) + "tick");
@@ -285,6 +289,7 @@ final class BotBrain {
             senses.ignoreItem(item, age + 1200);
             collectSince = 0;
             nav.stop();
+            rethink = true; // chọn lại mục tiêu ngay tick sau
         }
     }
 

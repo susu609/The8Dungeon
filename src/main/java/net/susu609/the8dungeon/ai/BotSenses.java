@@ -58,6 +58,7 @@ final class BotSenses {
 
     void ignoreItem(ItemEntity e, int until) {
         ignoredItems.put(e.getId(), until);
+        if (e == item) item = null; // bỏ ngay, không chờ lần quét kế tiếp
     }
 
     /** Cập nhật giác quan. blocks=false khi đang trú ẩn để tiết kiệm CPU. */
