@@ -52,25 +52,47 @@ mixin {
 
 
 // ===== Thông tin bản build: nhánh + commit, in ra log build và log game =====
-def gitText = { String... args ->
-    providers.exec {
-        commandLine(['git'] + args.toList())
-        ignoreExitValue = true
-    }.standardOutput.asText.map { it.trim() }.orElse('')
-}
-def gitBranch = gitText('rev-parse', '--abbrev-ref', 'HEAD')
-def gitCommit = gitText('rev-parse', '--short', 'HEAD')
-def gitDirty = gitText('status', '--porcelain')
+// Đọc thẳng thư mục .git nên không cần lệnh git trong PATH; thiếu gì thì ghi "unknown", không bao giờ làm build lỗi.
+def gitDir = file('.git')
 def buildInfoDir = layout.buildDirectory.dir('generated/buildinfo')
 
 tasks.register('generateBuildInfo') {
     def outFile = buildInfoDir.map { it.file('susu609_build.properties') }
+    def projectDir = layout.projectDirectory.asFile
     outputs.file(outFile)
     outputs.upToDateWhen { false } // luôn ghi lại để thời gian và commit đúng
     doLast {
-        def branch = gitBranch.get() ?: 'unknown'
-        def commit = gitCommit.get() ?: 'unknown'
-        def state = gitDirty.get() ? 'dirty' : 'clean'
+        def branch = 'unknown'
+        def commit = 'unknown'
+        try {
+            def head = new File(gitDir, 'HEAD').text.trim()
+            if (head.startsWith('ref: ')) {
+                def ref = head.substring(5).trim()
+                branch = ref.replaceFirst('^refs/heads/', '')
+                def refFile = new File(gitDir, ref)
+                if (refFile.exists()) {
+                    commit = refFile.text.trim()
+                } else { // ref đã được gom vào packed-refs
+                    def packed = new File(gitDir, 'packed-refs')
+                    if (packed.exists()) {
+                        def line = packed.readLines().find { it.endsWith(' ' + ref) }
+                        if (line) commit = line.split(' ')[0]
+                    }
+                }
+            } else {
+                branch = 'detached'
+                commit = head
+            }
+            if (commit.length() > 7 && commit != 'unknown') commit = commit.substring(0, 7)
+        } catch (Exception ignored) {
+        }
+        def state = 'unknown' // cần lệnh git để biết có thay đổi chưa commit
+        try {
+            def proc = ['git', 'status', '--porcelain'].execute(null, projectDir)
+            def out = proc.text
+            if (proc.waitFor() == 0) state = out.trim() ? 'dirty' : 'clean'
+        } catch (Exception ignored) {
+        }
         def time = new Date().format('yyyy-MM-dd HH:mm:ss')
         def f = outFile.get().asFile
         f.parentFile.mkdirs()
