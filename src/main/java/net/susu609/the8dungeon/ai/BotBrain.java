@@ -87,6 +87,8 @@ final class BotBrain {
     private int farmTaskKind;          // 1 thu hoạch, 2 gieo, 3 xới, 4 nhặt hạt (đập cỏ)
     private int mineBlockedUntil;      // bậc thang gặp dung nham/nước: tạm ngưng
     private BlockPos digTask;          // khối đang đào ở lối xuống
+    private int stairDir;              // hướng lối xuống: 0 tây, 1 bắc, 2 đông, 3 nam (đổi hướng khi bị chặn)
+    private int stairBlocks;           // số hướng liên tiếp bị chặn
     // Tự gỡ kẹt
     private BlockPos digOut;          // khối chắn phía trước cần đào để đi tiếp
     private BlockPos pillarFeet;      // đang kê khối dưới chân để leo ra khỏi hố
@@ -1837,12 +1839,14 @@ final class BotBrain {
 
     private static final int MINE_BOTTOM_Y = 16; // tầng sắt
 
-    /** Bậc thang đi xuống phía tây base: bậc i ở entrance + (-i, -i, 0), cần trống 3 khối để đi xuống. */
+    /** Bậc thang đi xuống ngoài hàng rào base theo hướng stairDir; bậc i đi xa thêm 1 và sâu thêm 1. */
     private BlockPos stairStep(int i) {
-        BlockPos entrance = base.origin.offset(-5, 0, 3);
+        int[][] entr = {{-5, 3, -1, 0}, {3, -5, 0, -1}, {15, 3, 1, 0}, {3, 11, 0, 1}}; // x, z, bước x, bước z
+        int[] e = entr[stairDir & 3];
+        BlockPos entrance = base.origin.offset(e[0], 0, e[1]);
         int depth = Math.min(i, entrance.getY() - MINE_BOTTOM_Y);
-        int tunnel = Math.max(0, i - depth); // tới đáy thì đào hầm ngang tiếp
-        return entrance.offset(-depth - tunnel, -depth, 0);
+        int far = i; // tới đáy thì đào hầm ngang tiếp cùng hướng
+        return entrance.offset(e[2] * far, -depth, e[3] * far);
     }
 
     /** Tìm khối cần đào tiếp ở lối xuống. Trả false nếu đã xong (hầm ngang đủ dài) hoặc không có base. */
@@ -1880,8 +1884,17 @@ final class BotBrain {
         if (mineTick(target)) {
             BlockState after = level.getBlockState(target);
             if (target.equals(digTask) && !after.getCollisionShape(level, target).isEmpty()) {
-                mineBlockedUntil = age + 2400; // không đào được (dung nham/nước kề bên): tạm ngưng
-                BotLog.log(bot, "MINE", () -> "lối xuống bị chặn tại " + target.toShortString() + ", tạm ngưng");
+                // không đào được (dung nham/nước kề bên): đổi sang hướng khác; cả 4 hướng đều chặn thì tạm ngưng
+                stairDir = (stairDir + 1) & 3;
+                if (++stairBlocks >= 4) {
+                    stairBlocks = 0;
+                    mineBlockedUntil = age + 2400;
+                }
+                final String[] dirs = {"tây", "bắc", "đông", "nam"};
+                final int nd = stairDir;
+                BotLog.log(bot, "MINE", () -> "lối xuống bị chặn tại " + target.toShortString() + ", thử hướng " + dirs[nd]);
+            } else if (target.equals(digTask)) {
+                stairBlocks = 0;
             } else if (target.equals(ore)) {
                 BotLog.log(bot, "MINE", () -> "đào quặng tại " + target.toShortString());
                 BotMemory.Mind m = mind();
