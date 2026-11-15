@@ -80,7 +80,18 @@ final class BotNav {
             return true;
         }
 
-        Vec3 next = Vec3.atBottomCenterOf(path.getNextNodePos());
+        // Cửa gỗ đóng trên đường đi: mở ra (như người chơi bấm chuột phải)
+        BlockPos np = path.getNextNodePos();
+        for (BlockPos q : new BlockPos[] {np, np.above()}) {
+            net.minecraft.world.level.block.state.BlockState ds = bot.level().getBlockState(q);
+            if (ds.getBlock() instanceof net.minecraft.world.level.block.DoorBlock door
+                    && ds.is(net.minecraft.tags.BlockTags.WOODEN_DOORS)
+                    && !ds.getValue(net.minecraft.world.level.block.DoorBlock.OPEN)
+                    && bot.position().distanceToSqr(Vec3.atCenterOf(q)) < 3.0D * 3.0D) {
+                door.setOpen(bot, bot.level(), ds, q, true);
+            }
+        }
+        Vec3 next = Vec3.atBottomCenterOf(np);
         double dx = next.x - bot.getX();
         double dz = next.z - bot.getZ();
         double dy = next.y - bot.getY();

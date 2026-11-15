@@ -56,6 +56,7 @@ final class BotSenses {
     LivingEntity hostile;
     double hostileDist = Double.MAX_VALUE;
     LivingEntity prey;
+    LivingEntity sheep; // cừu gần nhất (giết lấy len làm giường)
     LivingEntity creeper; // creeper gần nhất, tách riêng: không đánh, chỉ tránh
     double creeperDist = Double.MAX_VALUE;
     ItemEntity item;
@@ -121,6 +122,8 @@ final class BotSenses {
         creeper = null;
         creeperDist = Double.MAX_VALUE;
         double preyD = Double.MAX_VALUE;
+        sheep = null;
+        double sheepD = Double.MAX_VALUE;
         seenUntil.int2IntEntrySet().removeIf(en -> en.getIntValue() <= now);
         AABB box = bot.getBoundingBox().inflate(18.0D, 8.0D, 18.0D);
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box, x -> x != bot && x.isAlive())) {
@@ -140,6 +143,10 @@ final class BotSenses {
                 if (!e.isBaby() && d < preyD) {
                     preyD = d;
                     prey = e;
+                }
+                if (e instanceof Sheep && !e.isBaby() && d < sheepD) {
+                    sheepD = d;
+                    sheep = e;
                 }
             }
         }

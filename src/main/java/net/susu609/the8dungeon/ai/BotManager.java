@@ -80,6 +80,18 @@ public final class BotManager {
                                 .executes(c -> peace(c, null))
                                 .then(Commands.argument("player", StringArgumentType.word())
                                         .executes(c -> peace(c, StringArgumentType.getString(c, "player"))))))
+                .then(Commands.literal("base").executes(c -> {
+                    var store = BaseStore.get(c.getSource().getServer());
+                    if (store.all().isEmpty()) {
+                        c.getSource().sendSuccess(() -> Component.literal("Chưa có base nào"), false);
+                        return 0;
+                    }
+                    for (BaseStore.Base b : store.all()) {
+                        c.getSource().sendSuccess(() -> Component.literal("Base #" + b.id + " tại " + b.origin.toShortString()
+                                + " cấp " + b.tier + ", thành viên: " + String.join(", ", b.members)), false);
+                    }
+                    return store.all().size();
+                }))
                 .then(Commands.literal("social").executes(c -> {
                     BOTS.forEach((n, b) -> c.getSource().sendSuccess(() -> Component.literal(n + ": " + b.socialStatus()), false));
                     return BOTS.size();
@@ -204,6 +216,12 @@ public final class BotManager {
                 && giver != bot) {
             bot.onGift(giver, event.getStack().getCount());
         }
+    }
+
+    /** Tên này là một bot đang chạy (còn sống). */
+    static boolean isOnlineBot(String name) {
+        BotPlayer b = BOTS.get(name);
+        return b != null && b.isAlive();
     }
 
     /** Giữ chỗ giường cho bot; false nếu bot khác đã giữ trước. */

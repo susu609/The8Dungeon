@@ -205,6 +205,9 @@ public final class BotHud {
             case "GROUP" -> "Đang về với nhóm";
             case "SHARE" -> "Đang chia đồ";
             case "SLEEP" -> "Đang ngủ";
+            case "CRAFT" -> "Đang chế đồ";
+            case "BUILD" -> "Đang xây nhà";
+            case "BASE" -> "Về nhà chung";
             default -> "Đang nghỉ";
         };
     }

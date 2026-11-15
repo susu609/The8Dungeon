@@ -33,7 +33,7 @@ import net.minecraft.world.phys.Vec3;
  */
 final class BotBrain {
 
-    private enum Goal { IDLE, FLEE, FIGHT, EAT, HUNT, COLLECT, SHELTER, WOOD, STONE, DIRT, EXPLORE, HOME, COOK, GROUP, SHARE, SLEEP, CRAFT }
+    private enum Goal { IDLE, FLEE, FIGHT, EAT, HUNT, COLLECT, SHELTER, WOOD, STONE, DIRT, EXPLORE, HOME, COOK, GROUP, SHARE, SLEEP, CRAFT, BUILD, BASE }
 
     private static final double REACH = 4.0D;
 
@@ -69,6 +69,14 @@ final class BotBrain {
     private BlockPos tableUse;   // bàn chế tạo đang dùng
     private boolean tableTemp;   // bàn tạm mình vừa đặt: chế xong thì thu lại
     private boolean wantFurnace;
+    // Base của nhóm
+    private BaseStore.Base base;
+    private BaseWork.Status baseStatus;
+    private java.util.Map<Blueprint.Mat, Integer> baseNeed = java.util.Map.of();
+    private int baseCheckAt;
+    private BlockPos allowBasePos;    // khối base mà bản vẽ yêu cầu phá (được phép đào)
+    private final java.util.Map<Long, Integer> buildSkip = new java.util.HashMap<>(); // ô không với tới: bỏ qua một lúc
+    private LivingEntity huntTarget;
 
     // Trạng thái con của từng mục tiêu
     private BlockPos mineTarget;
@@ -288,12 +296,13 @@ final class BotBrain {
         snapshotInventory();
         wantFurnace = rules.cook && rawFood > 0 && furnacePos == null
                 && BotItems.count(bot.getInventory(), st -> st.is(Items.FURNACE)) == 0;
-        for (int i = 0; i < 6 && BotCrafting.stepInventory(bot, wantFurnace, tableUse != null); i++) {
+        for (int i = 0; i < 6 && BotCrafting.stepInventory(bot, wantFurnace, tableUse != null, baseNeed); i++) {
             // công thức 2x2 chế liền trong túi
         }
         snapshotInventory();
 
         updateAllies();
+        if (age >= baseCheckAt) updateBase();
         boolean inShelter = sheltered && isNight() && shelter != null;
         senses.update(bot, age, !inShelter, rules.scanBudget / (BotManager.reduced() ? 2 : 1));
 
@@ -375,18 +384,35 @@ final class BotBrain {
             sc[Goal.EAT.ordinal()] = food <= 6 ? 1.0F : 0.8F;
         }
         if (!inShelter) {
+            huntTarget = senses.prey;
             if (rules.hunt && senses.prey != null && inRoam(senses.prey.blockPosition()) && foodCount < 2 && food <= 16) {
                 sc[Goal.HUNT.ordinal()] = 0.6F + (20 - food) / 80.0F;
+            }
+            // Base cần giường: giết cừu lấy len (3 len / giường)
+            int beds = baseNeed.getOrDefault(Blueprint.Mat.BED, 0);
+            int wool = BotItems.count(bot.getInventory(), st -> st.is(net.minecraft.tags.ItemTags.WOOL));
+            if (rules.hunt && beds > 0 && wool < 3 * beds && senses.sheep != null && inRoam(senses.sheep.blockPosition())) {
+                huntTarget = senses.sheep;
+                sc[Goal.HUNT.ordinal()] = Math.max(sc[Goal.HUNT.ordinal()], 0.52F);
+            }
+            // Xây base ban ngày khi có việc làm được ngay
+            if (base != null && baseStatus != null && baseStatus.next != null && !dusk && !night
+                    && base.origin.distSqr(bot.blockPosition()) < 96 * 96) {
+                sc[Goal.BUILD.ordinal()] = 0.58F;
             }
             if (rules.collect && senses.item != null && inRoam(senses.item.blockPosition())) sc[Goal.COLLECT.ordinal()] = 0.65F;
             if (rules.mine) {
                 BlockPos log = senses.best(BotSenses.LOG);
                 BlockPos stone = senses.best(BotSenses.STONE);
                 BlockPos dirt = senses.best(BotSenses.DIRT);
-                boolean needWood = logs * 4 + planks < 20 || pickRank == 0;
+                int baseWood = baseNeed.getOrDefault(Blueprint.Mat.PLANKS, 0) + 4 * baseNeed.getOrDefault(Blueprint.Mat.LOG, 0)
+                        + (baseNeed.containsKey(Blueprint.Mat.DOOR) ? 6 : 0) + 8 * baseNeed.getOrDefault(Blueprint.Mat.CHEST, 0)
+                        + 3 * baseNeed.getOrDefault(Blueprint.Mat.BED, 0) + 4 * baseNeed.getOrDefault(Blueprint.Mat.FENCE, 0) / 3;
+                boolean needWood = logs * 4 + planks < Math.max(20, baseWood) || pickRank == 0;
                 if (log != null && inRoam(log) && needWood) sc[Goal.WOOD.ordinal()] = pickRank == 0 ? 0.65F : 0.5F;
                 boolean shortOnBlocks = placeable < 9 && (dusk || night);
-                if (pickRank >= 1 && stone != null && inRoam(stone) && (cobble < 24 || shortOnBlocks)) {
+                if (pickRank >= 1 && stone != null && inRoam(stone) && (cobble < 24 || shortOnBlocks
+                        || cobble < baseNeed.getOrDefault(Blueprint.Mat.COBBLE, 0) + 8)) {
                     sc[Goal.STONE.ordinal()] = shortOnBlocks ? 0.75F : 0.45F;
                 }
                 if (shortOnBlocks && dirt != null && inRoam(dirt)) sc[Goal.DIRT.ordinal()] = 0.7F;
@@ -395,7 +421,7 @@ final class BotBrain {
             // Có món 3x3 chế được: ra bàn (bàn có sẵn gần đó, hoặc đặt bàn mang theo)
             boolean haveTable = BotItems.count(bot.getInventory(), st -> st.is(Items.CRAFTING_TABLE)) > 0
                     || senses.best(BotSenses.TABLE) != null;
-            if (tableUse != null || (haveTable && BotCrafting.needsTable(bot, wantFurnace))) {
+            if (tableUse != null || (haveTable && BotCrafting.needsTable(bot, wantFurnace, baseNeed))) {
                 sc[Goal.CRAFT.ordinal()] = 0.7F;
             }
             if (rules.cook && h == null) {
@@ -413,9 +439,17 @@ final class BotBrain {
                 if (d2 > lim * lim) sc[Goal.HOME.ordinal()] = 0.7F;
             }
         }
+        // Về nhà chung: chiều tối lên đường, đêm vào trong (giường > nhà > hầm chung > hộp 1x1)
+        boolean baseReady = base != null && baseStatus != null && baseStatus.structureDone;
+        if (rules.shelter && baseReady && shelter == null) {
+            if (night) sc[Goal.BASE.ordinal()] = 0.83F;
+            else if (dusk && base.origin.distSqr(bot.blockPosition()) > 12 * 12) sc[Goal.BASE.ordinal()] = 0.6F;
+        }
         boolean groupShelter = rules.coop && BotManager.sharedShelterNear(bot) != null;
         boolean canShelter = shelter != null || placeable >= 9 || groupShelter || (allyBotNear(16.0D) && placeable >= 6);
-        if (rules.shelter && night && !shelterDone && !shelterAbandoned && canShelter) sc[Goal.SHELTER.ordinal()] = 0.8F;
+        if (rules.shelter && night && !shelterDone && !shelterAbandoned && canShelter && !baseReady) {
+            sc[Goal.SHELTER.ordinal()] = groupShelter ? 0.8F : 0.75F; // tự nhốt trong hộp là lựa chọn cuối
+        }
         // Có giường trống (nhà trong làng...) thì ngủ giường tốt hơn tự dựng hầm
         BlockPos bed = senses.best(BotSenses.BED);
         if (rules.shelter && night && shelter == null && age >= bedRetryAt && (bot.isSleeping()
@@ -554,7 +588,7 @@ final class BotBrain {
         switch (goal) {
             case FLEE -> actFlee();
             case FIGHT -> chase(fightTarget);
-            case HUNT -> chase(senses.prey);
+            case HUNT -> chase(huntTarget);
             case EAT -> actEat();
             case COLLECT -> actCollect();
             case SHELTER -> actShelter();
@@ -567,6 +601,8 @@ final class BotBrain {
             case SHARE -> actShare();
             case SLEEP -> actSleep();
             case CRAFT -> actCraft();
+            case BUILD -> actBuild();
+            case BASE -> actBase();
             case HOME -> nav.moveTo(bot.home(), age, false);
             default -> nav.stop();
         }
@@ -945,6 +981,8 @@ final class BotBrain {
     /** Không phá thứ nguy hiểm hoặc quan trọng: đáy chân, chất lỏng kề, khối có dữ liệu, bedrock... */
     private boolean breakable(ServerLevel level, BlockPos pos, BlockState state) {
         if (state.getDestroySpeed(level, pos) < 0.0F) return false;
+        if (pos.equals(allowBasePos)) return state.getFluidState().isEmpty(); // bản vẽ base yêu cầu dọn ô này
+        if (BaseWork.protects(BaseStore.get(bot.getServer()), level, pos)) return false; // không phá nhà của nhóm
         if (state.hasBlockEntity() || state.is(Blocks.SPAWNER) || !state.getFluidState().isEmpty()) return false;
         if (state.is(Blocks.CRAFTING_TABLE) && !(tableTemp && pos.equals(tableUse))) return false; // bàn của người khác/base
         if (pos.equals(bot.blockPosition().below())) return false;
@@ -1090,7 +1128,7 @@ final class BotBrain {
         nav.stop();
         bot.lookAt(EntityAnchorArgument.Anchor.EYES, center); // nhìn vào bàn khi chế
         if (age % 10 != 0) return; // mỗi món nửa giây
-        if (BotCrafting.stepTable(bot, wantFurnace)) {
+        if (BotCrafting.stepTable(bot, wantFurnace, baseNeed)) {
             bot.swing(InteractionHand.MAIN_HAND, true);
             snapshotInventory();
             return;
@@ -1106,6 +1144,139 @@ final class BotBrain {
         } else {
             tableUse = null;
             rethink = true;
+        }
+    }
+
+    // ===== Base của nhóm =====
+
+    /** Mỗi 2 giây: vào base của nhóm (hoặc lập base mới), kiểm tra tiến độ, nâng cấp khi đủ người. */
+    private void updateBase() {
+        baseCheckAt = age + 40;
+        net.minecraft.server.MinecraftServer server = bot.getServer();
+        if (server == null) return;
+        BaseStore store = BaseStore.get(server);
+        String name = bot.getGameProfile().getName();
+        ServerLevel level = bot.serverLevel();
+        String dim = level.dimension().location().toString();
+        base = store.baseOf(name);
+        if (base == null && rules.coop) { // vào base của đồng đội gần đó
+            for (BaseStore.Base b : store.all()) {
+                if (!b.dim.equals(dim) || b.origin.distSqr(bot.blockPosition()) > 96 * 96) continue;
+                boolean friendly = b.members.stream().noneMatch(BotManager::isOnlineBot);
+                for (String m : b.members) {
+                    net.minecraft.server.level.ServerPlayer pm = server.getPlayerList().getPlayerByName(m);
+                    if (pm != null && social.isAlly(pm)) friendly = true;
+                }
+                if (friendly) {
+                    store.join(b, name);
+                    base = b;
+                    final BaseStore.Base jb = b;
+                    BotLog.log(bot, "BASE", () -> "vào base chung #" + jb.id + " tại " + jb.origin.toShortString());
+                    break;
+                }
+            }
+        }
+        long t = level.getDayTime() % 24000L;
+        if (base == null && t < 9000L && pickRank >= 1 && logs * 4 + planks >= 16) { // đủ đồ nghề thì lập base
+            BlockPos center = groupCenter != null ? BlockPos.containing(groupCenter) : bot.blockPosition();
+            BlockPos site = BaseWork.findSite(level, center);
+            if (site != null) {
+                base = store.create(dim, site, name);
+                BotLog.log(bot, "BASE", () -> "lập base mới tại " + site.toShortString());
+            }
+        }
+        if (base == null || !base.dim.equals(dim)) {
+            baseStatus = null;
+            baseNeed = java.util.Map.of();
+            return;
+        }
+        buildSkip.values().removeIf(until -> until <= age);
+        baseStatus = BaseWork.status(level, base, bot, p -> buildSkip.containsKey(p.asLong()));
+        baseNeed = BaseWork.deficit(baseStatus, bot.getInventory());
+        // Nâng cấp: xong cấp 1 và nhóm >= 2 bot -> cấp 2; xong cấp 2 và >= 3 bot -> cấp 3
+        if (baseStatus.tierDone && base.tier < Blueprint.MAX_TIER) {
+            long members = base.members.stream().filter(BotManager::isOnlineBot).count();
+            if (members >= base.tier + 1) {
+                base.tier++;
+                store.changed();
+                final int tier = base.tier;
+                BotLog.log(bot, "BASE", () -> "nâng nhà chung lên cấp " + tier);
+                server.getPlayerList().broadcastSystemMessage(net.minecraft.network.chat.Component.literal(
+                        "<" + name + "> Nhà chung lên cấp " + tier + " rồi, mọi người cùng xây nhé!"), false);
+                baseStatus = BaseWork.status(level, base, bot, p -> buildSkip.containsKey(p.asLong()));
+                baseNeed = BaseWork.deficit(baseStatus, bot.getInventory());
+            }
+        }
+    }
+
+    private void actBuild() {
+        ServerLevel level = bot.serverLevel();
+        if (base == null || baseStatus == null || baseStatus.next == null) {
+            nav.stop();
+            rethink = true;
+            return;
+        }
+        Blueprint.Entry e = baseStatus.next;
+        BlockPos p = base.origin.offset(e.dx(), e.dy(), e.dz());
+        if (BaseWork.satisfied(level, p, e.mat())) { // đã xong (có thể do đồng đội làm)
+            baseCheckAt = age;
+            rethink = true;
+            return;
+        }
+        BlockState cur = level.getBlockState(p);
+        if (!cur.canBeReplaced() || !cur.getFluidState().isEmpty()) { // phải dọn khối đang chiếm chỗ trước
+            allowBasePos = p;
+            if (mineTick(p)) {
+                allowBasePos = null;
+                baseCheckAt = age;
+                rethink = true;
+            }
+            return;
+        }
+        Vec3 center = Vec3.atCenterOf(p);
+        if (bot.getEyePosition().distanceToSqr(center) > 4.5D * 4.5D) {
+            boolean arrived = nav.moveTo(p, age, false);
+            if (nav.failed || (arrived && bot.getEyePosition().distanceToSqr(center) > 4.5D * 4.5D)) {
+                buildSkip.put(p.asLong(), age + 600); // không với tới: làm ô khác trước
+                baseCheckAt = age;
+                rethink = true;
+            }
+            return;
+        }
+        nav.stop();
+        bot.lookAt(EntityAnchorArgument.Anchor.EYES, center);
+        if (age % 4 != 0) return;
+        if (BaseWork.place(level, bot, e, p)) {
+            bot.swing(InteractionHand.MAIN_HAND, true);
+            BotLog.log(bot, "BUILD", () -> e.mat() + " tại " + p.toShortString() + " (base #" + base.id + " cấp " + base.tier + ")");
+        }
+        baseCheckAt = age; // cập nhật việc tiếp theo
+        rethink = true;
+    }
+
+    /** Ban đêm: vào trong nhà chung, đứng ở ô giữa và đóng cửa. */
+    private void actBase() {
+        if (base == null) {
+            nav.stop();
+            return;
+        }
+        ServerLevel level = bot.serverLevel();
+        int[] c = Blueprint.insideCell(base.tier);
+        BlockPos cell = base.origin.offset(c[0], c[1], c[2]);
+        if (bot.blockPosition().distSqr(cell) > 2) {
+            nav.moveTo(cell, age, false);
+            return;
+        }
+        nav.stop();
+        if (!isNight() || age % 20 != 0) return;
+        for (Blueprint.Entry e : Blueprint.tier(base.tier)) { // đóng cửa nhà khi đã vào trong
+            if (e.mat() != Blueprint.Mat.DOOR) continue;
+            BlockPos dp = base.origin.offset(e.dx(), e.dy(), e.dz());
+            BlockState ds = level.getBlockState(dp);
+            if (ds.getBlock() instanceof net.minecraft.world.level.block.DoorBlock door
+                    && ds.getValue(net.minecraft.world.level.block.DoorBlock.OPEN)) {
+                door.setOpen(bot, level, ds, dp, false);
+            }
         }
     }
 
