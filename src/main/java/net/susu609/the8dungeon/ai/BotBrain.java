@@ -69,6 +69,7 @@ final class BotBrain {
     private BlockPos tableUse;   // bàn chế tạo đang dùng
     private boolean tableTemp;   // bàn tạm mình vừa đặt: chế xong thì thu lại
     private boolean wantFurnace;
+    private int craftBlockedUntil; // không có chỗ đặt bàn: tạm bỏ việc chế
     // Base của nhóm
     private BaseStore.Base base;
     private BaseWork.Status baseStatus;
@@ -424,7 +425,7 @@ final class BotBrain {
             // Có món 3x3 chế được: ra bàn (bàn có sẵn gần đó, hoặc đặt bàn mang theo)
             boolean haveTable = BotItems.count(bot.getInventory(), st -> st.is(Items.CRAFTING_TABLE)) > 0
                     || senses.best(BotSenses.TABLE) != null;
-            if (tableUse != null || (haveTable && BotCrafting.needsTable(bot, wantFurnace, baseNeed))) {
+            if (tableUse != null || (haveTable && age >= craftBlockedUntil && BotCrafting.needsTable(bot, wantFurnace, baseNeed))) {
                 sc[Goal.CRAFT.ordinal()] = 0.7F;
             }
             if (rules.cook && h == null) {
@@ -1086,13 +1087,22 @@ final class BotBrain {
     private BlockPos freeSpotBeside() {
         ServerLevel level = bot.serverLevel();
         BlockPos feet = bot.blockPosition();
-        for (Direction d : Direction.Plane.HORIZONTAL) {
-            BlockPos p = feet.relative(d);
-            BlockPos below = p.below();
-            if (!level.getBlockState(p).canBeReplaced() || !level.getFluidState(p).isEmpty()) continue;
-            if (!level.getBlockState(below).isFaceSturdy(level, below, Direction.UP)) continue;
-            if (!level.getEntitiesOfClass(LivingEntity.class, new net.minecraft.world.phys.AABB(p)).isEmpty()) continue;
-            return p;
+        // tìm từ gần ra xa (tối đa 3 khối, lệch cao 1), miễn còn với tới
+        for (int r = 1; r <= 3; r++) {
+            for (int dy = 0; dy >= -1; dy--) {
+                for (int dx = -r; dx <= r; dx++) {
+                    for (int dz = -r; dz <= r; dz++) {
+                        if (Math.max(Math.abs(dx), Math.abs(dz)) != r) continue;
+                        BlockPos p = feet.offset(dx, dy, dz);
+                        BlockPos below = p.below();
+                        if (!level.getBlockState(p).canBeReplaced() || !level.getFluidState(p).isEmpty()) continue;
+                        if (!level.getBlockState(below).isFaceSturdy(level, below, Direction.UP)) continue;
+                        if (bot.getEyePosition().distanceToSqr(Vec3.atCenterOf(p)) > REACH * REACH) continue;
+                        if (!level.getEntitiesOfClass(LivingEntity.class, new net.minecraft.world.phys.AABB(p)).isEmpty()) continue;
+                        return p;
+                    }
+                }
+            }
         }
         return null;
     }
@@ -1108,6 +1118,8 @@ final class BotBrain {
             } else {
                 BlockPos spot = freeSpotBeside();
                 if (spot == null || !BotItems.take(bot.getInventory(), st -> st.is(Items.CRAFTING_TABLE), 1)) {
+                    craftBlockedUntil = age + 200; // chỗ này chật quá: đi việc khác rồi thử lại
+                    BotLog.log(bot, "CRAFT", () -> "không có chỗ đặt bàn quanh đây, để sau");
                     rethink = true;
                     return;
                 }
