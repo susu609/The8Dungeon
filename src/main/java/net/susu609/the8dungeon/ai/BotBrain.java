@@ -817,7 +817,8 @@ final class BotBrain {
         BlockPos hitPos = target;
         BlockHitResult hit = level.clip(new ClipContext(bot.getEyePosition(), center,
                 ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, bot));
-        if (hit.getType() == HitResult.Type.BLOCK && !hit.getBlockPos().equals(target)) {
+        // Dọn ô theo bản vẽ base: đào thẳng (khối chắn có thể là nội thất base không được phá)
+        if (!target.equals(allowBasePos) && hit.getType() == HitResult.Type.BLOCK && !hit.getBlockPos().equals(target)) {
             hitPos = hit.getBlockPos();
             BlockState obstacle = level.getBlockState(hitPos);
             if (!breakable(level, hitPos, obstacle)) {
@@ -1228,6 +1229,11 @@ final class BotBrain {
             allowBasePos = p;
             if (mineTick(p)) {
                 allowBasePos = null;
+                BlockState after = level.getBlockState(p);
+                if (!after.canBeReplaced() || !after.getFluidState().isEmpty()) {
+                    buildSkip.put(p.asLong(), age + 600); // không dọn được: tạm bỏ qua, làm ô khác
+                    BotLog.log(bot, "BUILD", () -> "tạm bỏ qua ô " + p.toShortString() + " (không dọn được)");
+                }
                 baseCheckAt = age;
                 rethink = true;
             }
