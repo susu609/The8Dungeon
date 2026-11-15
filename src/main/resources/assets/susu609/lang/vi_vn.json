@@ -12,5 +12,7 @@
   "block.susu609.wall_torch_off": "Đuốc tường đã tắt",
   "itemGroup.susu609": "The8Dungeons",
   "key.susu609.camera": "Camera bot: tự do / theo dõi (spectator)",
-  "key.categories.susu609": "The8Dungeon"
+  "key.categories.susu609": "The8Dungeon",
+  "key.susu609.bot_prev": "Camera bot: bot trước",
+  "key.susu609.bot_next": "Camera bot: bot sau"
 }

@@ -63,6 +63,11 @@ public final class SpectatorCam {
     public static final KeyMapping KEY = new KeyMapping("key.susu609.camera", InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_V, "key.categories.susu609");
 
+    public static final KeyMapping PREV = new KeyMapping("key.susu609.bot_prev", InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_LEFT_BRACKET, "key.categories.susu609");
+    public static final KeyMapping NEXT = new KeyMapping("key.susu609.bot_next", InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_RIGHT_BRACKET, "key.categories.susu609");
+
     private static final double FAR = 12.0D;   // khoảng cách bình thường
     private static final double NEAR = 6.0D;   // khoảng cách khi bị che; bắt đầu làm mờ ở mức này
     private static final int MAX_HIDDEN = 600;
@@ -109,6 +114,8 @@ public final class SpectatorCam {
         @SubscribeEvent
         public static void register(RegisterKeyMappingsEvent event) {
             event.register(KEY);
+            event.register(PREV);
+            event.register(NEXT);
         }
     }
 
@@ -135,6 +142,8 @@ public final class SpectatorCam {
         while (KEY.consumeClick()) {
             if (p != null && p.isSpectator()) setMode(Mode.values()[(mode.ordinal() + 1) % Mode.values().length]);
         }
+        while (PREV.consumeClick()) switchBot(p, -1);
+        while (NEXT.consumeClick()) switchBot(p, 1);
         target = null;
         if (mode == Mode.FREE || p == null || mc.level == null || !p.isSpectator() || mc.getCameraEntity() != p) {
             CutawayState.clear(); // không ở spectator thì giữ lựa chọn nhưng tạm không áp dụng
@@ -171,6 +180,17 @@ public final class SpectatorCam {
         p.xo = cam.x;
         p.yo = cam.y;
         p.zo = cam.z;
+    }
+
+    /** Chuyển sang bot trước/sau trong danh sách; server ghi nhớ lựa chọn và dịch chuyển tới nếu bot ở xa. */
+    private static void switchBot(LocalPlayer p, int step) {
+        if (p == null || !p.isSpectator()) return;
+        java.util.List<String> names = BotHud.botNames();
+        if (names.isEmpty()) return;
+        int idx = names.indexOf(BotHud.botName());
+        String next = names.get(Math.floorMod(idx + step, names.size()));
+        Susu609Mod.PACKET_HANDLER.sendToServer(new net.susu609.the8dungeon.network.WatchBotPacket(next));
+        p.displayClientMessage(Component.literal("Đang xem bot: " + next), true);
     }
 
     /** Hướng từ bot tới camera: thẳng lên (trên xuống) hoặc ngược hướng nhìn của chuột (xoay tự do). */

@@ -62,6 +62,10 @@ public class Susu609Mod {
 				net.susu609.the8dungeon.network.RulesActionPacket::encode,
 				net.susu609.the8dungeon.network.RulesActionPacket::decode,
 				net.susu609.the8dungeon.network.RulesActionPacket::handle);
+		addNetworkMessage(net.susu609.the8dungeon.network.WatchBotPacket.class,
+				net.susu609.the8dungeon.network.WatchBotPacket::encode,
+				net.susu609.the8dungeon.network.WatchBotPacket::decode,
+				net.susu609.the8dungeon.network.WatchBotPacket::handle);
 		addNetworkMessage(net.susu609.the8dungeon.network.OpenBotInventoryPacket.class,
 				net.susu609.the8dungeon.network.OpenBotInventoryPacket::encode,
 				net.susu609.the8dungeon.network.OpenBotInventoryPacket::decode,

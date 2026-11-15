@@ -50,6 +50,7 @@ public final class BotManager {
         return humans;
     }
 
+    private static final Map<UUID, String> WATCH = new HashMap<>(); // spectator -> bot đã chọn bằng [ ]
     private static final Map<UUID, BotInfo> LAST_SENT = new HashMap<>();
 
     private BotManager() {}
@@ -72,6 +73,10 @@ public final class BotManager {
                                 .then(Commands.argument("key", StringArgumentType.word())
                                         .then(Commands.argument("value", StringArgumentType.word())
                                                 .executes(BotManager::setRule)))))
+                .then(Commands.literal("social").executes(c -> {
+                    BOTS.forEach((n, b) -> c.getSource().sendSuccess(() -> Component.literal(n + ": " + b.socialStatus()), false));
+                    return BOTS.size();
+                }))
                 .then(Commands.literal("gui").executes(c -> {
                     sendRules(c.getSource().getPlayerOrException(), true);
                     return 1;
@@ -108,9 +113,36 @@ public final class BotManager {
                 bot.deadTicks = 1;
                 BotLog.log(bot, "DEATH", () -> "bot chết tại " + bot.blockPosition().toShortString() + ", " + bot.status());
             } else if (!bot.isAlive() && ++bot.deadTicks >= 3) {
+                bot.prepareRespawn(); // lưu ở trạng thái sống để bot mới không bị vẽ như xác
                 server.getPlayerList().remove(bot);
-                BOTS.put(e.getKey(), BotPlayer.spawn(server, e.getKey())); // hồi sinh sau ~3 giây
+                BOTS.put(e.getKey(), BotPlayer.spawn(server, e.getKey(), true)); // hồi sinh sau ~3 giây, không báo "joined"
             }
+        }
+    }
+
+    // ===== Quan hệ: bị đánh, được cho đồ =====
+
+    @SubscribeEvent
+    public static void onHurt(net.minecraftforge.event.entity.living.LivingHurtEvent event) {
+        if (!(event.getEntity() instanceof BotPlayer bot)) return;
+        if (!(event.getSource().getEntity() instanceof net.minecraft.world.entity.player.Player attacker) || attacker == bot) return;
+        bot.onHurtBy(attacker, isAccidental(attacker, bot));
+    }
+
+    /** Trúng nhầm: kẻ đánh vừa đánh một con khác (trong 2 giây) đang ở sát bot, ví dụ đòn quét hay tên lạc. */
+    private static boolean isAccidental(net.minecraft.world.entity.player.Player attacker, BotPlayer bot) {
+        net.minecraft.world.entity.LivingEntity last = attacker.getLastHurtMob();
+        return last != null && last != bot && last.isAlive()
+                && attacker.tickCount - attacker.getLastHurtMobTimestamp() < 40
+                && last.distanceToSqr(bot) < 4.0D * 4.0D;
+    }
+
+    @SubscribeEvent
+    public static void onPickup(net.minecraftforge.event.entity.player.PlayerEvent.ItemPickupEvent event) {
+        if (event.getEntity() instanceof BotPlayer bot
+                && event.getOriginalEntity().getOwner() instanceof net.minecraft.world.entity.player.Player giver
+                && giver != bot) {
+            bot.onGift(giver, event.getStack().getCount());
         }
     }
 
@@ -118,13 +150,15 @@ public final class BotManager {
     private static void sendToSpectators(MinecraftServer server) {
         for (ServerPlayer p : server.getPlayerList().getPlayers()) {
             if (!p.isSpectator() || p instanceof BotPlayer) continue;
-            BotPlayer target = p.getCamera() instanceof BotPlayer cam ? cam : nearest(p);
+            BotPlayer watched = BOTS.get(WATCH.get(p.getUUID()));
+            BotPlayer target = p.getCamera() instanceof BotPlayer cam ? cam
+                    : watched != null && watched.isAlive() && watched.level() == p.level() ? watched : nearest(p);
             if (target == null || !target.isAlive()) continue;
             BotInfo info = target.info();
             // Gửi khi có thay đổi, hoặc mỗi 2 giây để HUD không tự ẩn
             if (!info.equals(LAST_SENT.get(p.getUUID())) || server.getTickCount() % 40 == 0) {
                 LAST_SENT.put(p.getUUID(), info);
-                Susu609Mod.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> p), new BotStatusPacket(info));
+                Susu609Mod.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> p), new BotStatusPacket(info, new ArrayList<>(BOTS.keySet())));
             }
         }
     }
@@ -153,6 +187,18 @@ public final class BotManager {
                 Component.literal("Kho đồ của " + bot.getGameProfile().getName())));
     }
 
+    /** Spectator chọn bot để xem: ghi nhớ, đổi camera nếu đang nhập vào bot khác, dịch chuyển tới nếu bot ở xa. */
+    public static void watch(ServerPlayer viewer, String name) {
+        BotPlayer bot = BOTS.get(name);
+        if (bot == null || !bot.isAlive()) return;
+        WATCH.put(viewer.getUUID(), name);
+        LAST_SENT.remove(viewer.getUUID()); // gửi HUD mới ngay
+        if (viewer.getCamera() instanceof BotPlayer && viewer.getCamera() != bot) viewer.setCamera(bot);
+        if (bot.level() != viewer.level() || bot.distanceToSqr(viewer) > 32.0D * 32.0D) {
+            viewer.teleportTo(bot.serverLevel(), bot.getX(), bot.getY() + 10.0D, bot.getZ(), viewer.getYRot(), viewer.getXRot());
+        }
+    }
+
     private static BotPlayer nearest(ServerPlayer p) {
         BotPlayer best = null;
         double bestD = Double.MAX_VALUE;
@@ -171,6 +217,7 @@ public final class BotManager {
     public static void onStopping(ServerStoppingEvent event) {
         BOTS.clear();
         LAST_SENT.clear();
+        WATCH.clear();
     }
 
     private static int spawn(CommandContext<CommandSourceStack> c, String name) {

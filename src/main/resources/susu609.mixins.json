@@ -4,7 +4,9 @@
   "package": "net.susu609.the8dungeon.mixin",
   "compatibilityLevel": "JAVA_17",
   "refmap": "susu609.refmap.json",
-  "mixins": [],
+  "mixins": [
+    "PlayerListJoinMixin"
+  ],
   "client": [
     "RenderChunkRegionMixin",
     "MinecraftGlowMixin"

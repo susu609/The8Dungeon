@@ -19,17 +19,24 @@ import net.susu609.the8dungeon.ai.BotInfo;
 public final class BotHud {
 
     private static BotInfo info;
+    private static java.util.List<String> names = java.util.List.of();
     private static long receivedAt;
 
     private BotHud() {}
+
+    /** Tên mọi bot trên server (để chuyển bằng phím [ ]). */
+    public static java.util.List<String> botNames() {
+        return isActive() ? names : java.util.List.of();
+    }
 
     /** Tên bot đang hiện trên HUD (null nếu chưa có hoặc dữ liệu đã cũ). */
     public static String botName() {
         return isActive() ? info.name() : null;
     }
 
-    public static void accept(BotInfo data) {
+    public static void accept(BotInfo data, java.util.List<String> bots) {
         info = data;
+        names = bots;
         Minecraft mc = Minecraft.getInstance();
         receivedAt = mc.level != null ? mc.level.getGameTime() : 0L;
     }
@@ -57,7 +64,9 @@ public final class BotHud {
         g.fill(x, y, x + w, y + h, 0x90000000);
         g.fill(x, y, x + 2, y + h, i.danger() ? 0xFFE05050 : 0xFF50C878); // vạch màu: đỏ khi có quái
 
-        g.drawString(font, "Bot: " + i.name(), x + 7, y + 4, 0xFFFFFF, false);
+        int idx = names.indexOf(i.name());
+        String pos = names.size() > 1 && idx >= 0 ? "  (" + (idx + 1) + "/" + names.size() + ")" : "";
+        g.drawString(font, "Bot: " + i.name() + pos, x + 7, y + 4, 0xFFFFFF, false);
         g.drawString(font, label(i.goal()) + (i.sheltered() ? " (trú)" : ""), x + 7, y + 15, 0xFFE9A5, false);
 
         bar(g, x + 7, y + 27, 54, i.hp() / 20.0F, 0xFFD03030);

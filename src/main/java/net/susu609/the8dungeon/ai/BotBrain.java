@@ -40,6 +40,8 @@ final class BotBrain {
     private final BotPlayer bot;
     private final BotSenses senses = new BotSenses();
     private final BotNav nav;
+    private final BotSocial social;
+    private LivingEntity fightTarget; // quái thù địch, hoặc người/bot đang bị coi là thù
 
     private BotRules rules = new BotRules();
     private int age;
@@ -71,6 +73,20 @@ final class BotBrain {
     BotBrain(BotPlayer bot) {
         this.bot = bot;
         this.nav = new BotNav(bot);
+        this.social = new BotSocial(bot);
+    }
+
+    void onHurtBy(net.minecraft.world.entity.player.Player attacker, boolean accidental) {
+        social.onHurtBy(attacker, accidental, age);
+        rethink = true; // phản ứng ngay tick sau
+    }
+
+    void onGift(net.minecraft.world.entity.player.Player giver, int count) {
+        social.onGift(giver, count, age);
+    }
+
+    String socialStatus() {
+        return social.describe();
     }
 
     String status() {
@@ -130,16 +146,33 @@ final class BotBrain {
         boolean fleeing = goal == Goal.FLEE;
         LivingEntity cr = senses.creeper;
         boolean creeper = cr != null && senses.creeperDist < (fleeing ? 9.5D : 6.5D);
-        LivingEntity threat = creeper ? cr : h;
-        double threatDist = creeper ? senses.creeperDist : hd;
         boolean canFlee = age >= cannotFleeUntil;
         ItemStack foodStack = BotItems.bestFood(bot, food <= 6);
+        float fleeHp = rules.fleeHpPct / 100.0F;
+        boolean lowHp = hp < (fleeing ? fleeHp + 0.15F : fleeHp);
+
+        // Quan hệ: người/bot đang bị coi là thù, hoặc đang tạm lùi xa sau khi bị đánh
+        social.tick(age);
+        net.minecraft.world.entity.player.Player grudge = social.grudge();
+        net.minecraft.world.entity.player.Player avoid = social.avoiding(age);
+        // Kẻ thù không gây sát thương được (creative...) thì chỉ né, không đánh
+        boolean grudgeUntouchable = grudge != null && (grudge.isCreative() || grudge.isInvulnerable());
+        net.minecraft.world.entity.player.Player fleeFrom = avoid != null ? avoid
+                : grudge != null && (lowHp || grudgeUntouchable || !rules.fight) ? grudge : null;
+
+        LivingEntity threat = creeper ? cr : fleeFrom != null ? fleeFrom : h;
+        double threatDist = threat == null ? 0.0D : threat.distanceTo(bot);
+        fightTarget = grudge != null && fleeFrom == null ? grudge : h;
 
         float[] sc = new float[Goal.values().length];
-        if ((h != null || creeper) && !inShelter) {
-            float fleeHp = rules.fleeHpPct / 100.0F;
-            if (canFlee && (creeper || hp < (fleeing ? fleeHp + 0.15F : fleeHp))) sc[Goal.FLEE.ordinal()] = 0.95F;
-            else if (rules.fight && h != null && hd <= 16.0D) sc[Goal.FIGHT.ordinal()] = hd < 6.0D ? 0.85F : 0.6F;
+        if (!inShelter) {
+            if (canFlee && (creeper || fleeFrom != null || (h != null && lowHp))) {
+                sc[Goal.FLEE.ordinal()] = 0.95F;
+            } else if (rules.fight && grudge != null && fleeFrom == null) {
+                sc[Goal.FIGHT.ordinal()] = 0.9F; // đánh trả người/bot đã thành thù
+            } else if (rules.fight && h != null && hd <= 16.0D) {
+                sc[Goal.FIGHT.ordinal()] = hd < 6.0D ? 0.85F : 0.6F;
+            }
         }
         if (!foodStack.isEmpty() && (food <= rules.eatBelow || (hp < 0.7F && food < 20)) && (h == null || hd > 5.0D || inShelter)) {
             sc[Goal.EAT.ordinal()] = food <= 6 ? 1.0F : 0.8F;
@@ -275,7 +308,7 @@ final class BotBrain {
     private void act() {
         switch (goal) {
             case FLEE -> actFlee();
-            case FIGHT -> chase(senses.hostile);
+            case FIGHT -> chase(fightTarget);
             case HUNT -> chase(senses.prey);
             case EAT -> actEat();
             case COLLECT -> actCollect();

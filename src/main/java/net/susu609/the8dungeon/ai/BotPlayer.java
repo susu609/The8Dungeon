@@ -27,15 +27,29 @@ public final class BotPlayer extends ServerPlayer {
     }
 
     /** Tạo bot và cho vào thế giới tại điểm spawn của overworld. */
+    /** Đặt true trong lúc hồi sinh để mixin PlayerListJoinMixin bỏ dòng "joined the game". */
+    public static boolean quietJoin;
+
     public static BotPlayer spawn(MinecraftServer server, String name) {
+        return spawn(server, name, false);
+    }
+
+    /** quiet=true: hồi sinh sau khi chết, không báo "joined the game". */
+    public static BotPlayer spawn(MinecraftServer server, String name, boolean quiet) {
         ServerLevel overworld = server.overworld();
         GameProfile profile = new GameProfile(UUIDUtil.createOfflinePlayerUUID(name), name);
         BotPlayer bot = new BotPlayer(server, overworld, profile);
-        server.getPlayerList().placeNewPlayer(new BotConnection(), bot);
+        quietJoin = quiet;
+        try {
+            server.getPlayerList().placeNewPlayer(new BotConnection(), bot);
+        } finally {
+            quietJoin = false;
+        }
 
         // Dữ liệu lưu cũ có thể là của lần đã chết: dọn lại cho sạch
         if (bot.getHealth() <= 0.0F || bot.deathTime > 0) {
             bot.deathTime = 0;
+            bot.hurtTime = 0;
             bot.getInventory().clearContent();
             bot.removeAllEffects();
             bot.setHealth(bot.getMaxHealth());
@@ -56,6 +70,34 @@ public final class BotPlayer extends ServerPlayer {
     /** Điểm nhà (nơi sinh ra), dùng cho luật bán kính. */
     public BlockPos home() {
         return home;
+    }
+
+    /**
+     * Gọi trên bot đã chết, ngay trước khi gỡ để hồi sinh: dữ liệu được lưu phải là trạng thái "sống",
+     * nếu không bot mới sẽ nạp máu 0 / deathTime > 0 và client vẽ nó đỏ, nằm nghiêng 90° như đang chết.
+     */
+    void prepareRespawn() {
+        this.setHealth(this.getMaxHealth());
+        this.deathTime = 0;
+        this.hurtTime = 0;
+        this.removeAllEffects();
+        this.clearFire();
+        this.fallDistance = 0.0F;
+        this.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+        this.getFoodData().setFoodLevel(20);
+        this.getFoodData().setSaturation(5.0F);
+    }
+
+    public void onHurtBy(net.minecraft.world.entity.player.Player attacker, boolean accidental) {
+        brain.onHurtBy(attacker, accidental);
+    }
+
+    public void onGift(net.minecraft.world.entity.player.Player giver, int count) {
+        brain.onGift(giver, count);
+    }
+
+    public String socialStatus() {
+        return brain.socialStatus();
     }
 
     public BotInfo info() {
