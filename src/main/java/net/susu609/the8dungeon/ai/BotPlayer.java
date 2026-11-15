@@ -96,6 +96,16 @@ public final class BotPlayer extends ServerPlayer {
         brain.onGift(giver, count);
     }
 
+    /** Bot khác đề nghị làm hòa với bot này. */
+    boolean acceptPeace(BotPlayer from) {
+        return this.isAlive() && brain.acceptPeace(from);
+    }
+
+    /** Xóa thù (/bot peace). target null = với tất cả. Trả về số mối thù đã xóa. */
+    public int forgive(java.util.UUID target) {
+        return brain.forgive(target);
+    }
+
     public String socialStatus() {
         return brain.socialStatus();
     }

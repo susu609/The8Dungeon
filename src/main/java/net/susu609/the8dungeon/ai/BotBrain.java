@@ -85,6 +85,14 @@ final class BotBrain {
         social.onGift(giver, count, age);
     }
 
+    boolean acceptPeace(BotPlayer from) {
+        return social.acceptPeace(from, age);
+    }
+
+    int forgive(java.util.UUID target) {
+        return social.forgive(target, age);
+    }
+
     String socialStatus() {
         return social.describe();
     }

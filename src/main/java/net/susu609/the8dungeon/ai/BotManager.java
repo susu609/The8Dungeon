@@ -73,6 +73,11 @@ public final class BotManager {
                                 .then(Commands.argument("key", StringArgumentType.word())
                                         .then(Commands.argument("value", StringArgumentType.word())
                                                 .executes(BotManager::setRule)))))
+                .then(Commands.literal("peace")
+                        .then(Commands.argument("bot", StringArgumentType.word())
+                                .executes(c -> peace(c, null))
+                                .then(Commands.argument("player", StringArgumentType.word())
+                                        .executes(c -> peace(c, StringArgumentType.getString(c, "player"))))))
                 .then(Commands.literal("social").executes(c -> {
                     BOTS.forEach((n, b) -> c.getSource().sendSuccess(() -> Component.literal(n + ": " + b.socialStatus()), false));
                     return BOTS.size();
@@ -330,6 +335,24 @@ public final class BotManager {
         applyRules(global ? "" : target, false, r);
         c.getSource().sendSuccess(() -> Component.literal("Đã đặt " + key + "=" + value + " cho " + target), true);
         return 1;
+    }
+
+    /** /bot peace <bot> [người]: xóa thù của bot (với một người hoặc tất cả). */
+    private static int peace(CommandContext<CommandSourceStack> c, String player) {
+        String name = StringArgumentType.getString(c, "bot");
+        BotPlayer bot = BOTS.get(name);
+        if (bot == null) {
+            c.getSource().sendFailure(Component.literal("Không có bot tên " + name));
+            return 0;
+        }
+        UUID target = null;
+        if (player != null) {
+            ServerPlayer p = c.getSource().getServer().getPlayerList().getPlayerByName(player);
+            target = p != null ? p.getUUID() : net.minecraft.core.UUIDUtil.createOfflinePlayerUUID(player);
+        }
+        int n = bot.forgive(target);
+        c.getSource().sendSuccess(() -> Component.literal(name + " đã xóa " + n + " mối thù"), true);
+        return n;
     }
 
     private static int debug(CommandContext<CommandSourceStack> c, boolean on) {
