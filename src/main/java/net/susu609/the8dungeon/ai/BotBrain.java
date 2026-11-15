@@ -1249,15 +1249,42 @@ final class BotBrain {
             }
             return;
         }
+        // Đang đứng chiếm ô cần đặt (hoặc ô đầu giường / nửa trên cửa): bước sang bên cạnh trước
+        BlockPos extra = e.mat() == Blueprint.Mat.BED ? p.relative(e.facing())
+                : e.mat() == Blueprint.Mat.DOOR ? p.above() : p;
+        net.minecraft.world.phys.AABB need = new net.minecraft.world.phys.AABB(p).minmax(new net.minecraft.world.phys.AABB(extra));
+        if (bot.getBoundingBox().intersects(need)) {
+            BlockPos aside = stepAside(need);
+            if (aside != null) nav.moveTo(aside, age, false);
+            else buildSkip.put(p.asLong(), age + 200);
+            return;
+        }
         nav.stop();
         bot.lookAt(EntityAnchorArgument.Anchor.EYES, center);
         if (age % 4 != 0) return;
         if (BaseWork.place(level, bot, e, p)) {
             bot.swing(InteractionHand.MAIN_HAND, true);
             BotLog.log(bot, "BUILD", () -> e.mat() + " tại " + p.toShortString() + " (base #" + base.id + " cấp " + base.tier + ")");
+        } else {
+            buildSkip.put(p.asLong(), age + 100); // có ai đứng chắn / thiếu chỗ: làm ô khác trước
         }
         baseCheckAt = age; // cập nhật việc tiếp theo
         rethink = true;
+    }
+
+    /** Ô đứng gần (1-3 khối) không chạm vùng box, để bước ra khỏi chỗ cần đặt khối. */
+    private BlockPos stepAside(net.minecraft.world.phys.AABB box) {
+        BlockPos here = bot.blockPosition();
+        for (int r = 1; r <= 3; r++) {
+            for (int dx = -r; dx <= r; dx++) {
+                for (int dz = -r; dz <= r; dz++) {
+                    if (Math.max(Math.abs(dx), Math.abs(dz)) != r) continue;
+                    BlockPos q = standable(here.getX() + dx, here.getY(), here.getZ() + dz);
+                    if (q != null && !box.intersects(new net.minecraft.world.phys.AABB(q).expandTowards(0, 1, 0))) return q;
+                }
+            }
+        }
+        return null;
     }
 
     /** Ban đêm: vào trong nhà chung, đứng ở ô giữa và đóng cửa. */
