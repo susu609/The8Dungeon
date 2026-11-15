@@ -3,19 +3,22 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 8 class/kiểu Java, 356 dòng, 8 phụ thuộc nội bộ
+- 11 class/kiểu Java, 459 dòng, 17 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
 ```mermaid
 flowchart LR
   subgraph pkg__g_c_["(gốc)"]
-    Susu609Mod(["Susu609Mod<br/><small>class · 116 dòng</small>"])
+    Susu609Mod(["Susu609Mod<br/><small>class · 123 dòng</small>"])
   end
   subgraph pkg_init["init"]
-    ModBlockEntitiesRegistry["ModBlockEntitiesRegistry<br/><small>class · 24 dòng</small>"]
+    ModBlockEntitiesRegistry["ModBlockEntitiesRegistry<br/><small>class · 16 dòng</small>"]
     ModBlocksRegistry["ModBlocksRegistry<br/><small>class · 49 dòng</small>"]
     ModCreativeTabsRegistry["ModCreativeTabsRegistry<br/><small>class · 31 dòng</small>"]
+    ModEntitiesRegistry["ModEntitiesRegistry<br/><small>class · 32 dòng</small>"]
+    ModEntityRenderersRegistry["ModEntityRenderersRegistry<br/><small>class · 30 dòng</small>"]
+    ModItemsRegistry["ModItemsRegistry<br/><small>class · 42 dòng</small>"]
   end
   subgraph pkg_mixin["mixin"]
     ModBlockBehaviour["ModBlockBehaviour<br/><small>class · 45 dòng</small>"]
@@ -27,12 +30,21 @@ flowchart LR
   end
   ModBlockBehaviour --> ModBlocksRegistry
   ModBlockBehaviour --> TorchBurn
-  ModBlockEntitiesRegistry --> ModBlocksRegistry
   ModBlockEntitiesRegistry --> Susu609Mod
   ModBlocksRegistry --> ModUnlitTorchBlock
   ModBlocksRegistry --> ModUnlitWallTorchBlock
   ModBlocksRegistry --> Susu609Mod
+  ModCreativeTabsRegistry --> ModItemsRegistry
   ModCreativeTabsRegistry --> Susu609Mod
+  ModEntitiesRegistry --> Susu609Mod
+  ModItemsRegistry --> ModBlocksRegistry
+  ModItemsRegistry --> Susu609Mod
+  Susu609Mod --> ModBlockEntitiesRegistry
+  Susu609Mod --> ModBlocksRegistry
+  Susu609Mod --> ModCreativeTabsRegistry
+  Susu609Mod --> ModEntitiesRegistry
+  Susu609Mod --> ModEntityRenderersRegistry
+  Susu609Mod --> ModItemsRegistry
 ```
 
 ## Class theo package
@@ -41,15 +53,18 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `Susu609Mod` | class | 116 | - | NetworkEvent, NetworkEvent.Context, TickEvent, TickEvent.Phase, TickEvent.ServerTickEvent |
+| `Susu609Mod` | class | 123 | ModBlockEntitiesRegistry, ModBlocksRegistry, ModCreativeTabsRegistry, ModEntitiesRegistry, ModEntityRenderersRegistry, ModItemsRegistry | NetworkEvent, NetworkEvent.Context, TickEvent, TickEvent.Phase, TickEvent.ServerTickEvent |
 
 ### init
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `ModBlockEntitiesRegistry` | class | 24 | ModBlocksRegistry, Susu609Mod | - |
+| `ModBlockEntitiesRegistry` | class | 16 | Susu609Mod | - |
 | `ModBlocksRegistry` | class | 49 | ModUnlitTorchBlock, ModUnlitWallTorchBlock, Susu609Mod | - |
-| `ModCreativeTabsRegistry` | class | 31 | Susu609Mod | - |
+| `ModCreativeTabsRegistry` | class | 31 | ModItemsRegistry, Susu609Mod | - |
+| `ModEntitiesRegistry` | class | 32 | Susu609Mod | EntityAttributeCreationEvent |
+| `ModEntityRenderersRegistry` | class | 30 | - | EntityRenderersEvent, EntityRenderersEvent.RegisterLayerDefinitions, EntityRenderersEvent.RegisterRenderers |
+| `ModItemsRegistry` | class | 42 | ModBlocksRegistry, Susu609Mod | BuildCreativeModeTabContentsEvent |
 
 ### mixin
 
