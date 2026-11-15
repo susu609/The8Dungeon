@@ -33,7 +33,7 @@ import net.minecraft.world.phys.Vec3;
  */
 final class BotBrain {
 
-    private enum Goal { IDLE, FLEE, FIGHT, EAT, HUNT, COLLECT, SHELTER, WOOD, STONE, DIRT, EXPLORE, HOME, COOK, GROUP, SHARE, SLEEP, CRAFT, BUILD, BASE }
+    private enum Goal { IDLE, FLEE, FIGHT, EAT, HUNT, COLLECT, SHELTER, WOOD, STONE, DIRT, EXPLORE, HOME, COOK, GROUP, SHARE, SLEEP, CRAFT, BUILD, BASE, STAY, FOLLOW }
 
     private static final double REACH = 4.0D;
 
@@ -70,6 +70,11 @@ final class BotBrain {
     private boolean tableTemp;   // bàn tạm mình vừa đặt: chế xong thì thu lại
     private boolean wantFurnace;
     private int craftBlockedUntil; // không có chỗ đặt bàn: tạm bỏ việc chế
+    // Lệnh từ chat ("su đứng lại", "su chặt gỗ"...)
+    private Goal order;               // việc được giao (STAY/FOLLOW hoặc một việc thường), null = tự do
+    private int orderUntil;           // việc thường hết hạn sau ~5 phút; đứng/đi theo thì tới khi hủy
+    private java.util.UUID orderFrom; // ai ra lệnh (để đi theo / mang đồ tới)
+    private BlockPos stayAt;
     // Tự gỡ kẹt
     private BlockPos digOut;          // khối chắn phía trước cần đào để đi tiếp
     private BlockPos pillarFeet;      // đang kê khối dưới chân để leo ra khỏi hố
@@ -158,6 +163,105 @@ final class BotBrain {
         rethink = true;
     }
 
+    /** Nhãn tiếng Việt của việc đang làm (để trả lời trong chat). */
+    private static String goalLabel(Goal g) {
+        return switch (g) {
+            case FLEE -> "chạy trốn";
+            case FIGHT -> "đánh nhau";
+            case EAT -> "ăn";
+            case HUNT -> "đi săn";
+            case COLLECT -> "nhặt đồ";
+            case SHELTER -> "trú ẩn";
+            case WOOD -> "chặt gỗ";
+            case STONE -> "đào đá";
+            case DIRT -> "đào đất";
+            case EXPLORE -> "đi khám phá";
+            case HOME, BASE -> "về nhà";
+            case COOK -> "nấu ăn";
+            case GROUP -> "về với nhóm";
+            case SHARE -> "mang đồ cho bạn";
+            case SLEEP -> "ngủ";
+            case CRAFT -> "chế đồ";
+            case BUILD -> "xây nhà";
+            case STAY -> "đứng chờ";
+            case FOLLOW -> "đi theo";
+            default -> "nghỉ";
+        };
+    }
+
+    /** Có ai gọi tên bot trong chat. text đã bỏ dấu, chữ thường. */
+    void onCommand(net.minecraft.server.level.ServerPlayer from, String text) {
+        String who = from.getGameProfile().getName();
+        if (!social.isAlly(from)) {
+            social.speak("Mình không nghe lời " + who + " đâu.", age);
+            return;
+        }
+        Goal g = null;
+        String reply;
+        if (has(text, "sao roi", "the nao", "trang thai", "dang lam gi", "status", "how are you")) {
+            social.speak("Mình đang " + goalLabel(goal) + ", máu " + (int) bot.getHealth() + "/20, đói "
+                    + bot.getFoodData().getFoodLevel() + "/20, gỗ " + (logs + planks / 4) + ", đá " + cobble
+                    + (order != null ? " (đang làm theo lệnh: " + goalLabel(order) + ")" : "") + ".", age);
+            return;
+        } else if (has(text, "tu do", "tiep tuc", "lam viec di", "thoi", "free", "resume", "carry on")) {
+            order = null;
+            reply = "Ok, mình tự lo tiếp nhé.";
+        } else if (has(text, "dung lai", "dung yen", "dung im", "o yen", "o day", "cho day", "stop", "wait", "stay")) {
+            g = Goal.STAY;
+            reply = "Mình đứng đây chờ " + who + ".";
+        } else if (has(text, "lai day", "di theo", "theo minh", "theo toi", "follow", "come")) {
+            g = Goal.FOLLOW;
+            reply = "Mình theo " + who + " đây!";
+        } else if (has(text, "cho do an", "do an", "dua do an", "doi qua", "food", "feed")) {
+            ItemStack f = BotItems.bestFood(bot, false);
+            if (f.isEmpty()) {
+                social.speak("Mình hết đồ ăn rồi " + who + " ơi.", age);
+                return;
+            }
+            shareWith = from;
+            shareKind = f;
+            g = Goal.SHARE;
+            reply = "Mình mang đồ ăn tới cho " + who + ".";
+        } else if (has(text, "chat go", "lay go", "kiem go", "wood", "chop")) {
+            g = Goal.WOOD;
+            reply = "Ok, đi chặt gỗ.";
+        } else if (has(text, "dao da", "lay da", "dao mo", "mine", "stone")) {
+            g = Goal.STONE;
+            reply = "Ok, đi đào đá.";
+        } else if (has(text, "san", "hunt")) {
+            g = Goal.HUNT;
+            reply = "Ok, đi săn.";
+        } else if (has(text, "xay", "build")) {
+            g = Goal.BUILD;
+            reply = base != null ? "Ok, đi xây nhà." : "Nhóm mình chưa có nhà, để mình kiếm chỗ đã.";
+        } else if (has(text, "ve nha", "home")) {
+            g = Goal.BASE;
+            reply = base != null ? "Mình về nhà đây." : "Mình chưa có nhà để về.";
+        } else if (has(text, "di ngu", "ngu", "sleep")) {
+            g = Goal.SLEEP;
+            reply = "Mình đi ngủ.";
+        } else {
+            social.speak(who + " gọi mình à? Thử: đứng lại, lại đây, chặt gỗ, đào đá, săn, xây, về nhà, ngủ, cho đồ ăn, sao rồi, tự do.", age);
+            return;
+        }
+        if (g != null) {
+            order = g;
+            orderFrom = from.getUUID();
+            orderUntil = (g == Goal.STAY || g == Goal.FOLLOW) ? Integer.MAX_VALUE : age + 6000;
+            stayAt = g == Goal.STAY ? bot.blockPosition() : null;
+        }
+        final String said = text;
+        BotLog.log(bot, "ORDER", () -> who + ": \"" + said + "\" -> " + (order == null ? "tự do" : order));
+        social.speak(reply, age);
+        rethink = true;
+    }
+
+    private static boolean has(String text, String... keys) {
+        String padded = " " + text + " ";
+        for (String k : keys) if (padded.contains(" " + k + " ")) return true;
+        return false;
+    }
+
     boolean acceptPeaceInFight(BotPlayer from) {
         boolean ok = social.acceptPeaceInFight(from, bot.getHealth() / bot.getMaxHealth(), age);
         if (ok) rethink = true;
@@ -234,6 +338,54 @@ final class BotBrain {
             glanceUntil = age + 15;
         }
         if (age < glanceUntil) bot.setYHeadRot(glanceYaw); // chỉ quay đầu, thân vẫn đi theo đường
+    }
+
+    // ===== Lệnh từ chat =====
+
+    /** Việc được giao đè lên lựa chọn bình thường; việc khẩn (chạy, nhảy khỏi lửa, ăn khi sắp chết đói, đánh sát) vẫn hơn. */
+    private void applyOrder(float[] sc) {
+        if (order == null) return;
+        if (age > orderUntil) {
+            order = null;
+            return;
+        }
+        switch (order) {
+            case STAY -> sc[Goal.STAY.ordinal()] = 0.84F;     // dưới đánh sát (0.85+) và chạy trốn
+            case FOLLOW -> sc[Goal.FOLLOW.ordinal()] = 0.8F;
+            case SHARE -> {
+                if (shareWith == null || shareKind.isEmpty()) order = null;
+                else sc[Goal.SHARE.ordinal()] = 0.9F;
+            }
+            default -> {
+                // việc thường: nếu đang làm được thì ưu tiên hẳn lên
+                if (sc[order.ordinal()] > 0.0F) sc[order.ordinal()] = Math.max(sc[order.ordinal()], 0.82F);
+                else if (order == Goal.BASE && base != null) sc[Goal.BASE.ordinal()] = 0.82F;
+                else if (order == Goal.SLEEP && senses.best(BotSenses.BED) != null && isNight()) sc[Goal.SLEEP.ordinal()] = 0.86F;
+                else if (order == Goal.WOOD || order == Goal.STONE || order == Goal.HUNT) {
+                    sc[Goal.EXPLORE.ordinal()] = Math.max(sc[Goal.EXPLORE.ordinal()], 0.5F); // chưa thấy: đi tìm
+                }
+            }
+        }
+    }
+
+    private void actStay() {
+        if (stayAt != null && bot.blockPosition().distSqr(stayAt) > 2) nav.moveTo(stayAt, age, false); // bị đẩy đi thì về chỗ cũ
+        else nav.stop();
+    }
+
+    private void actFollow() {
+        net.minecraft.world.entity.player.Player leader = orderFrom == null ? null : bot.serverLevel().getPlayerByUUID(orderFrom);
+        if (leader == null || !leader.isAlive() || leader.isSpectator()) {
+            nav.stop();
+            if (leader == null) order = null; // người gọi đã rời đi
+            return;
+        }
+        double d = bot.distanceTo(leader);
+        if (d > 3.0D) nav.moveTo(leader.blockPosition(), age, d > 10.0D);
+        else {
+            nav.stop();
+            bot.lookAt(EntityAnchorArgument.Anchor.EYES, leader.getEyePosition());
+        }
     }
 
     // ===== Tự gỡ kẹt (dốc, vách, hố) =====
@@ -561,13 +713,14 @@ final class BotBrain {
         if (!inShelter && rules.coop) {
             double lim = goal == Goal.GROUP ? 12.0D : 24.0D; // độ trễ: về tới 12 khối mới thôi
             if (nearestAlly != null && nearestAllyDist > lim) sc[Goal.GROUP.ordinal()] = 0.55F;
-            if (age % 100 == 0 || goal == Goal.SHARE) findShareTarget();
+            if ((age % 100 == 0 || goal == Goal.SHARE) && order != Goal.SHARE) findShareTarget();
             if (shareWith != null && h == null) {
                 // đồng đội sắp chết đói thì ưu tiên hơn cả việc trú ẩn
                 sc[Goal.SHARE.ordinal()] = shareWith.getFoodData().getFoodLevel() <= 6 ? 0.85F : 0.7F;
             }
         }
 
+        applyOrder(sc);
         lastScores = sc;
         // Chọn điểm cao nhất, thêm quán tính cho mục tiêu hiện tại
         Goal pick = Goal.IDLE;
@@ -699,6 +852,8 @@ final class BotBrain {
             case CRAFT -> actCraft();
             case BUILD -> actBuild();
             case BASE -> actBase();
+            case STAY -> actStay();
+            case FOLLOW -> actFollow();
             case HOME -> nav.moveTo(bot.home(), age, false);
             default -> nav.stop();
         }
@@ -1492,6 +1647,7 @@ final class BotBrain {
             break;
         }
         shareCooldown.put(to.getUUID(), age + 1200);
+        if (order == Goal.SHARE) order = null;
         shareWith = null;
         shareKind = ItemStack.EMPTY;
         rethink = true;

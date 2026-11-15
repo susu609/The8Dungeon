@@ -105,6 +105,10 @@ public final class BotPlayer extends ServerPlayer {
         brain.onAllyAttacked(victim, attacker);
     }
 
+    public void onCommand(net.minecraft.server.level.ServerPlayer from, String normalizedText) {
+        brain.onCommand(from, normalizedText);
+    }
+
     public void onDamaged(net.minecraft.world.damagesource.DamageSource source) {
         brain.onDamaged(source);
     }

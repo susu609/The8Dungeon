@@ -308,6 +308,11 @@ final class BotSocial {
         avoidUntil = until;
     }
 
+    /** Trả lời lệnh của người chơi: luôn nói (không bị giới hạn tần suất). */
+    void speak(String text, int now) {
+        say(text, now, true);
+    }
+
     private void say(String text, int now) {
         say(text, now, false);
     }

@@ -80,6 +80,10 @@ public final class BotManager {
                                 .executes(c -> peace(c, null))
                                 .then(Commands.argument("player", StringArgumentType.word())
                                         .executes(c -> peace(c, StringArgumentType.getString(c, "player"))))))
+                .then(Commands.literal("say")
+                        .then(Commands.argument("message", StringArgumentType.greedyString())
+                                .executes(c -> dispatchChat(c.getSource().getPlayerOrException(),
+                                        StringArgumentType.getString(c, "message")))))
                 .then(Commands.literal("base").executes(c -> {
                     var store = BaseStore.get(c.getSource().getServer());
                     if (store.all().isEmpty()) {
@@ -140,6 +144,43 @@ public final class BotManager {
                 BOTS.put(e.getKey(), BotPlayer.spawn(server, e.getKey(), true)); // hồi sinh sau ~3 giây, không báo "joined"
             }
         }
+    }
+
+    // ===== Lệnh qua chat: gọi tên bot (hoặc "tất cả") + việc cần làm =====
+
+    @SubscribeEvent
+    public static void onChat(net.minecraftforge.event.ServerChatEvent event) {
+        if (BOTS.isEmpty() || event.getPlayer() instanceof BotPlayer) return;
+        dispatchChat(event.getPlayer(), event.getRawText());
+    }
+
+    /** Tìm bot được gọi tên (hoặc "tất cả") trong câu và chuyển phần lệnh cho nó. */
+    static int dispatchChat(ServerPlayer from, String raw) {
+        String text = normalize(raw);
+        int n = 0;
+        boolean everyone = (" " + text + " ").matches(".* (tat ca|moi nguoi|ca nhom|all|everyone|bots) .*");
+        for (Map.Entry<String, BotPlayer> e : BOTS.entrySet()) {
+            String name = normalize(e.getKey());
+            boolean named = (" " + text + " ").contains(" " + name + " ");
+            if (!(named || everyone) || !e.getValue().isAlive()) continue;
+            String rest = (" " + text + " ").replace(" " + name + " ", " ")
+                    .replaceAll(" (tat ca|moi nguoi|ca nhom|all|everyone|bots|oi|nhe|nha|hey|please) ", " ")
+                    .trim().replaceAll("\\s+", " ");
+            BotPlayer bot = e.getValue();
+            if (bot == from) continue;
+            String cmd = rest;
+            // trả lời ở tick sau để dòng chat của người gọi hiện trước
+            from.getServer().execute(() -> bot.onCommand(from, cmd));
+            n++;
+        }
+        return n;
+    }
+
+    /** Chữ thường, bỏ dấu tiếng Việt (đ -> d), bỏ dấu câu. */
+    static String normalize(String s) {
+        String n = java.text.Normalizer.normalize(s.toLowerCase(java.util.Locale.ROOT).replace('đ', 'd'),
+                java.text.Normalizer.Form.NFD);
+        return n.replaceAll("\\p{M}", "").replaceAll("[^a-z0-9_ ]", " ").trim().replaceAll("\\s+", " ");
     }
 
     // ===== Quan hệ: bị đánh, được cho đồ =====
