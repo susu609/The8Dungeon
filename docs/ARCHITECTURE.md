@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 12 class/kiểu Java, 928 dòng, 18 phụ thuộc nội bộ
+- 15 class/kiểu Java, 981 dòng, 22 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -12,8 +12,13 @@ flowchart LR
   subgraph pkg__g_c_["(gốc)"]
     Susu609Mod(["Susu609Mod<br/><small>class · 123 dòng</small>"])
   end
+  subgraph pkg_client_gui["client.gui"]
+    ScreenUtil["ScreenUtil<br/><small>class · 16 dòng</small>"]
+  end
   subgraph pkg_client_gui_screens["client.gui.screens"]
     ModTitleScreen["ModTitleScreen<br/><small>class · 469 dòng</small>"]
+    TitleScreenHook["TitleScreenHook<br/><small>class · 24 dòng</small>"]
+    TitleScreenInterface["TitleScreenInterface<br/><small>interface · 13 dòng</small>"]
   end
   subgraph pkg_init["init"]
     ModBlockEntitiesRegistry["ModBlockEntitiesRegistry<br/><small>class · 16 dòng</small>"]
@@ -42,13 +47,17 @@ flowchart LR
   ModEntitiesRegistry --> Susu609Mod
   ModItemsRegistry --> ModBlocksRegistry
   ModItemsRegistry --> Susu609Mod
+  ModTitleScreen --> ScreenUtil
   ModTitleScreen --> Susu609Mod
+  ModTitleScreen --> TitleScreenInterface
   Susu609Mod --> ModBlockEntitiesRegistry
   Susu609Mod --> ModBlocksRegistry
   Susu609Mod --> ModCreativeTabsRegistry
   Susu609Mod --> ModEntitiesRegistry
   Susu609Mod --> ModEntityRenderersRegistry
   Susu609Mod --> ModItemsRegistry
+  TitleScreenHook --> ModTitleScreen
+  TitleScreenHook --> Susu609Mod
 ```
 
 ## Class theo package
@@ -59,11 +68,19 @@ flowchart LR
 |---|---|---|---|---|
 | `Susu609Mod` | class | 123 | ModBlockEntitiesRegistry, ModBlocksRegistry, ModCreativeTabsRegistry, ModEntitiesRegistry, ModEntityRenderersRegistry, ModItemsRegistry | NetworkEvent, NetworkEvent.Context, TickEvent, TickEvent.Phase, TickEvent.ServerTickEvent |
 
+### client.gui
+
+| Class | Loại | Dòng | Dùng tới | Event Forge |
+|---|---|---|---|---|
+| `ScreenUtil` | class | 16 | - | - |
+
 ### client.gui.screens
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `ModTitleScreen` | class | 469 | Susu609Mod | - |
+| `ModTitleScreen` | class | 469 | ScreenUtil, Susu609Mod, TitleScreenInterface | - |
+| `TitleScreenHook` | class | 24 | ModTitleScreen, Susu609Mod | ScreenEvent, ScreenEvent.Opening |
+| `TitleScreenInterface` | interface | 13 | - | - |
 
 ### init
 
