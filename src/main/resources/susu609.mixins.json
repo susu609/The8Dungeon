@@ -11,7 +11,8 @@
   "client": [
     "RenderChunkRegionMixin",
     "MinecraftGlowMixin",
-    "CameraFollowMixin"
+    "CameraFollowMixin",
+    "EntityTeamColorMixin"
   ],
   "injectors": {
     "defaultRequire": 1

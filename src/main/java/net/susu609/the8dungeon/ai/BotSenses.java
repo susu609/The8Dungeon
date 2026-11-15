@@ -28,8 +28,8 @@ import net.minecraft.world.phys.AABB;
  */
 final class BotSenses {
 
-    static final int LOG = 0, STONE = 1, DIRT = 2, BED = 3;
-    private static final int KINDS = 4;
+    static final int LOG = 0, STONE = 1, DIRT = 2, BED = 3, TABLE = 4;
+    private static final int KINDS = 5;
 
     private static final int R = 16, RY = 6;
     private static final int W = 2 * R + 1, H = 2 * RY + 1, TOTAL = W * W * H;
@@ -166,6 +166,7 @@ final class BotSenses {
             case LOG -> s.is(BlockTags.LOGS);
             case STONE -> s.is(Blocks.STONE) || s.is(Blocks.COBBLESTONE);
             case DIRT -> s.is(Blocks.DIRT) || s.is(Blocks.GRASS_BLOCK) || s.is(Blocks.COARSE_DIRT);
+            case TABLE -> s.is(Blocks.CRAFTING_TABLE);
             // giường trống: chỉ lấy phần đầu giường (vị trí dùng để nằm)
             default -> s.is(BlockTags.BEDS) && s.getValue(net.minecraft.world.level.block.BedBlock.PART)
                     == net.minecraft.world.level.block.state.properties.BedPart.HEAD
@@ -231,7 +232,7 @@ final class BotSenses {
         if (banned.containsKey(pos.asLong())) return;
         BlockPos cur = best[kind];
         if (cur != null && cur.distSqr(here) <= pos.distSqr(here)) return;
-        if (kind != BED && !safeAndExposed(level, pos)) return;
+        if (kind != BED && kind != TABLE && !safeAndExposed(level, pos)) return;
         best[kind] = pos.immutable();
     }
 

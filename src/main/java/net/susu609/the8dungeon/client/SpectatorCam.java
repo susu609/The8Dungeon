@@ -101,9 +101,21 @@ public final class SpectatorCam {
         return mode.label;
     }
 
-    /** Dùng bởi mixin viền sáng: bot đang được theo dõi thì luôn có viền. */
-    public static boolean isFollowTarget(Entity e) {
-        return target != null && e == target;
+    /** 4 màu viền cho 4 bot: đỏ, xanh dương, vàng, xanh lá. */
+    public static final int[] BOT_COLORS = {0xFF5555, 0x5599FF, 0xFFDD33, 0x55DD55};
+
+    /** Màu viền của bot (theo thứ tự trong danh sách bot), hoặc -1 nếu không phải bot / không ở chế độ Người xem. */
+    public static int outlineColor(Entity e) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || !mc.player.isSpectator() || !(e instanceof AbstractClientPlayer pl) || e == mc.player) return -1;
+        java.util.List<String> names = BotHud.allBotNames();
+        int idx = names.indexOf(pl.getGameProfile().getName());
+        return idx < 0 ? -1 : BOT_COLORS[idx % BOT_COLORS.length];
+    }
+
+    /** Dùng bởi mixin viền: ở chế độ Người xem, mọi bot đều có viền màu (nhìn xuyên khối). */
+    public static boolean shouldGlow(Entity e) {
+        return outlineColor(e) >= 0;
     }
 
     public static void setMode(Mode m) {

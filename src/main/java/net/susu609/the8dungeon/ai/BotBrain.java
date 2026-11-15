@@ -33,7 +33,7 @@ import net.minecraft.world.phys.Vec3;
  */
 final class BotBrain {
 
-    private enum Goal { IDLE, FLEE, FIGHT, EAT, HUNT, COLLECT, SHELTER, WOOD, STONE, DIRT, EXPLORE, HOME, COOK, GROUP, SHARE, SLEEP }
+    private enum Goal { IDLE, FLEE, FIGHT, EAT, HUNT, COLLECT, SHELTER, WOOD, STONE, DIRT, EXPLORE, HOME, COOK, GROUP, SHARE, SLEEP, CRAFT }
 
     private static final double REACH = 4.0D;
 
@@ -66,6 +66,9 @@ final class BotBrain {
     // Ảnh chụp kho đồ (cập nhật mỗi lần suy nghĩ)
     private int logs, planks, cobble, placeable, foodCount, pickRank, rawFood;
     private BlockPos furnacePos; // lò bot đã đặt (nhớ để quay lại lấy đồ chín)
+    private BlockPos tableUse;   // bàn chế tạo đang dùng
+    private boolean tableTemp;   // bàn tạm mình vừa đặt: chế xong thì thu lại
+    private boolean wantFurnace;
 
     // Trạng thái con của từng mục tiêu
     private BlockPos mineTarget;
@@ -282,8 +285,11 @@ final class BotBrain {
 
     private void think() {
         rules = BotRulesStore.get(bot.getServer()).effective(bot.getGameProfile().getName());
-        for (int i = 0; i < 6 && BotCrafting.step(bot); i++) {
-            // chế liên tục tới khi hết việc
+        snapshotInventory();
+        wantFurnace = rules.cook && rawFood > 0 && furnacePos == null
+                && BotItems.count(bot.getInventory(), st -> st.is(Items.FURNACE)) == 0;
+        for (int i = 0; i < 6 && BotCrafting.stepInventory(bot, wantFurnace); i++) {
+            // công thức 2x2 chế liền trong túi
         }
         snapshotInventory();
 
@@ -386,11 +392,17 @@ final class BotBrain {
                 if (shortOnBlocks && dirt != null && inRoam(dirt)) sc[Goal.DIRT.ordinal()] = 0.7F;
             }
             if (rules.explore) sc[Goal.EXPLORE.ordinal()] = 0.2F;
+            // Có món 3x3 chế được: ra bàn (bàn có sẵn gần đó, hoặc đặt bàn mang theo)
+            boolean haveTable = BotItems.count(bot.getInventory(), st -> st.is(Items.CRAFTING_TABLE)) > 0
+                    || senses.best(BotSenses.TABLE) != null;
+            if (tableUse != null || (haveTable && BotCrafting.needsTable(bot, wantFurnace))) {
+                sc[Goal.CRAFT.ordinal()] = 0.7F;
+            }
             if (rules.cook && h == null) {
                 int fs = furnaceState();
                 boolean spareWood = logs * 4 + planks > 12;
                 boolean hasFuel = !BotItems.findFuel(bot.getInventory(), spareWood).isEmpty() || fs == FURNACE_BUSY;
-                boolean canGetFurnace = furnacePos != null || cobble >= 8;
+                boolean canGetFurnace = furnacePos != null || BotItems.count(bot.getInventory(), st -> st.is(Items.FURNACE)) > 0;
                 if (fs == FURNACE_READY) sc[Goal.COOK.ordinal()] = 0.6F;                 // đồ đã chín: đi lấy
                 else if (rawFood > 0 && hasFuel && canGetFurnace) sc[Goal.COOK.ordinal()] = 0.5F; // bỏ đồ sống vào lò
                 else if (fs == FURNACE_BUSY) sc[Goal.COOK.ordinal()] = 0.3F;             // đang nung: chờ gần lò
@@ -554,6 +566,7 @@ final class BotBrain {
             case GROUP -> actGroup();
             case SHARE -> actShare();
             case SLEEP -> actSleep();
+            case CRAFT -> actCraft();
             case HOME -> nav.moveTo(bot.home(), age, false);
             default -> nav.stop();
         }
@@ -909,7 +922,7 @@ final class BotBrain {
         ServerLevel level = bot.serverLevel();
         Inventory inv = bot.getInventory();
         boolean hasItem = BotItems.count(inv, st -> st.is(Items.FURNACE)) > 0;
-        if (!hasItem && cobble < 8) return false;
+        if (!hasItem) return false; // lò phải chế ở bàn chế tạo (CRAFT)
         BlockPos feet = bot.blockPosition();
         for (Direction d : Direction.Plane.HORIZONTAL) {
             BlockPos p = feet.relative(d);
@@ -917,15 +930,13 @@ final class BotBrain {
             if (!level.getBlockState(p).canBeReplaced() || !level.getFluidState(p).isEmpty()) continue;
             if (!level.getBlockState(below).isFaceSturdy(level, below, Direction.UP)) continue;
             if (bot.getBoundingBox().intersects(new net.minecraft.world.phys.AABB(p))) continue;
-            if (hasItem) BotItems.take(inv, st -> st.is(Items.FURNACE), 1);
-            else BotItems.take(inv, st -> st.is(Items.COBBLESTONE), 8);
+            BotItems.take(inv, st -> st.is(Items.FURNACE), 1);
             BlockState furnace = Blocks.FURNACE.defaultBlockState().setValue(AbstractFurnaceBlock.FACING, d.getOpposite());
             level.setBlock(p, furnace, 3);
             level.playSound(null, p, furnace.getSoundType().getPlaceSound(), SoundSource.BLOCKS, 1.0F, 0.8F);
             bot.swing(InteractionHand.MAIN_HAND, true);
             furnacePos = p.immutable();
-            final boolean crafted = !hasItem;
-            BotLog.log(bot, "COOK", () -> (crafted ? "chế lò từ 8 đá cuội, " : "") + "đặt lò tại " + furnacePos.toShortString());
+            BotLog.log(bot, "COOK", () -> "đặt lò tại " + furnacePos.toShortString());
             return true;
         }
         return false;
@@ -935,6 +946,7 @@ final class BotBrain {
     private boolean breakable(ServerLevel level, BlockPos pos, BlockState state) {
         if (state.getDestroySpeed(level, pos) < 0.0F) return false;
         if (state.hasBlockEntity() || state.is(Blocks.SPAWNER) || !state.getFluidState().isEmpty()) return false;
+        if (state.is(Blocks.CRAFTING_TABLE) && !(tableTemp && pos.equals(tableUse))) return false; // bàn của người khác/base
         if (pos.equals(bot.blockPosition().below())) return false;
         for (Direction d : Direction.values()) {
             if (!level.getBlockState(pos.relative(d)).getFluidState().isEmpty()) return false;
@@ -1019,6 +1031,82 @@ final class BotBrain {
         shelter = null;
         myCell = null;
         shelterDone = true;
+    }
+
+    // ===== Chế đồ ở bàn chế tạo =====
+
+    /** Ô trống cạnh chân để đặt một khối (bàn, lò): sàn đặc, không chất lỏng, không có sinh vật. */
+    private BlockPos freeSpotBeside() {
+        ServerLevel level = bot.serverLevel();
+        BlockPos feet = bot.blockPosition();
+        for (Direction d : Direction.Plane.HORIZONTAL) {
+            BlockPos p = feet.relative(d);
+            BlockPos below = p.below();
+            if (!level.getBlockState(p).canBeReplaced() || !level.getFluidState(p).isEmpty()) continue;
+            if (!level.getBlockState(below).isFaceSturdy(level, below, Direction.UP)) continue;
+            if (!level.getEntitiesOfClass(LivingEntity.class, new net.minecraft.world.phys.AABB(p)).isEmpty()) continue;
+            return p;
+        }
+        return null;
+    }
+
+    private void actCraft() {
+        ServerLevel level = bot.serverLevel();
+        if (tableUse == null) {
+            BlockPos known = senses.best(BotSenses.TABLE);
+            if (known != null && known.distSqr(bot.blockPosition()) < 24 * 24) {
+                tableUse = known;
+                tableTemp = false;
+                BotLog.log(bot, "CRAFT", () -> "dùng bàn có sẵn tại " + known.toShortString());
+            } else {
+                BlockPos spot = freeSpotBeside();
+                if (spot == null || !BotItems.take(bot.getInventory(), st -> st.is(Items.CRAFTING_TABLE), 1)) {
+                    rethink = true;
+                    return;
+                }
+                level.setBlock(spot, Blocks.CRAFTING_TABLE.defaultBlockState(), 3);
+                level.playSound(null, spot, Blocks.CRAFTING_TABLE.defaultBlockState().getSoundType().getPlaceSound(),
+                        SoundSource.BLOCKS, 1.0F, 0.8F);
+                bot.swing(InteractionHand.MAIN_HAND, true);
+                tableUse = spot.immutable();
+                tableTemp = true;
+                BotLog.log(bot, "CRAFT", () -> "đặt bàn tạm tại " + spot.toShortString());
+            }
+        }
+        if (!level.getBlockState(tableUse).is(Blocks.CRAFTING_TABLE)) { // bàn bị phá mất
+            tableUse = null;
+            tableTemp = false;
+            return;
+        }
+        Vec3 center = Vec3.atCenterOf(tableUse);
+        if (bot.getEyePosition().distanceToSqr(center) > REACH * REACH) {
+            nav.moveTo(tableUse, age, false);
+            if (nav.failed) {
+                senses.ban(tableUse, age + 2400);
+                tableUse = null;
+            }
+            return;
+        }
+        nav.stop();
+        bot.lookAt(EntityAnchorArgument.Anchor.EYES, center); // nhìn vào bàn khi chế
+        if (age % 10 != 0) return; // mỗi món nửa giây
+        if (BotCrafting.stepTable(bot, wantFurnace)) {
+            bot.swing(InteractionHand.MAIN_HAND, true);
+            snapshotInventory();
+            return;
+        }
+        // Hết món để chế: bàn tạm thì phá thu lại, bàn có sẵn thì để nguyên
+        if (tableTemp) {
+            if (mineTick(tableUse)) {
+                BotLog.log(bot, "CRAFT", () -> "thu lại bàn tạm");
+                tableUse = null;
+                tableTemp = false;
+                rethink = true;
+            }
+        } else {
+            tableUse = null;
+            rethink = true;
+        }
     }
 
     // ===== Ngủ giường =====

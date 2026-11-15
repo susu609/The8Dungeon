@@ -64,6 +64,11 @@ public final class BotHud {
         return isActive() ? all.stream().map(BotInfo::name).toList() : List.of();
     }
 
+    /** Tên mọi bot theo thứ tự (dùng để gán màu viền). */
+    public static List<String> allBotNames() {
+        return allBots().stream().map(BotInfo::name).toList();
+    }
+
     static List<BotInfo> allBots() {
         return fresh() ? all : List.of();
     }
@@ -147,7 +152,9 @@ public final class BotHud {
                 BotInfo b = bots.get(k);
                 int[] r = faceRect(width, k);
                 boolean focused = info != null && b.name().equals(info.name());
-                g.fill(r[0] - 1, r[1] - 1, r[0] + FACE + 1, r[1] + FACE + 1, focused ? 0xFFFFE070 : 0x90000000);
+                int color = 0xFF000000 | SpectatorCam.BOT_COLORS[k % SpectatorCam.BOT_COLORS.length];
+                int border = focused ? 2 : 1; // cùng màu viền với bot trong thế giới; bot đang xem viền dày hơn
+                g.fill(r[0] - border, r[1] - border, r[0] + FACE + border, r[1] + FACE + border, color);
                 PlayerFaceRenderer.draw(g, skinOf(b.name()), r[0], r[1], FACE);
                 bar(g, r[0], r[1] + FACE + 2, FACE, b.hp() / 20.0F, b.danger() ? 0xFFE05050 : 0xFFD03030);
                 if (b.goal().equals("SLEEP")) g.drawString(font, "z", r[0] + FACE - 4, r[1] - 2, 0xFFFFFF, true);
