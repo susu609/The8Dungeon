@@ -110,8 +110,8 @@ public final class SpectatorCam {
             CutawayState.clear();
             return;
         }
-        if (!p.isSpectator()) {
-            setFollow(false);
+        if (!p.isSpectator()) { // giữ lựa chọn, chỉ tạm không áp dụng khi không ở spectator
+            CutawayState.clear();
             return;
         }
         Player bot = findBot(mc.level);
