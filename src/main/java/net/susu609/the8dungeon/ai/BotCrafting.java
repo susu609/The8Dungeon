@@ -45,11 +45,13 @@ final class BotCrafting {
         if (wantTools && sticks < 4 && planks >= 2) {
             BotItems.take(inv, PLANK, 2);
             BotItems.give(bot, new ItemStack(Items.STICK, 4));
+            BotLog.log(bot, "CRAFT", () -> "4 gậy (từ 2 ván)");
             return true;
         }
         if (wantTools && planks < 8 && logs > 0) {
             BotItems.take(inv, LOG, 1);
             BotItems.give(bot, new ItemStack(Items.OAK_PLANKS, 4));
+            BotLog.log(bot, "CRAFT", () -> "4 ván (từ 1 gỗ)");
             return true;
         }
         return false;
@@ -64,6 +66,7 @@ final class BotCrafting {
         if (BotItems.count(inv, STICK) < sticks || !BotItems.take(inv, material, amount)) return false;
         BotItems.take(inv, STICK, sticks);
         BotItems.give(bot, new ItemStack(result));
+        BotLog.log(bot, "CRAFT", () -> result.getDescriptionId());
         return true;
     }
 }

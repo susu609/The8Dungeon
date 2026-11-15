@@ -52,6 +52,10 @@ final class BotNav {
         }
         if (path == null || now >= repathAt) {
             path = computePath(goal);
+            final Path found = path;
+            BotLog.log(bot, "NAV", () -> found == null ? "KHÔNG có đường tới " + goal.toShortString()
+                    : "đường " + found.getNodeCount() + " nút tới " + goal.toShortString()
+                            + (found.canReach() ? "" : " (cụt, chỉ tới gần)"));
             repathAt = now + 40;
         }
         if (path == null) {
@@ -93,6 +97,8 @@ final class BotNav {
             if (bot.position().distanceToSqr(checkPos) < 0.16D) {
                 stuck++;
                 path = null; // tính lại đường
+                final int n = stuck;
+                BotLog.log(bot, "NAV_STUCK", () -> "kẹt lần " + n + " tại " + bot.blockPosition().toShortString());
                 if (stuck >= 4) failed = true;
             } else {
                 stuck = 0;

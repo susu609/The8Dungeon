@@ -1,5 +1,6 @@
 package net.susu609.the8dungeon.ai;
 
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import java.util.ArrayList;
@@ -49,7 +50,18 @@ public final class BotManager {
                         .executes(c -> kill(c, null))
                         .then(Commands.argument("name", StringArgumentType.word())
                                 .executes(c -> kill(c, StringArgumentType.getString(c, "name")))))
-                .then(Commands.literal("status").executes(BotManager::status)));
+                .then(Commands.literal("status").executes(BotManager::status))
+                .then(Commands.literal("debug")
+                        .then(Commands.literal("on").executes(c -> debug(c, true)))
+                        .then(Commands.literal("off").executes(c -> debug(c, false))))
+                .then(Commands.literal("log")
+                        .executes(c -> showLog(c, 20))
+                        .then(Commands.argument("n", IntegerArgumentType.integer(1, 100))
+                                .executes(c -> showLog(c, IntegerArgumentType.getInteger(c, "n")))))
+                .then(Commands.literal("logclear").executes(c -> {
+                    BotLog.clear();
+                    return 1;
+                })));
     }
 
     @SubscribeEvent
@@ -62,6 +74,9 @@ public final class BotManager {
             BotPlayer bot = e.getValue();
             if (bot.isRemoved() && bot.isAlive()) {
                 BOTS.remove(e.getKey()); // bị gỡ từ bên ngoài
+            } else if (!bot.isAlive() && bot.deadTicks == 0) {
+                bot.deadTicks = 1;
+                BotLog.log(bot, "DEATH", () -> "bot chết tại " + bot.blockPosition().toShortString() + ", " + bot.status());
             } else if (!bot.isAlive() && ++bot.deadTicks >= 3) {
                 server.getPlayerList().remove(bot);
                 BOTS.put(e.getKey(), BotPlayer.spawn(server, e.getKey())); // hồi sinh sau ~3 giây
@@ -134,7 +149,9 @@ public final class BotManager {
             c.getSource().sendFailure(Component.literal("Đã có người chơi tên " + name));
             return 0;
         }
-        BOTS.put(name, BotPlayer.spawn(server, name));
+        BotPlayer created = BotPlayer.spawn(server, name);
+        BOTS.put(name, created);
+        BotLog.log(created, "SPAWN", () -> "tại " + created.blockPosition().toShortString());
         c.getSource().sendSuccess(() -> Component.literal("Đã tạo bot " + name), true);
         return 1;
     }
@@ -152,6 +169,23 @@ public final class BotManager {
         int removed = n;
         c.getSource().sendSuccess(() -> Component.literal("Đã gỡ " + removed + " bot"), true);
         return n;
+    }
+
+    private static int debug(CommandContext<CommandSourceStack> c, boolean on) {
+        BotLog.setEnabled(on);
+        c.getSource().sendSuccess(() -> Component.literal("Debug log bot: " + (on ? "BẬT" : "TẮT")), true);
+        return 1;
+    }
+
+    private static int showLog(CommandContext<CommandSourceStack> c, int n) {
+        java.util.List<String> lines = BotLog.tail(n);
+        if (lines.isEmpty()) {
+            c.getSource().sendSuccess(() -> Component.literal(
+                    BotLog.enabled() ? "Chưa có dòng log nào" : "Debug đang tắt. Dùng /bot debug on"), false);
+            return 0;
+        }
+        for (String line : lines) c.getSource().sendSuccess(() -> Component.literal(line), false);
+        return lines.size();
     }
 
     private static int status(CommandContext<CommandSourceStack> c) {

@@ -42,6 +42,8 @@ final class BotBrain {
     private final BotNav nav;
 
     private int age;
+    private int mineStartAge;
+    private float[] lastScores = new float[Goal.values().length];
     private Goal goal = Goal.IDLE;
     private int goalSince;
 
@@ -84,6 +86,10 @@ final class BotBrain {
         age++;
         bot.setJumping(false);
         if (age % THINK_EVERY == 0) think();
+        if (age % 200 == 0) {
+            BotLog.log(bot, "BEAT", () -> status() + " pos=" + bot.blockPosition().toShortString()
+                    + " mục tiêu=" + goal + " đã=" + (age - goalSince) + "tick");
+        }
         act();
     }
 
@@ -129,6 +135,7 @@ final class BotBrain {
         else if (!night && !shelterPlan.isEmpty()) sc[Goal.SHELTER.ordinal()] = 0.9F; // phải phá chỗ trú để ra
         if (!night && !dusk && shelterPlan.isEmpty()) shelterDone = false;
 
+        lastScores = sc;
         // Chọn điểm cao nhất, thêm quán tính cho mục tiêu hiện tại
         Goal pick = Goal.IDLE;
         float bestScore = 0.0F;
@@ -143,10 +150,17 @@ final class BotBrain {
             boolean dwell = age - goalSince < 30 && sc[goal.ordinal()] > 0.0F && bestScore < 0.9F;
             if (!dwell) switchGoal(pick);
         }
-        if (goal == Goal.FLEE && h != null) fleeTarget = awayFrom(h);
+        if (goal == Goal.FLEE && h != null) {
+            fleeTarget = awayFrom(h);
+            BotLog.log(bot, "FLEE", () -> "tránh " + h.getType().getDescriptionId() + " cách " + (int) hd
+                    + " -> " + fleeTarget.toShortString());
+        }
     }
 
     private void switchGoal(Goal next) {
+        final Goal from = goal;
+        final int spent = age - goalSince;
+        BotLog.log(bot, "GOAL", () -> from + " -> " + next + " (sau " + spent + " tick) điểm=" + scores());
         goal = next;
         goalSince = age;
         nav.stop();
@@ -157,6 +171,15 @@ final class BotBrain {
         fleeTarget = null;
         exploreTarget = null;
         if (next == Goal.FIGHT || next == Goal.HUNT) BotItems.equipWeapon(bot);
+    }
+
+    private String scores() {
+        StringBuilder sb = new StringBuilder("{");
+        for (Goal g : Goal.values()) {
+            float v = lastScores[g.ordinal()];
+            if (v > 0.0F) sb.append(g).append('=').append(String.format("%.2f", v)).append(' ');
+        }
+        return sb.append('}').toString();
     }
 
     private void snapshotInventory() {
@@ -224,6 +247,7 @@ final class BotBrain {
             bot.lookAt(EntityAnchorArgument.Anchor.EYES, e.getEyePosition());
             if (bot.getAttackStrengthScale(0.5F) >= 1.0F) {
                 bot.attack(e);
+                BotLog.log(bot, "ATTACK", () -> e.getType().getDescriptionId() + " hp=" + (int) e.getHealth());
                 bot.swing(InteractionHand.MAIN_HAND, true);
             }
         }
@@ -234,7 +258,10 @@ final class BotBrain {
         if (--eatTimer > 0) return;
         eatTimer = 32;
         ItemStack food = BotItems.bestFood(bot, bot.getFoodData().getFoodLevel() <= 6);
-        if (!food.isEmpty()) bot.eat(bot.level(), food);
+        if (!food.isEmpty()) {
+            BotLog.log(bot, "EAT", () -> food.getItem().getDescriptionId() + " (đói " + bot.getFoodData().getFoodLevel() + ")");
+            bot.eat(bot.level(), food);
+        }
     }
 
     private void actCollect() {
@@ -246,6 +273,7 @@ final class BotBrain {
         }
         if (collectSince == 0) collectSince = age;
         if (age - collectSince > 160) { // mãi không nhặt được thì bỏ qua món này
+            BotLog.log(bot, "COLLECT", () -> "bỏ qua món không nhặt được " + item.getItem().getItem().getDescriptionId());
             senses.ignoreItem(item, age + 1200);
             collectSince = 0;
             return;
@@ -254,7 +282,10 @@ final class BotBrain {
     }
 
     private void actExplore() {
-        if (exploreTarget == null) exploreTarget = pickExploreTarget();
+        if (exploreTarget == null) {
+            exploreTarget = pickExploreTarget();
+            BotLog.log(bot, "EXPLORE", () -> "đích mới " + (exploreTarget == null ? "không có (quay đầu)" : exploreTarget.toShortString()));
+        }
         if (exploreTarget == null) {
             nav.stop();
             return;
@@ -304,6 +335,8 @@ final class BotBrain {
         ServerLevel level = bot.serverLevel();
         BlockState state = level.getBlockState(target);
         if (state.isAir() || !breakable(level, target, state)) {
+            final BlockState seen = state;
+            BotLog.log(bot, "BAN", () -> target.toShortString() + " không phá được/đã mất (" + seen.getBlock().getDescriptionId() + ")");
             senses.ban(target, age + 2400);
             return true;
         }
@@ -311,6 +344,7 @@ final class BotBrain {
         if (bot.getEyePosition().distanceToSqr(center) > REACH * REACH) {
             boolean arrived = nav.moveTo(target, age, false);
             if (nav.failed || (arrived && ++reachFails >= 3)) {
+                BotLog.log(bot, "BAN", () -> target.toShortString() + " không tới được (navFail=" + nav.failed + ")");
                 senses.ban(target, age + 2400);
                 reachFails = 0;
                 return true;
@@ -327,6 +361,8 @@ final class BotBrain {
             hitPos = hit.getBlockPos();
             BlockState obstacle = level.getBlockState(hitPos);
             if (!breakable(level, hitPos, obstacle)) {
+                final BlockPos blocked = hitPos;
+                BotLog.log(bot, "BAN", () -> target.toShortString() + " bị chắn bởi khối không phá được " + blocked.toShortString());
                 senses.ban(target, age + 2400);
                 return true;
             }
@@ -335,6 +371,11 @@ final class BotBrain {
 
         if (!hitPos.equals(mineTarget)) {
             mineTarget = hitPos;
+            mineStartAge = age;
+            final BlockPos startPos = hitPos;
+            final BlockState startState = state;
+            BotLog.log(bot, "MINE_START", () -> startState.getBlock().getDescriptionId() + " tại " + startPos.toShortString()
+                    + (startPos.equals(target) ? "" : " (chắn đường tới " + target.toShortString() + ")"));
             mineProgress = 0.0F;
             BotItems.equipBest(bot, state);
         }
@@ -342,6 +383,10 @@ final class BotBrain {
         mineProgress += state.getDestroyProgress(bot, level, hitPos);
         if (age % 4 == 0) bot.swing(InteractionHand.MAIN_HAND, true);
         if (mineProgress >= 1.0F) {
+            final BlockPos donePos = hitPos;
+            final BlockState doneState = state;
+            BotLog.log(bot, "MINE_DONE", () -> doneState.getBlock().getDescriptionId() + " tại " + donePos.toShortString()
+                    + " mất " + (age - mineStartAge) + " tick");
             bot.gameMode.destroyBlock(hitPos);
             level.destroyBlockProgress(bot.getId(), hitPos, -1);
             mineTarget = null;
@@ -379,6 +424,7 @@ final class BotBrain {
         // Trời sáng: phá lại từng khối đã đặt để thu hồi vật liệu và đi ra
         sheltered = false;
         if (shelterPlan.isEmpty()) {
+            BotLog.log(bot, "SHELTER", () -> "đã phá xong hộp, ra ngoài");
             shelterDone = true;
             return;
         }
@@ -400,6 +446,7 @@ final class BotBrain {
         BlockPos feet = bot.blockPosition();
         shelterPlan.clear();
         shelterIdx = 0;
+        BotLog.log(bot, "SHELTER", () -> "dựng hộp tại " + feet.toShortString() + " (đất/đá có " + placeable + ")");
         for (Direction d : Direction.Plane.HORIZONTAL) {
             shelterPlan.add(feet.relative(d));
             shelterPlan.add(feet.relative(d).above());
@@ -414,6 +461,7 @@ final class BotBrain {
         if (stack.isEmpty() || !(stack.getItem() instanceof BlockItem bi)) return;
         BlockState place = bi.getBlock().defaultBlockState();
         level.setBlock(pos, place, 3);
+        BotLog.log(bot, "PLACE", () -> place.getBlock().getDescriptionId() + " tại " + pos.toShortString());
         level.playSound(null, pos, place.getSoundType().getPlaceSound(), SoundSource.BLOCKS, 1.0F, 0.8F);
         stack.shrink(1);
         bot.swing(InteractionHand.MAIN_HAND, true);
