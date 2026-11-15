@@ -23,7 +23,8 @@ public final class DungeonBuilder {
 
     private static final int CELL = RoomPreset.CELL;
     private static final int HEIGHT = RoomPreset.INTERIOR_HEIGHT;
-    private static final int DOOR_HEIGHT = 4;
+    // TODO: cửa cao 3 ô (bản upload đã đổi từ 4 xuống 3; main vẫn là 4). Áp dụng cho MỌI cửa, không riêng phòng vào.
+    private static final int DOOR_HEIGHT = 3;
 
     // 2 = gửi thay đổi cho client, 16 = bỏ qua cập nhật hình dạng block lân cận (nhanh hơn khi đặt hàng loạt).
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
@@ -84,8 +85,20 @@ public final class DungeonBuilder {
         for (Door door : layout.doors()) {
             carveDoor(level, door, origin, air, pos);
         }
+        // TODO: đuốc TƯỜNG (Blocks.WALL_TORCH) đặt bên TRONG mỗi phòng, ở hai bên cạnh cửa, cho MỌI cửa.
+        //   Cửa hướng đông (door.east() == true), baseX/baseZ như trong carveDoor, y = origin.getY() + 2:
+        //     phòng phía tây: x = baseX + 14, z = baseZ + 6 và baseZ + 9, FACING = WEST (quay ra xa tường x = 15)
+        //     phòng phía đông: x = baseX + 17, cùng hai z, FACING = EAST (tường ở x = 16)
+        //   Cửa hướng nam (east == false): đổi vai x và z; phía bắc z = baseZ + 14 FACING = NORTH, phía nam z = baseZ + 17 FACING = SOUTH.
+        //   Đặt sau vòng khoét cửa; block tường tại (15|16, 6|9) vẫn còn là STONE_BRICKS nên đuốc có chỗ bám.
+        // TODO: mỗi đuốc roll RIÊNG: world.fork("torch").at(x, z).chance(0.75) (x, z là toạ độ block đuốc, nên kết quả không phụ thuộc thứ tự lặp).
+        // TODO: 25% còn lại là tắt (wall_torch_off) hoặc YẾU. Đuốc yếu = Blocks.WALL_TORCH nhưng thời gian cháy chỉ còn 25% (TorchBurn.WEAK_TICKS).
+        //       Không cần block mới. Cần chốt tỉ lệ chia tắt / yếu trong 25%; nếu chia thì roll thứ hai cho cùng đuốc.
+        // TODO: đuốc sáng và yếu đều do mixin ModBlockBehaviour lên lịch tắt khi onPlace; đặt đuốc yếu phải ghi đè thời gian (xem TODO trong TorchBurn).
+        // TODO: build() chưa nhận seed/WorldRandom; thêm tham số thì phải sửa cả DungeonCommand (gọi build).
     }
 
+    // TODO: toạ độ đuốc dùng chung baseX/baseZ/door.east() với hàm này; cân nhắc tách hàm tính toạ độ chung để hai nơi không lệch nhau.
     private static void carveDoor(ServerLevel level, Door door, BlockPos origin,
                                   BlockState air, BlockPos.MutableBlockPos pos) {
         int baseX = origin.getX() + door.cx() * CELL;

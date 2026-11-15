@@ -30,6 +30,7 @@ public abstract class ModBlockBehaviour {
         if (level.isClientSide) return;
         if (!state.is(Blocks.TORCH) && !state.is(Blocks.WALL_TORCH)) return;
         if (oldState.is(state.getBlock())) return;
+        // TODO: cho phép đuốc yếu của dungeon dùng thời gian khác LIT_TICKS thay cho hằng cố định này (sửa mixin: cần bạn duyệt trước).
         level.scheduleTick(pos, state.getBlock(), TorchBurn.LIT_TICKS);
     }
 

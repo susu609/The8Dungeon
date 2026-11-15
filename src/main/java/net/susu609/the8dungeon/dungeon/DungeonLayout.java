@@ -72,6 +72,7 @@ public final class DungeonLayout {
     public DungeonParams params() { return params; }
     public List<Room> rooms() { return Collections.unmodifiableList(rooms); }
     public List<Door> doors() { return Collections.unmodifiableList(doors); }
+    // TODO: thêm hàm lấy cửa vào của phòng start() (Door có a() hoặc b() bằng start().id()) để DungeonBuilder dùng chọn lối vào.
     public Room start() { return rooms.get(0); }
 
     public Role roleOf(Room room) {
@@ -132,6 +133,8 @@ public final class DungeonLayout {
         for (Room room : rooms) {
             if (room.id() != 0 && degree(room.id()) == 1) deadEnds.add(room);
         }
+        // TODO: tầng 1, phòng 1x2 (R16X32) chủ yếu là phòng boss. preset chọn trước, vai trò gán sau (pha 3), nên phải quyết:
+        //       (a) ưu tiên chọn boss trong các phòng cụt đang là R16X32, hoặc (b) ép phòng cụt xa nhất thành R16X32 ở pha 2.
         Room boss = deadEnds.get(0);
         for (Room room : deadEnds) {
             if (dist[room.id()] > dist[boss.id()]) boss = room;
@@ -360,6 +363,7 @@ public final class DungeonLayout {
     public record Exit(char side, int toRoom) {
     }
 
+    // TODO: nếu giảm số phòng 1x2 ở tầng 1 thì sửa tại đây hoặc ở presetWeights (xem TODO trong DungeonParams).
     private RoomPreset pickPreset(WorldRandom r) {
         int[] w = params.presetWeights();
         int total = 0;

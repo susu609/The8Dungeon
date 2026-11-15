@@ -14,6 +14,7 @@ public record DungeonParams(int gridW, int gridD, int minRooms, int maxRooms,
                             int minDeadEnds, int[] presetWeights) {
 
     // Compact constructor: chạy trước khi gán trường, dùng để kiểm tra đầu vào.
+    // TODO: thêm trường tỉ lệ đuốc sáng (0.75) vào record. Đổi chữ ký record cần duyệt trước vì mọi nơi gọi new DungeonParams(...) phải sửa.
     public DungeonParams {
         if (gridW < 3 || gridD < 3) throw new IllegalArgumentException("lưới tối thiểu 3x3");
         if (minRooms < 2 || maxRooms < minRooms) throw new IllegalArgumentException("minRooms/maxRooms sai");
@@ -37,6 +38,8 @@ public record DungeonParams(int gridW, int gridD, int minRooms, int maxRooms,
     // Mặc định duy nhất: lưới 13x13 chunk (208x208 block), phòng vào ở ô giữa (6, 6),
     // tối thiểu 16 phòng (tối đa 24 ở pha chính), tối thiểu 4 phòng cụt.
     //                                                    16x16  16x32  32x32
+    // TODO: tầng 1 hiếm phòng 1x2 (R16X32): hạ trọng số R16X32 trong presetWeights (hiện {6,3,1} = 30% là 16x32); cần chốt con số.
+    //       Hiện chỉ có một DEFAULT cho mọi tầng; nếu mỗi tầng một bộ thông số thì cần thêm cách chọn theo số tầng.
     public static final DungeonParams DEFAULT =
             new DungeonParams(13, 13, 16, 24, 4, new int[]{6, 3, 1});
 }

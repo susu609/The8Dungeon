@@ -34,6 +34,7 @@ public class WorldRandom {
         return (nextLong() >>> 11) * 0x1.0p-53;
     }
 
+    // TODO: đuốc dùng chance(0.75) thì nên gọi qua fork("torch") để không lệch dãy của phần khác khi thêm đuốc.
     // true với xác suất p. Ví dụ chance(0.02) = 2%
     public boolean chance(double p) {
         return nextDouble() < p;
