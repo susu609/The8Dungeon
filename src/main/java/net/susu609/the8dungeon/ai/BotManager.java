@@ -264,6 +264,7 @@ public final class BotManager {
                 case "shelter" -> r.shelter = b;
                 case "explore" -> r.explore = b;
                 case "collect" -> r.collect = b;
+                case "cook" -> r.cook = b;
                 case "pause" -> r.pauseWhenAlone = b;
                 case "flee" -> r.fleeHpPct = Integer.parseInt(value);
                 case "eat" -> r.eatBelow = Integer.parseInt(value);
@@ -271,7 +272,7 @@ public final class BotManager {
                 case "think" -> r.thinkEvery = Integer.parseInt(value);
                 case "budget" -> r.scanBudget = Integer.parseInt(value);
                 default -> {
-                    c.getSource().sendFailure(Component.literal("Khóa hợp lệ: fight hunt mine shelter explore collect pause flee eat roam think budget"));
+                    c.getSource().sendFailure(Component.literal("Khóa hợp lệ: fight hunt mine shelter explore collect cook pause flee eat roam think budget"));
                     return 0;
                 }
             }

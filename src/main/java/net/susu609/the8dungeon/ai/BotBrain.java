@@ -17,7 +17,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.PickaxeItem;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.block.AbstractFurnaceBlock;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.BlockHitResult;
@@ -31,7 +33,7 @@ import net.minecraft.world.phys.Vec3;
  */
 final class BotBrain {
 
-    private enum Goal { IDLE, FLEE, FIGHT, EAT, HUNT, COLLECT, SHELTER, WOOD, STONE, DIRT, EXPLORE, HOME }
+    private enum Goal { IDLE, FLEE, FIGHT, EAT, HUNT, COLLECT, SHELTER, WOOD, STONE, DIRT, EXPLORE, HOME, COOK }
 
     private static final double REACH = 4.0D;
 
@@ -49,7 +51,8 @@ final class BotBrain {
     private int goalSince;
 
     // Ảnh chụp kho đồ (cập nhật mỗi lần suy nghĩ)
-    private int logs, planks, cobble, placeable, foodCount, pickRank;
+    private int logs, planks, cobble, placeable, foodCount, pickRank, rawFood;
+    private BlockPos furnacePos; // lò bot đã đặt (nhớ để quay lại lấy đồ chín)
 
     // Trạng thái con của từng mục tiêu
     private BlockPos mineTarget;
@@ -159,6 +162,15 @@ final class BotBrain {
                 if (shortOnBlocks && dirt != null && inRoam(dirt)) sc[Goal.DIRT.ordinal()] = 0.7F;
             }
             if (rules.explore) sc[Goal.EXPLORE.ordinal()] = 0.2F;
+            if (rules.cook && h == null) {
+                int fs = furnaceState();
+                boolean spareWood = logs * 4 + planks > 12;
+                boolean hasFuel = !BotItems.findFuel(bot.getInventory(), spareWood).isEmpty() || fs == FURNACE_BUSY;
+                boolean canGetFurnace = furnacePos != null || cobble >= 8;
+                if (fs == FURNACE_READY) sc[Goal.COOK.ordinal()] = 0.6F;                 // đồ đã chín: đi lấy
+                else if (rawFood > 0 && hasFuel && canGetFurnace) sc[Goal.COOK.ordinal()] = 0.5F; // bỏ đồ sống vào lò
+                else if (fs == FURNACE_BUSY) sc[Goal.COOK.ordinal()] = 0.3F;             // đang nung: chờ gần lò
+            }
             if (rules.roam > 0) { // ra xa quá bán kính thì quay về, có độ trễ để khỏi đổi qua lại
                 double d2 = bot.home().distSqr(bot.blockPosition());
                 double lim = goal == Goal.HOME ? rules.roam * 0.6D : rules.roam;
@@ -230,6 +242,8 @@ final class BotBrain {
         placeable = BotItems.count(inv, BotItems::isPlaceable);
         foodCount = BotItems.count(inv, s -> s.isEdible() && !s.is(Items.ROTTEN_FLESH) && !s.is(Items.SPIDER_EYE));
         pickRank = BotItems.rank(inv, PickaxeItem.class);
+        ServerLevel lvl = bot.serverLevel();
+        rawFood = BotItems.count(inv, st -> BotItems.isRawFood(lvl, st));
     }
 
     private boolean isNight() {
@@ -270,6 +284,7 @@ final class BotBrain {
             case STONE -> actMine(BotSenses.STONE);
             case DIRT -> actMine(BotSenses.DIRT);
             case EXPLORE -> actExplore();
+            case COOK -> actCook();
             case HOME -> nav.moveTo(bot.home(), age, false);
             default -> nav.stop();
         }
@@ -492,6 +507,127 @@ final class BotBrain {
             return hitPos.equals(target);
         }
         level.destroyBlockProgress(bot.getId(), hitPos, (int) (mineProgress * 10.0F));
+        return false;
+    }
+
+    // ===== Nấu ăn bằng lò =====
+
+    private static final int FURNACE_NONE = 0, FURNACE_IDLE = 1, FURNACE_BUSY = 2, FURNACE_READY = 3;
+
+    /** Trạng thái lò đã đặt; quên lò nếu bị phá hoặc ở quá xa (> 64 khối). */
+    private int furnaceState() {
+        if (furnacePos == null) return FURNACE_NONE;
+        ServerLevel level = bot.serverLevel();
+        if (!level.isLoaded(furnacePos) || furnacePos.distSqr(bot.blockPosition()) > 64 * 64) {
+            furnacePos = null;
+            return FURNACE_NONE;
+        }
+        if (!(level.getBlockEntity(furnacePos) instanceof AbstractFurnaceBlockEntity f)) {
+            furnacePos = null;
+            return FURNACE_NONE;
+        }
+        if (!f.getItem(2).isEmpty()) return FURNACE_READY;
+        if (!f.getItem(0).isEmpty()) return FURNACE_BUSY;
+        return FURNACE_IDLE;
+    }
+
+    private void actCook() {
+        ServerLevel level = bot.serverLevel();
+        if (furnacePos == null && !placeFurnace()) {
+            rethink = true;
+            return;
+        }
+        Vec3 center = Vec3.atCenterOf(furnacePos);
+        if (bot.getEyePosition().distanceToSqr(center) > REACH * REACH) {
+            nav.moveTo(furnacePos, age, false);
+            if (nav.failed) {
+                BotLog.log(bot, "COOK", () -> "không tới được lò " + furnacePos.toShortString() + ", bỏ lò này");
+                furnacePos = null;
+            }
+            return;
+        }
+        nav.stop();
+        bot.lookAt(EntityAnchorArgument.Anchor.EYES, center);
+        if (age % 10 != 0) return; // thao tác lò 2 lần/giây là đủ
+        if (!(level.getBlockEntity(furnacePos) instanceof AbstractFurnaceBlockEntity f)) {
+            furnacePos = null;
+            return;
+        }
+        Inventory inv = bot.getInventory();
+        boolean changed = false;
+
+        // 1) Lấy đồ đã chín
+        ItemStack out = f.getItem(2);
+        if (!out.isEmpty()) {
+            final ItemStack got = out.copy();
+            BotItems.give(bot, got);
+            f.setItem(2, ItemStack.EMPTY);
+            BotLog.log(bot, "COOK", () -> "lấy " + got.getCount() + " " + got.getItem().getDescriptionId());
+            changed = true;
+        }
+        // 2) Bỏ đồ sống vào ô nguyên liệu (cùng loại với đồ đang nung nếu có)
+        ItemStack in = f.getItem(0);
+        if (in.isEmpty() || in.getCount() < in.getMaxStackSize()) {
+            for (int i = 0; i < inv.getContainerSize(); i++) {
+                ItemStack st = inv.getItem(i);
+                if (!BotItems.isRawFood(level, st) || (!in.isEmpty() && !ItemStack.isSameItemSameTags(st, in))) continue;
+                int move = in.isEmpty() ? st.getCount() : Math.min(st.getCount(), in.getMaxStackSize() - in.getCount());
+                if (in.isEmpty()) {
+                    f.setItem(0, st.split(move));
+                } else {
+                    in.grow(move);
+                    st.shrink(move);
+                }
+                final int moved = move;
+                final ItemStack kind = f.getItem(0);
+                BotLog.log(bot, "COOK", () -> "bỏ " + moved + " " + kind.getItem().getDescriptionId() + " vào lò");
+                changed = true;
+                break;
+            }
+        }
+        // 3) Thêm nhiên liệu vừa đủ cho số đồ trong lò
+        ItemStack inNow = f.getItem(0);
+        if (f.getItem(1).isEmpty() && !inNow.isEmpty()) {
+            ItemStack fuel = BotItems.findFuel(inv, logs * 4 + planks > 12);
+            float per = BotItems.smeltsPerFuel(fuel);
+            if (per > 0.0F) {
+                int need = Math.min(fuel.getCount(), Math.max(1, (int) Math.ceil(inNow.getCount() / per)));
+                final ItemStack used = fuel.split(need);
+                f.setItem(1, used);
+                BotLog.log(bot, "COOK", () -> "thêm " + used.getCount() + " " + used.getItem().getDescriptionId() + " làm nhiên liệu");
+                changed = true;
+            }
+        }
+        if (changed) {
+            f.setChanged();
+            bot.swing(InteractionHand.MAIN_HAND, true);
+        }
+    }
+
+    /** Đặt lò cạnh chân bot: dùng lò có sẵn trong túi, không thì chế từ 8 đá cuội. */
+    private boolean placeFurnace() {
+        ServerLevel level = bot.serverLevel();
+        Inventory inv = bot.getInventory();
+        boolean hasItem = BotItems.count(inv, st -> st.is(Items.FURNACE)) > 0;
+        if (!hasItem && cobble < 8) return false;
+        BlockPos feet = bot.blockPosition();
+        for (Direction d : Direction.Plane.HORIZONTAL) {
+            BlockPos p = feet.relative(d);
+            BlockPos below = p.below();
+            if (!level.getBlockState(p).canBeReplaced() || !level.getFluidState(p).isEmpty()) continue;
+            if (!level.getBlockState(below).isFaceSturdy(level, below, Direction.UP)) continue;
+            if (bot.getBoundingBox().intersects(new net.minecraft.world.phys.AABB(p))) continue;
+            if (hasItem) BotItems.take(inv, st -> st.is(Items.FURNACE), 1);
+            else BotItems.take(inv, st -> st.is(Items.COBBLESTONE), 8);
+            BlockState furnace = Blocks.FURNACE.defaultBlockState().setValue(AbstractFurnaceBlock.FACING, d.getOpposite());
+            level.setBlock(p, furnace, 3);
+            level.playSound(null, p, furnace.getSoundType().getPlaceSound(), SoundSource.BLOCKS, 1.0F, 0.8F);
+            bot.swing(InteractionHand.MAIN_HAND, true);
+            furnacePos = p.immutable();
+            final boolean crafted = !hasItem;
+            BotLog.log(bot, "COOK", () -> (crafted ? "chế lò từ 8 đá cuội, " : "") + "đặt lò tại " + furnacePos.toShortString());
+            return true;
+        }
         return false;
     }
 

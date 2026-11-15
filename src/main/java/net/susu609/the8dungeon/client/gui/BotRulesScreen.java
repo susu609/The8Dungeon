@@ -28,6 +28,7 @@ public final class BotRulesScreen extends Screen {
     private boolean inherit = true;    // chỉ có nghĩa khi đã chọn một bot
     private BotRules cur;
     private int ticks;
+    private int statsY = 184;
 
     private BotRulesScreen(RulesSyncPacket data) {
         super(Component.literal("Luật cho bot"));
@@ -119,14 +120,17 @@ public final class BotRulesScreen extends Screen {
         toggle(lx, y, "Khám phá", cur.explore, editable, v -> cur.explore = v);
         toggle(rx, y, "Nhặt đồ rơi", cur.collect, editable, v -> cur.collect = v);
         y += 20;
-        toggle(lx, y, "Dừng khi vắng người", cur.pauseWhenAlone, editable, v -> cur.pauseWhenAlone = v);
-        slider(rx, y, "Chạy trốn khi máu <", 10, 90, 5, cur.fleeHpPct, editable, v -> cur.fleeHpPct = v, v -> v + "%");
+        toggle(lx, y, "Nấu ăn bằng lò", cur.cook, editable, v -> cur.cook = v);
+        toggle(rx, y, "Dừng khi vắng người", cur.pauseWhenAlone, editable, v -> cur.pauseWhenAlone = v);
         y += 20;
-        slider(lx, y, "Ăn khi đói ≤", 4, 19, 1, cur.eatBelow, editable, v -> cur.eatBelow = v, String::valueOf);
-        slider(rx, y, "Bán kính", 0, 512, 16, cur.roam, editable, v -> cur.roam = v, v -> v < 32 ? "không giới hạn" : v + " khối");
+        slider(lx, y, "Chạy trốn khi máu <", 10, 90, 5, cur.fleeHpPct, editable, v -> cur.fleeHpPct = v, v -> v + "%");
+        slider(rx, y, "Ăn khi đói ≤", 4, 19, 1, cur.eatBelow, editable, v -> cur.eatBelow = v, String::valueOf);
         y += 20;
-        slider(lx, y, "Nhịp suy nghĩ", 5, 40, 5, cur.thinkEvery, editable, v -> cur.thinkEvery = v, v -> v + " tick");
-        slider(rx, y, "Quét khối", 200, 1500, 100, cur.scanBudget, editable, v -> cur.scanBudget = v, v -> v + "/lần");
+        slider(lx, y, "Bán kính", 0, 512, 16, cur.roam, editable, v -> cur.roam = v, v -> v < 32 ? "không giới hạn" : v + " khối");
+        slider(rx, y, "Nhịp suy nghĩ", 5, 40, 5, cur.thinkEvery, editable, v -> cur.thinkEvery = v, v -> v + " tick");
+        y += 20;
+        slider(lx, y, "Quét khối", 200, 1500, 100, cur.scanBudget, editable, v -> cur.scanBudget = v, v -> v + "/lần");
+        statsY = y + 24;
     }
 
     private void toggle(int x, int y, String name, boolean value, boolean editable, Consumer<Boolean> set) {
@@ -202,7 +206,7 @@ public final class BotRulesScreen extends Screen {
         super.render(g, mx, my, partial);
 
         int x = width / 2 - 155;
-        int y = 184;
+        int y = statsY;
         int needMb = data.maxBots * 1024;
         boolean low = data.heapMaxMb < needMb;
         g.drawString(font, "Bot " + data.bots.size() + "/" + data.maxBots + "  |  Heap server "

@@ -10,5 +10,7 @@
   "subtitles.susu609.entity.clawd.happy": "Clawd vui vẻ",
   "block.susu609.torch_off": "Đuốc đã tắt",
   "block.susu609.wall_torch_off": "Đuốc tường đã tắt",
-  "itemGroup.susu609": "The8Dungeons"
+  "itemGroup.susu609": "The8Dungeons",
+  "key.susu609.camera": "Camera bot: tự do / theo dõi (spectator)",
+  "key.categories.susu609": "The8Dungeon"
 }

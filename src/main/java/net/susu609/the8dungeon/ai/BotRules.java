@@ -13,6 +13,7 @@ public final class BotRules {
     public boolean shelter = true;
     public boolean explore = true;
     public boolean collect = true;
+    public boolean cook = true;       // nấu thức ăn sống bằng lò
     /** Tiết kiệm tài nguyên: đứng yên khi không có người chơi thật trên server. */
     public boolean pauseWhenAlone = false;
 
@@ -33,6 +34,7 @@ public final class BotRules {
         r.shelter = shelter;
         r.explore = explore;
         r.collect = collect;
+        r.cook = cook;
         r.pauseWhenAlone = pauseWhenAlone;
         r.fleeHpPct = fleeHpPct;
         r.eatBelow = eatBelow;
@@ -58,6 +60,7 @@ public final class BotRules {
         b.writeBoolean(shelter);
         b.writeBoolean(explore);
         b.writeBoolean(collect);
+        b.writeBoolean(cook);
         b.writeBoolean(pauseWhenAlone);
         b.writeVarInt(fleeHpPct);
         b.writeVarInt(eatBelow);
@@ -74,6 +77,7 @@ public final class BotRules {
         r.shelter = b.readBoolean();
         r.explore = b.readBoolean();
         r.collect = b.readBoolean();
+        r.cook = b.readBoolean();
         r.pauseWhenAlone = b.readBoolean();
         r.fleeHpPct = b.readVarInt();
         r.eatBelow = b.readVarInt();
@@ -91,6 +95,7 @@ public final class BotRules {
         t.putBoolean("shelter", shelter);
         t.putBoolean("explore", explore);
         t.putBoolean("collect", collect);
+        t.putBoolean("cook", cook);
         t.putBoolean("pause", pauseWhenAlone);
         t.putInt("flee", fleeHpPct);
         t.putInt("eat", eatBelow);
@@ -108,6 +113,7 @@ public final class BotRules {
         if (t.contains("shelter")) r.shelter = t.getBoolean("shelter");
         if (t.contains("explore")) r.explore = t.getBoolean("explore");
         if (t.contains("collect")) r.collect = t.getBoolean("collect");
+        if (t.contains("cook")) r.cook = t.getBoolean("cook");
         r.pauseWhenAlone = t.getBoolean("pause");
         if (t.contains("flee")) r.fleeHpPct = t.getInt("flee");
         if (t.contains("eat")) r.eatBelow = t.getInt("eat");

@@ -128,6 +128,43 @@ final class BotItems {
         if (bestSlot >= 0) select(inv, bestSlot);
     }
 
+    private static final java.util.Map<net.minecraft.world.item.Item, ItemStack> COOK_CACHE = new java.util.HashMap<>();
+
+    /** Kết quả nung trong lò của món này (đã cache), hoặc EMPTY nếu không nung được. */
+    static ItemStack cookResult(net.minecraft.server.level.ServerLevel level, ItemStack s) {
+        return COOK_CACHE.computeIfAbsent(s.getItem(), it -> level.getRecipeManager()
+                .getRecipeFor(net.minecraft.world.item.crafting.RecipeType.SMELTING,
+                        new net.minecraft.world.SimpleContainer(new ItemStack(it)), level)
+                .map(r -> r.getResultItem(level.registryAccess()).copy())
+                .orElse(ItemStack.EMPTY));
+    }
+
+    /** Đồ sống nung ra được đồ ăn (thịt sống, cá sống, khoai tây...). */
+    static boolean isRawFood(net.minecraft.server.level.ServerLevel level, ItemStack s) {
+        if (s.isEmpty()) return false;
+        ItemStack r = cookResult(level, s);
+        return !r.isEmpty() && r.isEdible();
+    }
+
+    /** Số món nung được với một đơn vị nhiên liệu này (than 8, gỗ 1,5), 0 nếu không dùng làm nhiên liệu. */
+    static float smeltsPerFuel(ItemStack s) {
+        if (s.is(Items.COAL) || s.is(Items.CHARCOAL)) return 8.0F;
+        if (s.is(ItemTags.PLANKS) || s.is(ItemTags.LOGS)) return 1.5F;
+        return 0.0F;
+    }
+
+    /** Nhiên liệu tốt nhất; chỉ đốt gỗ khi còn dư (để dành gỗ chế công cụ). */
+    static ItemStack findFuel(Inventory inv, boolean allowWood) {
+        ItemStack wood = ItemStack.EMPTY;
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack s = inv.getItem(i);
+            if (s.isEmpty()) continue;
+            if (s.is(Items.COAL) || s.is(Items.CHARCOAL)) return s;
+            if (allowWood && wood.isEmpty() && (s.is(ItemTags.PLANKS) || s.is(ItemTags.LOGS))) wood = s;
+        }
+        return wood;
+    }
+
     private static void select(Inventory inv, int slot) {
         if (slot < 9) {
             inv.selected = slot;
