@@ -559,10 +559,11 @@ final class BotBrain {
         // 1) Lấy đồ đã chín
         ItemStack out = f.getItem(2);
         if (!out.isEmpty()) {
-            final ItemStack got = out.copy();
-            BotItems.give(bot, got);
+            final int count = out.getCount();
+            final String what = out.getItem().getDescriptionId();
+            BotItems.give(bot, out.copy()); // give() chuyển hẳn stack vào túi, nên ghi log từ số đã lưu
             f.setItem(2, ItemStack.EMPTY);
-            BotLog.log(bot, "COOK", () -> "lấy " + got.getCount() + " " + got.getItem().getDescriptionId());
+            BotLog.log(bot, "COOK", () -> "lấy " + count + " " + what);
             changed = true;
         }
         // 2) Bỏ đồ sống vào ô nguyên liệu (cùng loại với đồ đang nung nếu có)
@@ -587,7 +588,8 @@ final class BotBrain {
         }
         // 3) Thêm nhiên liệu vừa đủ cho số đồ trong lò
         ItemStack inNow = f.getItem(0);
-        if (f.getItem(1).isEmpty() && !inNow.isEmpty()) {
+        boolean lit = level.getBlockState(furnacePos).getValue(AbstractFurnaceBlock.LIT);
+        if (f.getItem(1).isEmpty() && !inNow.isEmpty() && !lit) { // đang cháy thì chưa thêm, tránh phí than
             ItemStack fuel = BotItems.findFuel(inv, logs * 4 + planks > 12);
             float per = BotItems.smeltsPerFuel(fuel);
             if (per > 0.0F) {
