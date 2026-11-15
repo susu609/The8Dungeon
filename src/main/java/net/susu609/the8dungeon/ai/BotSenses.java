@@ -40,6 +40,18 @@ final class BotSenses {
     private int cursor = TOTAL;
     private BlockPos center = BlockPos.ZERO;
 
+    // ===== Tầm nhìn: nón 120° trước mặt + không bị khối che; phía sau là mù =====
+    private static final float HALF_FOV = 60.0F;
+    private static final int MEMORY_TICKS = 100;   // thấy rồi thì nhớ 5 giây
+    private final Int2IntOpenHashMap seenUntil = new Int2IntOpenHashMap();
+
+    // ===== Thính giác =====
+    static final int SOUND_ALERT = 1;   // tiếng quái: quay đầu nhìn
+    static final int SOUND_DANGER = 2;  // creeper xì, TNT, nổ: chạy
+    net.minecraft.world.phys.Vec3 heardPos;
+    int heardKind;
+    int heardAt = -100000;
+
     LivingEntity hostile;
     double hostileDist = Double.MAX_VALUE;
     LivingEntity prey;
@@ -73,6 +85,32 @@ final class BotSenses {
         }
     }
 
+    /** Bot có nhận biết được thực thể này không: sát bên, còn trong trí nhớ, hoặc trong nón nhìn và không bị che. */
+    boolean perceives(BotPlayer bot, net.minecraft.world.entity.Entity e, double distSqr, int now) {
+        if (distSqr < 1.5D * 1.5D) return true;                 // sát bên: cảm nhận được dù không nhìn
+        if (seenUntil.get(e.getId()) > now) return true;       // vừa thấy gần đây
+        double dx = e.getX() - bot.getX();
+        double dz = e.getZ() - bot.getZ();
+        float toward = (float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0D);
+        if (Math.abs(net.minecraft.util.Mth.wrapDegrees(toward - bot.getYHeadRot())) > HALF_FOV) return false;
+        if (!bot.hasLineOfSight(e)) return false;               // raycast đắt nhất nên để cuối
+        seenUntil.put(e.getId(), now + MEMORY_TICKS);
+        return true;
+    }
+
+    /** Ghi nhớ một thực thể dù không nhìn thấy (bị nó đánh, nghe tiếng nó). */
+    void remember(net.minecraft.world.entity.Entity e, int now) {
+        seenUntil.put(e.getId(), now + MEMORY_TICKS);
+    }
+
+    void hear(net.minecraft.world.phys.Vec3 pos, int kind, int now) {
+        // tiếng nguy hiểm không bị tiếng thường đè lên trong lúc còn mới
+        if (kind < heardKind && now - heardAt < 40) return;
+        heardPos = pos;
+        heardKind = kind;
+        heardAt = now;
+    }
+
     // ===== Thực thể =====
 
     private void entities(BotPlayer bot, ServerLevel level, int now) {
@@ -82,9 +120,11 @@ final class BotSenses {
         creeper = null;
         creeperDist = Double.MAX_VALUE;
         double preyD = Double.MAX_VALUE;
+        seenUntil.int2IntEntrySet().removeIf(en -> en.getIntValue() <= now);
         AABB box = bot.getBoundingBox().inflate(18.0D, 8.0D, 18.0D);
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box, x -> x != bot && x.isAlive())) {
             double d = e.distanceToSqr(bot);
+            if (!perceives(bot, e, d, now)) continue; // phía sau / bị che: không biết
             if (e instanceof Creeper) {
                 if (d < creeperDist) {
                     creeperDist = d;
@@ -111,7 +151,7 @@ final class BotSenses {
         for (ItemEntity ie : level.getEntitiesOfClass(ItemEntity.class, bot.getBoundingBox().inflate(12.0D, 5.0D, 12.0D),
                 x -> x.isAlive() && !ignoredItems.containsKey(x.getId()))) {
             double d = ie.distanceToSqr(bot);
-            if (d < itemD) {
+            if (d < itemD && perceives(bot, ie, d, now)) {
                 itemD = d;
                 item = ie;
             }

@@ -96,6 +96,19 @@ public final class BotPlayer extends ServerPlayer {
         brain.onGift(giver, count);
     }
 
+    /** Bot khác đề nghị dừng tay giữa trận. */
+    boolean acceptPeaceInFight(BotPlayer from) {
+        return this.isAlive() && brain.acceptPeaceInFight(from);
+    }
+
+    public void onDamaged(net.minecraft.world.damagesource.DamageSource source) {
+        brain.onDamaged(source);
+    }
+
+    public void onSound(net.minecraft.world.phys.Vec3 pos, int kind) {
+        brain.onSound(pos, kind);
+    }
+
     /** Bot khác đề nghị làm hòa với bot này. */
     boolean acceptPeace(BotPlayer from) {
         return this.isAlive() && brain.acceptPeace(from);

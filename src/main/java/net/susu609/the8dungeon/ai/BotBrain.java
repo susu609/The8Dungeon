@@ -42,6 +42,17 @@ final class BotBrain {
     private final BotNav nav;
     private final BotSocial social;
     private LivingEntity fightTarget; // quái thù địch, hoặc người/bot đang bị coi là thù
+    // Sát thương gần nhất: ai/cái gì gây ra, ở đâu, loại nguy hiểm môi trường hay không
+    private LivingEntity lastAttacker;
+    private Vec3 lastDamagePos;
+    private boolean lastDamageHazard;
+    private int lastDamageAt = -100000;
+    // Quay đầu nhìn (về phía âm thanh, kẻ đánh lén, hoặc nhìn quanh khi rảnh)
+    private float glanceYaw;
+    private int glanceUntil;
+    // Làm hòa giữa trận với bot khác
+    private int fightSince = -1;
+    private int nextPeaceOffer;
 
     private BotRules rules = new BotRules();
     private int age;
@@ -74,6 +85,46 @@ final class BotBrain {
         this.bot = bot;
         this.nav = new BotNav(bot);
         this.social = new BotSocial(bot);
+    }
+
+    /** Mọi loại sát thương: ghi lại nguồn để phản ứng ở lần suy nghĩ ngay sau. */
+    void onDamaged(net.minecraft.world.damagesource.DamageSource src) {
+        lastDamageAt = age;
+        lastDamageHazard = src.is(net.minecraft.tags.DamageTypeTags.IS_FIRE)
+                || src.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION)
+                || src.is(net.minecraft.world.damagesource.DamageTypes.CACTUS)
+                || src.is(net.minecraft.world.damagesource.DamageTypes.SWEET_BERRY_BUSH)
+                || src.is(net.minecraft.world.damagesource.DamageTypes.HOT_FLOOR);
+        Vec3 at = src.getSourcePosition();
+        lastDamagePos = at != null ? at : bot.position();
+        lastAttacker = src.getEntity() instanceof LivingEntity le && le != bot ? le : null;
+        if (lastAttacker != null) {
+            senses.remember(lastAttacker, age);  // bị đánh lén: giờ đã biết nó ở đâu
+            glanceAt(lastAttacker.position(), 30);
+        }
+        final String what = src.getMsgId();
+        BotLog.log(bot, "HURT", () -> what + (lastAttacker != null ? " từ " + lastAttacker.getType().getDescriptionId() : "")
+                + (lastDamageHazard ? " (môi trường nguy hiểm)" : ""));
+        rethink = true;
+    }
+
+    /** Nghe một âm thanh (do BotManager lọc từ sự kiện âm thanh của server). */
+    void onSound(Vec3 pos, int kind) {
+        senses.hear(pos, kind, age);
+        if (kind == BotSenses.SOUND_DANGER) rethink = true;
+    }
+
+    boolean acceptPeaceInFight(BotPlayer from) {
+        boolean ok = social.acceptPeaceInFight(from, bot.getHealth() / bot.getMaxHealth(), age);
+        if (ok) rethink = true;
+        return ok;
+    }
+
+    private void glanceAt(Vec3 pos, int ticks) {
+        double dx = pos.x - bot.getX();
+        double dz = pos.z - bot.getZ();
+        glanceYaw = (float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0D);
+        glanceUntil = age + ticks;
     }
 
     void onHurtBy(net.minecraft.world.entity.player.Player attacker, boolean accidental) {
@@ -128,6 +179,12 @@ final class BotBrain {
                     + " mục tiêu=" + goal + " đã=" + (age - goalSince) + "tick");
         }
         act();
+        // Rảnh thì thỉnh thoảng nhìn quanh (tầm nhìn chỉ có phía trước)
+        if (age >= glanceUntil && age % 80 == 0 && goal != Goal.FIGHT && goal != Goal.FLEE) {
+            glanceYaw = bot.getYRot() + (bot.getRandom().nextFloat() - 0.5F) * 220.0F;
+            glanceUntil = age + 15;
+        }
+        if (age < glanceUntil) bot.setYHeadRot(glanceYaw); // chỉ quay đầu, thân vẫn đi theo đường
     }
 
     private boolean inRoam(BlockPos p) {
@@ -168,14 +225,35 @@ final class BotBrain {
         net.minecraft.world.entity.player.Player fleeFrom = avoid != null ? avoid
                 : grudge != null && (lowHp || grudgeUntouchable || !rules.fight) ? grudge : null;
 
-        LivingEntity threat = creeper ? cr : fleeFrom != null ? fleeFrom : h;
+        // Thính giác: tiếng nguy hiểm gần (creeper xì, TNT, nổ) -> chạy; tiếng quái -> quay đầu nhìn
+        boolean heardDanger = senses.heardKind == BotSenses.SOUND_DANGER && age - senses.heardAt < 40
+                && senses.heardPos.distanceToSqr(bot.position()) < 10.0D * 10.0D;
+        if (senses.heardKind == BotSenses.SOUND_ALERT && age - senses.heardAt < 20 && age >= glanceUntil
+                && goal != Goal.FIGHT) {
+            glanceAt(senses.heardPos, 25);
+        }
+        // Sát thương gần đây: môi trường (lửa, dung nham, xương rồng, nổ) -> nhảy ra chỗ an toàn;
+        // bị quái đánh -> đánh trả (máu thấp thì chạy)
+        boolean recentHurt = age - lastDamageAt < 30;
+        boolean hazard = recentHurt && lastDamageHazard;
+        LivingEntity revenge = recentHurt && lastAttacker != null && lastAttacker.isAlive()
+                && !(lastAttacker instanceof net.minecraft.world.entity.player.Player) ? lastAttacker : null;
+
+        LivingEntity threat = creeper ? cr : fleeFrom != null ? fleeFrom : revenge != null && lowHp ? revenge : h;
         double threatDist = threat == null ? 0.0D : threat.distanceTo(bot);
-        fightTarget = grudge != null && fleeFrom == null ? grudge : h;
+        Vec3 dangerFrom = hazard ? lastDamagePos : heardDanger ? senses.heardPos
+                : threat != null ? threat.position() : null;
+        fightTarget = grudge != null && fleeFrom == null ? grudge : revenge != null ? revenge : h;
 
         float[] sc = new float[Goal.values().length];
+        if (hazard || heardDanger) {
+            sc[Goal.FLEE.ordinal()] = 0.98F; // nguy hiểm môi trường/âm thanh: ưu tiên tuyệt đối (kể cả trong chỗ trú)
+        }
         if (!inShelter) {
-            if (canFlee && (creeper || fleeFrom != null || (h != null && lowHp))) {
-                sc[Goal.FLEE.ordinal()] = 0.95F;
+            if (canFlee && (creeper || fleeFrom != null || ((h != null || revenge != null) && lowHp))) {
+                sc[Goal.FLEE.ordinal()] = Math.max(sc[Goal.FLEE.ordinal()], 0.95F);
+            } else if (rules.fight && revenge != null) {
+                sc[Goal.FIGHT.ordinal()] = 0.88F; // bị quái đánh (kể cả từ sau lưng): quay lại đánh
             } else if (rules.fight && grudge != null && fleeFrom == null) {
                 sc[Goal.FIGHT.ordinal()] = 0.9F; // đánh trả người/bot đã thành thù
             } else if (rules.fight && h != null && hd <= 16.0D) {
@@ -237,15 +315,32 @@ final class BotBrain {
             boolean dwell = age - goalSince < 30 && sc[goal.ordinal()] > 0.0F && bestScore < 0.9F;
             if (!dwell) switchGoal(pick);
         }
-        if (goal == Goal.FLEE && threat != null && fleeTarget == null) {
-            fleeTarget = awayFrom(threat);
-            if (fleeTarget == null) { // không có đường lùi (hang cụt...): quay lại đánh
+        if (goal == Goal.FLEE && fleeTarget == null && dangerFrom != null) {
+            final String why = hazard ? "môi trường nguy hiểm" : heardDanger ? "âm thanh nguy hiểm"
+                    : threat.getType().getDescriptionId() + " cách " + (int) threatDist;
+            fleeTarget = hazard ? safeSpotNear() : awayFrom(dangerFrom);
+            if (fleeTarget == null && !hazard) { // không có đường lùi (hang cụt...): quay lại đánh
                 cannotFleeUntil = age + 100;
-                BotLog.log(bot, "FLEE", () -> "không có chỗ để chạy khỏi " + threat.getType().getDescriptionId() + ", chuyển sang đánh");
+                BotLog.log(bot, "FLEE", () -> "không có chỗ để chạy khỏi " + why + ", chuyển sang đánh");
                 switchGoal(Goal.FIGHT);
-            } else {
-                BotLog.log(bot, "FLEE", () -> "tránh " + threat.getType().getDescriptionId() + " cách " + (int) threatDist
-                        + " -> " + fleeTarget.toShortString());
+            } else if (fleeTarget != null) {
+                BotLog.log(bot, "FLEE", () -> "tránh " + why + " -> " + fleeTarget.toShortString());
+            }
+        }
+
+        // Đang đánh nhau (hoặc chạy) với một bot khác: đánh lâu hoặc mất nửa máu thì đề nghị làm hòa
+        BotPlayer foe = goal == Goal.FIGHT && fightTarget instanceof BotPlayer b ? b
+                : goal == Goal.FLEE && threat instanceof BotPlayer b2 ? b2 : null;
+        if (foe == null) {
+            fightSince = -1;
+        } else {
+            if (fightSince < 0) fightSince = age;
+            if ((hp < 0.5F || age - fightSince > 300) && age >= nextPeaceOffer) {
+                nextPeaceOffer = age + 200;
+                if (social.offerPeaceInFight(foe, age)) {
+                    fightSince = -1;
+                    rethink = true;
+                }
             }
         }
     }
@@ -343,14 +438,14 @@ final class BotBrain {
      * Chỗ để chạy: thử nhiều hướng quanh hướng ngược với mối đe dọa, ở cùng độ cao với bot
      * (không nhảy lên mặt đất khi bot đang ở dưới hang). Trả null nếu không có chỗ nào xa hơn.
      */
-    private BlockPos awayFrom(LivingEntity threat) {
-        Vec3 dir = bot.position().subtract(threat.position()).multiply(1.0D, 0.0D, 1.0D);
+    private BlockPos awayFrom(Vec3 danger) {
+        Vec3 dir = bot.position().subtract(danger).multiply(1.0D, 0.0D, 1.0D);
         if (dir.lengthSqr() < 1.0E-4D) dir = new Vec3(1.0D, 0.0D, 0.0D);
         double base = Math.atan2(dir.z, dir.x);
         double[] turns = {0.0D, 0.7D, -0.7D, 1.4D, -1.4D};
         double[] dists = {14.0D, 10.0D, 6.0D};
         BlockPos here = bot.blockPosition();
-        BlockPos from = threat.blockPosition();
+        BlockPos from = BlockPos.containing(danger);
         for (double d : dists) {
             for (double t : turns) {
                 int x = Mth.floor(bot.getX() + Math.cos(base + t) * d);
@@ -360,6 +455,34 @@ final class BotBrain {
             }
         }
         return null;
+    }
+
+    /** Chỗ đứng an toàn gần nhất (trong 4 khối): không lửa, không dung nham, không xương rồng/bụi gai, sàn không nóng. */
+    private BlockPos safeSpotNear() {
+        ServerLevel level = bot.serverLevel();
+        BlockPos here = bot.blockPosition();
+        for (int r = 1; r <= 4; r++) {
+            for (int dx = -r; dx <= r; dx++) {
+                for (int dz = -r; dz <= r; dz++) {
+                    if (Math.max(Math.abs(dx), Math.abs(dz)) != r) continue; // chỉ xét vòng ngoài của bán kính r
+                    BlockPos p = standable(here.getX() + dx, here.getY(), here.getZ() + dz);
+                    if (p != null && safe(level, p)) return p;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static boolean safe(ServerLevel level, BlockPos p) {
+        for (BlockPos q : new BlockPos[] {p, p.above(), p.below()}) {
+            BlockState s = level.getBlockState(q);
+            if (s.is(net.minecraft.tags.BlockTags.FIRE) || s.is(Blocks.LAVA) || s.is(Blocks.MAGMA_BLOCK)
+                    || s.is(Blocks.CACTUS) || s.is(Blocks.SWEET_BERRY_BUSH) || s.is(Blocks.CAMPFIRE)) return false;
+        }
+        for (Direction d : Direction.Plane.HORIZONTAL) {
+            if (level.getBlockState(p.relative(d)).is(Blocks.CACTUS)) return false;
+        }
+        return true;
     }
 
     /** Ô đứng được gần độ cao nearY: chân và đầu trống, không chất lỏng, dưới chân là khối đặc. */

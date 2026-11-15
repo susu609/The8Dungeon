@@ -130,6 +130,7 @@ public final class BotManager {
     @SubscribeEvent
     public static void onHurt(net.minecraftforge.event.entity.living.LivingHurtEvent event) {
         if (!(event.getEntity() instanceof BotPlayer bot)) return;
+        bot.onDamaged(event.getSource()); // mọi nguồn sát thương: quái, lửa, dung nham, nổ...
         if (!(event.getSource().getEntity() instanceof net.minecraft.world.entity.player.Player attacker) || attacker == bot) return;
         bot.onHurtBy(attacker, isAccidental(attacker, bot));
     }
@@ -140,6 +141,44 @@ public final class BotManager {
         return last != null && last != bot && last.isAlive()
                 && attacker.tickCount - attacker.getLastHurtMobTimestamp() < 40
                 && last.distanceToSqr(bot) < 4.0D * 4.0D;
+    }
+
+    // ===== Thính giác: lọc âm thanh nguy hiểm ở server cho các bot gần đó =====
+
+    @SubscribeEvent
+    public static void onSoundAtPosition(net.minecraftforge.event.PlayLevelSoundEvent.AtPosition event) {
+        if (!BOTS.isEmpty()) hearSound(event.getLevel(), event.getPosition(), event.getSound(), event.getSource());
+    }
+
+    @SubscribeEvent
+    public static void onSoundAtEntity(net.minecraftforge.event.PlayLevelSoundEvent.AtEntity event) {
+        if (!BOTS.isEmpty()) hearSound(event.getLevel(), event.getEntity().position(), event.getSound(), event.getSource());
+    }
+
+    private static void hearSound(net.minecraft.world.level.Level level, net.minecraft.world.phys.Vec3 pos,
+                                  net.minecraft.core.Holder<net.minecraft.sounds.SoundEvent> sound,
+                                  net.minecraft.sounds.SoundSource source) {
+        if (level.isClientSide() || sound == null) return;
+        net.minecraft.sounds.SoundEvent s = sound.value();
+        int kind;
+        double range;
+        if (s == net.minecraft.sounds.SoundEvents.CREEPER_PRIMED || s == net.minecraft.sounds.SoundEvents.TNT_PRIMED) {
+            kind = BotSenses.SOUND_DANGER;
+            range = 16.0D;
+        } else if (s == net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE) {
+            kind = BotSenses.SOUND_DANGER;
+            range = 24.0D;
+        } else if (source == net.minecraft.sounds.SoundSource.HOSTILE) {
+            kind = BotSenses.SOUND_ALERT; // quái rên, bước chân, bắn tên...
+            range = 16.0D;
+        } else {
+            return;
+        }
+        for (BotPlayer bot : BOTS.values()) {
+            if (bot.level() == level && bot.isAlive() && bot.position().distanceToSqr(pos) < range * range) {
+                bot.onSound(pos, kind);
+            }
+        }
     }
 
     @SubscribeEvent

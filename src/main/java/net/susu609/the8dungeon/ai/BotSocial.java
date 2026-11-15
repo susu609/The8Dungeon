@@ -28,6 +28,7 @@ final class BotSocial {
         int windowStart;
         int lastHit = -100000;
         int nextOffer;         // lần sớm nhất được đề nghị làm hòa tiếp (bot với bot)
+        int truceUntil;        // ngừng bắn sau khi làm hòa giữa trận: đòn lỡ tay không tính
     }
 
     private final BotPlayer bot;
@@ -93,6 +94,10 @@ final class BotSocial {
     void onHurtBy(Player attacker, boolean accidental, int now) {
         Rel r = rel(attacker);
         String name = attacker.getGameProfile().getName();
+        if (now < r.truceUntil) { // đòn còn đang vung dở lúc vừa làm hòa: bỏ qua
+            log(attacker, "đòn trong lúc ngừng bắn, bỏ qua", r);
+            return;
+        }
         r.lastHit = now;
         if (accidental) {
             setTrust(attacker.getUUID(), r, r.trust - 2.0F);
@@ -148,6 +153,40 @@ final class BotSocial {
         setTrust(from.getUUID(), r, TRUCE);
         say("Ừ, làm hòa nhé " + name + ".", now);
         log(from, "đồng ý làm hòa", r);
+        return true;
+    }
+
+    /** Đang đánh nhau với bot khác: đề nghị dừng tay. Trả true nếu bên kia đồng ý. */
+    boolean offerPeaceInFight(BotPlayer foe, int now) {
+        Rel r = rel(foe);
+        String name = foe.getGameProfile().getName();
+        say(name + ", dừng tay đi, làm hòa nhé!", now);
+        if (!foe.acceptPeaceInFight(bot)) {
+            log(foe, "đề nghị làm hòa giữa trận bị từ chối", r);
+            return false;
+        }
+        setTrust(foe.getUUID(), r, Math.max(r.trust, TRUCE));
+        r.truceUntil = now + 100;
+        r.hits = 0;
+        avoid = null;
+        log(foe, "làm hòa giữa trận", r);
+        return true;
+    }
+
+    /** Bot khác đề nghị dừng tay giữa trận. Đồng ý khi chính mình mất nhiều máu hoặc chưa quá căm ghét. */
+    boolean acceptPeaceInFight(BotPlayer from, float myHp, int now) {
+        Rel r = rel(from);
+        String name = from.getGameProfile().getName();
+        if (r.trust < -80.0F || (myHp >= 0.6F && r.trust < -60.0F)) {
+            say("Không đời nào, " + name + "!", now);
+            return false;
+        }
+        setTrust(from.getUUID(), r, Math.max(r.trust, TRUCE));
+        r.truceUntil = now + 100;
+        r.hits = 0;
+        avoid = null;
+        say("Được, dừng tay. Làm hòa, " + name + ".", now);
+        log(from, "đồng ý làm hòa giữa trận", r);
         return true;
     }
 
