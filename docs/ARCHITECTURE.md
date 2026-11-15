@@ -189,10 +189,10 @@ flowchart LR
 - `assets/susu609/lang/vi_vn.json`
 - `assets/susu609/models/block/torch_off.json`
 - `assets/susu609/models/block/wall_torch_off.json`
-- `assets/susu609/models/item/clawd_spawn_egg.json`
 - `assets/susu609/models/item/torch.json`
 - `assets/susu609/models/item/torch_off.json`
 - `assets/susu609/sounds.json`
+- `assets/susu609/textures/block/torch_off.png`
 - `assets/susu609/textures/entity/clawd_agent.png`
 - `assets/susu609/textures/gui/title/mod_title.png`
 - `assets/susu609/textures/map/minimap_icons.png`
