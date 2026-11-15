@@ -84,6 +84,17 @@ public final class BotManager {
                         .then(Commands.argument("message", StringArgumentType.greedyString())
                                 .executes(c -> dispatchChat(c.getSource().getPlayerOrException(),
                                         StringArgumentType.getString(c, "message")))))
+                .then(Commands.literal("memory").executes(c -> {
+                    var mem = BotMemory.get(c.getSource().getServer());
+                    for (String n : BOTS.keySet()) {
+                        BotMemory.Mind m = mem.of(n);
+                        java.util.Map<BotMemory.PoiType, Long> counts = new java.util.EnumMap<>(BotMemory.PoiType.class);
+                        for (BotMemory.Poi p : m.pois) counts.merge(p.type(), 1L, Long::sum);
+                        c.getSource().sendSuccess(() -> Component.literal(n + ": đã ghé " + m.visited.size()
+                                + " chunk, nhớ " + counts), false);
+                    }
+                    return BOTS.size();
+                }))
                 .then(Commands.literal("base").executes(c -> {
                     var store = BaseStore.get(c.getSource().getServer());
                     if (store.all().isEmpty()) {
