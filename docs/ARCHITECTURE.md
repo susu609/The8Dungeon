@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 11 class/kiểu Java, 459 dòng, 17 phụ thuộc nội bộ
+- 12 class/kiểu Java, 928 dòng, 18 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -11,6 +11,9 @@ Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry po
 flowchart LR
   subgraph pkg__g_c_["(gốc)"]
     Susu609Mod(["Susu609Mod<br/><small>class · 123 dòng</small>"])
+  end
+  subgraph pkg_client_gui_screens["client.gui.screens"]
+    ModTitleScreen["ModTitleScreen<br/><small>class · 469 dòng</small>"]
   end
   subgraph pkg_init["init"]
     ModBlockEntitiesRegistry["ModBlockEntitiesRegistry<br/><small>class · 16 dòng</small>"]
@@ -39,6 +42,7 @@ flowchart LR
   ModEntitiesRegistry --> Susu609Mod
   ModItemsRegistry --> ModBlocksRegistry
   ModItemsRegistry --> Susu609Mod
+  ModTitleScreen --> Susu609Mod
   Susu609Mod --> ModBlockEntitiesRegistry
   Susu609Mod --> ModBlocksRegistry
   Susu609Mod --> ModCreativeTabsRegistry
@@ -54,6 +58,12 @@ flowchart LR
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
 | `Susu609Mod` | class | 123 | ModBlockEntitiesRegistry, ModBlocksRegistry, ModCreativeTabsRegistry, ModEntitiesRegistry, ModEntityRenderersRegistry, ModItemsRegistry | NetworkEvent, NetworkEvent.Context, TickEvent, TickEvent.Phase, TickEvent.ServerTickEvent |
+
+### client.gui.screens
+
+| Class | Loại | Dòng | Dùng tới | Event Forge |
+|---|---|---|---|---|
+| `ModTitleScreen` | class | 469 | Susu609Mod | - |
 
 ### init
 
