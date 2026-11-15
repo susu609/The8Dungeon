@@ -17,7 +17,7 @@ public final class TorchBurn {
 
     /** Số tick đuốc cháy trước khi tắt hẳn: 12000 tick = 10 phút. */
     public static final int LIT_TICKS = 12000;
-
+    public static final int WEAK_TICKS = LIT_TICKS / 4;   // 3000 tick = 2,5 phút
     // TODO: đuốc yếu = thời gian cháy còn 25%: WEAK_TICKS = LIT_TICKS / 4 (3000 tick = 2,5 phút).
     // TODO: hàm đặt đuốc với thời gian cháy tuỳ chỉnh cho DungeonBuilder dùng. Lưu ý level.scheduleTick cùng (pos, block) đã có thì lần gọi sau bị BỎ QUA
     //       (cần kiểm chứng trong game), mà mixin onPlace đã lên lịch LIT_TICKS rồi; nên không thể chỉ gọi thêm scheduleTick(3000) sau setBlock.

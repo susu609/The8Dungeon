@@ -47,8 +47,9 @@ public final class DungeonCommand {
 
         DungeonLayout layout;
         try {
-            layout = DungeonLayout.generate(new WorldRandom(seed), params);
-            DungeonBuilder.build(source.getLevel(), layout, origin);
+            WorldRandom world = new WorldRandom(seed);
+            layout = DungeonLayout.generate(world, params);
+            DungeonBuilder.build(source.getLevel(), layout, origin, world);
         } catch (IllegalStateException | IllegalArgumentException e) {
             source.sendFailure(Component.literal("Không dựng được dungeon: " + e.getMessage()));
             return 0;
