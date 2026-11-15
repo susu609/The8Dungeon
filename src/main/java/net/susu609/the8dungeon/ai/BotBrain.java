@@ -33,7 +33,7 @@ import net.minecraft.world.phys.Vec3;
  */
 final class BotBrain {
 
-    private enum Goal { IDLE, FLEE, FIGHT, EAT, HUNT, COLLECT, SHELTER, WOOD, STONE, DIRT, EXPLORE, HOME, COOK, GROUP, SHARE, SLEEP, CRAFT, BUILD, BASE, STAY, FOLLOW }
+    private enum Goal { IDLE, FLEE, FIGHT, EAT, HUNT, COLLECT, SHELTER, WOOD, STONE, DIRT, EXPLORE, HOME, COOK, GROUP, SHARE, SLEEP, CRAFT, BUILD, BASE, STAY, FOLLOW, SCOUT }
 
     private static final double REACH = 4.0D;
 
@@ -75,6 +75,11 @@ final class BotBrain {
     private int orderUntil;           // việc thường hết hạn sau ~5 phút; đứng/đi theo thì tới khi hủy
     private java.util.UUID orderFrom; // ai ra lệnh (để đi theo / mang đồ tới)
     private BlockPos stayAt;
+    // Trí nhớ khám phá
+    private BotMemory.Mind mind;
+    private int scoutSince = -1;       // bắt đầu dò chỗ làm base lúc nào
+    private BlockPos scoutTarget;      // chỗ hợp làm base đã biết, đang đi tới
+    private int nextShareMemory;
     // Tự gỡ kẹt
     private BlockPos digOut;          // khối chắn phía trước cần đào để đi tiếp
     private BlockPos pillarFeet;      // đang kê khối dưới chân để leo ra khỏi hố
@@ -545,6 +550,7 @@ final class BotBrain {
         snapshotInventory();
 
         updateAllies();
+        updateMemory();
         if (age >= baseCheckAt) updateBase();
         boolean inShelter = sheltered && isNight() && shelter != null;
         senses.update(bot, age, !inShelter, rules.scanBudget / (BotManager.reduced() ? 2 : 1));
@@ -720,6 +726,7 @@ final class BotBrain {
             }
         }
 
+        if (scoutTarget != null && !night && !inShelter) sc[Goal.SCOUT.ordinal()] = 0.52F; // đi tới chỗ hợp làm base
         applyOrder(sc);
         lastScores = sc;
         // Chọn điểm cao nhất, thêm quán tính cho mục tiêu hiện tại
@@ -854,6 +861,12 @@ final class BotBrain {
             case BASE -> actBase();
             case STAY -> actStay();
             case FOLLOW -> actFollow();
+            case SCOUT -> {
+                if (scoutTarget == null || nav.moveTo(scoutTarget, age, false) || nav.failed) {
+                    baseCheckAt = age; // tới nơi (hoặc không tới được): kiểm tra lại để lập base
+                    rethink = true;
+                }
+            }
             case HOME -> nav.moveTo(bot.home(), age, false);
             default -> nav.stop();
         }
@@ -1004,20 +1017,41 @@ final class BotBrain {
         if (nav.moveTo(exploreTarget, age, false) || nav.failed) exploreTarget = null;
     }
 
+    /**
+     * Chọn đích khám phá: thử 12 hướng x 2 khoảng cách, chấm điểm theo trí nhớ: chunk chưa từng tới được điểm
+     * cao nhất, lâu rồi chưa quay lại cũng được, vừa đi qua thì bị trừ. Chưa có base thì ưu tiên đồng bằng.
+     */
     private BlockPos pickExploreTarget() {
         var rng = bot.getRandom();
         ServerLevel level = bot.serverLevel();
-        for (int i = 0; i < 6; i++) {
-            heading += (rng.nextDouble() - 0.5D) * Math.toRadians(120.0D);
-            double dist = 18.0D + rng.nextDouble() * 12.0D;
-            double x = bot.getX() + Math.cos(heading) * dist;
-            double z = bot.getZ() + Math.sin(heading) * dist;
-            if (!level.hasChunk(Mth.floor(x) >> 4, Mth.floor(z) >> 4)) continue;
-            BlockPos p = surface(x, z);
-            if (inRoam(p) && level.getFluidState(p.below()).isEmpty() && level.getFluidState(p).isEmpty()) return p;
+        BotMemory.Mind m = mind();
+        long now = level.getGameTime();
+        BlockPos best = null;
+        double bestScore = -Double.MAX_VALUE;
+        for (int i = 0; i < 12; i++) {
+            double ang = heading + i * Math.PI / 6.0D;
+            for (double dist : new double[] {20.0D, 32.0D}) {
+                double x = bot.getX() + Math.cos(ang) * dist;
+                double z = bot.getZ() + Math.sin(ang) * dist;
+                if (!level.hasChunk(Mth.floor(x) >> 4, Mth.floor(z) >> 4)) continue;
+                BlockPos p = surface(x, z);
+                if (!inRoam(p) || !level.getFluidState(p.below()).isEmpty() || !level.getFluidState(p).isEmpty()) continue;
+                double score = rng.nextDouble(); // chút ngẫu nhiên cho khỏi máy móc
+                long last = m == null ? -1L : m.lastVisit(p);
+                if (last < 0) score += 10.0D;                       // chưa từng tới
+                else if (now - last > 24000L) score += 5.0D;        // hơn một ngày chưa quay lại
+                else if (now - last < 6000L) score -= 6.0D;         // vừa đi qua
+                if (base == null && BaseWork.isPlainsLike(level, p)) score += 3.0D;
+                if (i == 0) score += 1.0D;                          // giữ hướng cũ một chút cho đi xa được
+                if (score > bestScore) {
+                    bestScore = score;
+                    best = p;
+                    if (score > 9.0D) heading = ang;
+                }
+            }
         }
-        heading += Math.PI; // bí đường thì quay đầu
-        return null;
+        if (best == null) heading += Math.PI; // bí đường thì quay đầu
+        return best;
     }
 
     private BlockPos surface(double x, double z) {
@@ -1412,6 +1446,66 @@ final class BotBrain {
 
     // ===== Base của nhóm =====
 
+    // ===== Trí nhớ khám phá =====
+
+    private BotMemory.Mind mind() {
+        if (mind == null && bot.getServer() != null) mind = BotMemory.get(bot.getServer()).of(bot.getGameProfile().getName());
+        return mind;
+    }
+
+    /** Ghi nhớ chunk đang đứng; mỗi 5 giây khảo sát quanh: nước, chỗ hợp làm base, hang; gặp đồng đội thì kể cho nhau. */
+    private void updateMemory() {
+        BotMemory.Mind m = mind();
+        if (m == null) return;
+        ServerLevel level = bot.serverLevel();
+        long now = level.getGameTime();
+        if (age % 40 == 0) m.markVisited(bot.blockPosition(), now);
+        if (age % 100 == 0) {
+            BlockPos here = bot.blockPosition();
+            BlockPos water = BaseWork.waterNear(level, here, 16);
+            if (water != null && m.remember(BotMemory.PoiType.WATER, water, now)) {
+                BotLog.log(bot, "MEMORY", () -> "nhớ nguồn nước tại " + water.toShortString());
+            }
+            // chỗ hợp làm base: đồng bằng, gần nước, đủ phẳng
+            if (base == null && age % 400 == 0 && water != null && BaseWork.isPlainsLike(level, here)) { // tìm chỗ phẳng khá nặng: thưa thôi
+                BlockPos site = BaseWork.findSite(level, here);
+                if (site != null && BaseWork.isPlainsLike(level, site) && BaseWork.waterNear(level, site, 12) != null
+                        && m.remember(BotMemory.PoiType.SITE, site, now)) {
+                    BotLog.log(bot, "MEMORY", () -> "nhớ chỗ hợp làm base (đồng bằng, gần nước) tại " + site.toShortString());
+                }
+            }
+            // đang ở dưới mặt đất mà xung quanh trống: cửa hang
+            int surfaceY = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, here.getX(), here.getZ());
+            if (here.getY() < surfaceY - 6 && level.getBrightness(net.minecraft.world.level.LightLayer.SKY, here) == 0
+                    && m.remember(BotMemory.PoiType.CAVE, here, now)) {
+                BotLog.log(bot, "MEMORY", () -> "nhớ hang tại " + here.toShortString());
+            }
+        }
+        // Gặp đồng đội (bot) trong 8 khối: kể cho nhau những địa điểm mình biết
+        if (age >= nextShareMemory) {
+            for (net.minecraft.world.entity.player.Player p : allies) {
+                if (!(p instanceof BotPlayer other) || p.distanceTo(bot) > 8.0D) continue;
+                nextShareMemory = age + 600;
+                int learned = other.learnFrom(m.pois);
+                if (learned > 0) {
+                    social.speak(other.getGameProfile().getName() + ", mình biết " + learned + " chỗ hay (nước, đất đẹp, hang...), kể cậu nghe nhé.", age);
+                }
+                break;
+            }
+        }
+    }
+
+    /** Nghe đồng đội kể: ghi nhớ những địa điểm mình chưa biết. Trả về số địa điểm mới. */
+    int learnFrom(java.util.List<BotMemory.Poi> told) {
+        BotMemory.Mind m = mind();
+        if (m == null) return 0;
+        int n = 0;
+        for (BotMemory.Poi p : java.util.List.copyOf(told)) if (m.remember(p.type(), p.pos(), p.time())) n++;
+        final int learned = n;
+        if (n > 0) BotLog.log(bot, "MEMORY", () -> "được kể " + learned + " địa điểm mới");
+        return n;
+    }
+
     /** Mỗi 2 giây: vào base của nhóm (hoặc lập base mới), kiểm tra tiến độ, nâng cấp khi đủ người. */
     private void updateBase() {
         baseCheckAt = age + 40;
@@ -1440,12 +1534,30 @@ final class BotBrain {
             }
         }
         long t = level.getDayTime() % 24000L;
+        scoutTarget = null;
         if (base == null && t < 9000L && pickRank >= 1 && logs * 4 + planks >= 16) { // đủ đồ nghề thì lập base
-            BlockPos center = groupCenter != null ? BlockPos.containing(groupCenter) : bot.blockPosition();
-            BlockPos site = BaseWork.findSite(level, center);
+            BotMemory.Mind m = mind();
+            BotMemory.Poi known = m == null ? null : m.nearest(BotMemory.PoiType.SITE, bot.blockPosition(), 256.0D);
+            BlockPos site = null;
+            if (known != null && known.pos().distSqr(bot.blockPosition()) < 16 * 16) {
+                site = BaseWork.findSite(level, known.pos()); // tới nơi: kiểm tra lại rồi lập
+                if (site == null) m.forget(BotMemory.PoiType.SITE, known.pos());
+            } else if (known != null) {
+                scoutTarget = known.pos(); // đã biết chỗ đẹp: đi tới đó
+            } else {
+                if (scoutSince < 0) scoutSince = age;
+                if (age - scoutSince > 6000) { // dò 5 phút chưa thấy: lập ở chỗ phẳng gần nhất
+                    BlockPos center = groupCenter != null ? BlockPos.containing(groupCenter) : bot.blockPosition();
+                    site = BaseWork.findSite(level, center);
+                }
+            }
             if (site != null) {
+                final BlockPos s0 = site;
                 base = store.create(dim, site, name);
-                BotLog.log(bot, "BASE", () -> "lập base mới tại " + site.toShortString());
+                scoutSince = -1;
+                BotLog.log(bot, "BASE", () -> "lập base mới tại " + s0.toShortString()
+                        + (BaseWork.isPlainsLike(level, s0) ? " (đồng bằng)" : "")
+                        + (BaseWork.waterNear(level, s0, 12) != null ? " (gần nước)" : ""));
             }
         }
         if (base == null || !base.dim.equals(dim)) {

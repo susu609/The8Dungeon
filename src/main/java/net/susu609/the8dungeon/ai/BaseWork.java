@@ -218,10 +218,40 @@ final class BaseWork {
                     }
                 }
                 if (!ok || max - min > 2) continue;
-                int score = (max - min) * 100 + dx * dx + dz * dz;
+                BlockPos mid = new BlockPos(ox + 3, max, oz + 3);
+                int score = (max - min) * 100 + dx * dx + dz * dz
+                        + (isPlainsLike(level, mid) ? 0 : 150)          // ưu tiên đồng bằng
+                        + (waterNear(level, mid, 12) != null ? 0 : 250); // ưu tiên gần nguồn nước
                 if (score < bestScore) {
                     bestScore = score;
                     best = new BlockPos(ox, Math.round(sum / 49.0F), oz);
+                }
+            }
+        }
+        return best;
+    }
+
+    /** Đồng bằng / đồng cỏ / thảo nguyên: chỗ hợp lập base. */
+    static boolean isPlainsLike(ServerLevel level, BlockPos p) {
+        var b = level.getBiome(p);
+        return b.is(net.minecraft.world.level.biome.Biomes.PLAINS) || b.is(net.minecraft.world.level.biome.Biomes.SUNFLOWER_PLAINS)
+                || b.is(net.minecraft.world.level.biome.Biomes.MEADOW) || b.is(net.minecraft.world.level.biome.Biomes.SAVANNA)
+                || b.is(net.minecraft.world.level.biome.Biomes.FLOWER_FOREST);
+    }
+
+    /** Nước bề mặt gần p nhất (bán kính r, lấy mẫu mỗi 2 khối), hoặc null. */
+    static BlockPos waterNear(ServerLevel level, BlockPos p, int r) {
+        BlockPos best = null;
+        double bestD = Double.MAX_VALUE;
+        for (int dx = -r; dx <= r; dx += 2) {
+            for (int dz = -r; dz <= r; dz += 2) {
+                int x = p.getX() + dx, z = p.getZ() + dz;
+                if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                int h = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+                BlockPos w = new BlockPos(x, h - 1, z);
+                if (level.getFluidState(w).is(net.minecraft.tags.FluidTags.WATER) && w.distSqr(p) < bestD) {
+                    bestD = w.distSqr(p);
+                    best = w;
                 }
             }
         }

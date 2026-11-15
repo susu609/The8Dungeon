@@ -105,6 +105,11 @@ public final class BotPlayer extends ServerPlayer {
         brain.onAllyAttacked(victim, attacker);
     }
 
+    /** Đồng đội kể lại địa điểm họ biết. */
+    int learnFrom(java.util.List<BotMemory.Poi> told) {
+        return brain.learnFrom(told);
+    }
+
     public void onCommand(net.minecraft.server.level.ServerPlayer from, String normalizedText) {
         brain.onCommand(from, normalizedText);
     }

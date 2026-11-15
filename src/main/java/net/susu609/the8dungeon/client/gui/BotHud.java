@@ -208,6 +208,7 @@ public final class BotHud {
             case "CRAFT" -> "Đang chế đồ";
             case "BUILD" -> "Đang xây nhà";
             case "BASE" -> "Về nhà chung";
+            case "SCOUT" -> "Đi tới chỗ làm nhà";
             default -> "Đang nghỉ";
         };
     }
