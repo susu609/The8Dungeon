@@ -70,6 +70,11 @@ final class BotBrain {
     private boolean tableTemp;   // bàn tạm mình vừa đặt: chế xong thì thu lại
     private boolean wantFurnace;
     private int craftBlockedUntil; // không có chỗ đặt bàn: tạm bỏ việc chế
+    // Tự gỡ kẹt
+    private BlockPos digOut;          // khối chắn phía trước cần đào để đi tiếp
+    private BlockPos pillarFeet;      // đang kê khối dưới chân để leo ra khỏi hố
+    private int escapeSince;
+    private int escapeCooldown;
     // Base của nhóm
     private BaseStore.Base base;
     private BaseWork.Status baseStatus;
@@ -215,13 +220,83 @@ final class BotBrain {
             BotLog.log(bot, "BEAT", () -> status() + " pos=" + bot.blockPosition().toShortString()
                     + " mục tiêu=" + goal + " đã=" + (age - goalSince) + "tick");
         }
-        act();
+        if (!escape()) act();
         // Rảnh thì thỉnh thoảng nhìn quanh (tầm nhìn chỉ có phía trước)
         if (age >= glanceUntil && age % 80 == 0 && goal != Goal.FIGHT && goal != Goal.FLEE) {
             glanceYaw = bot.getYRot() + (bot.getRandom().nextFloat() - 0.5F) * 220.0F;
             glanceUntil = age + 15;
         }
         if (age < glanceUntil) bot.setYHeadRot(glanceYaw); // chỉ quay đầu, thân vẫn đi theo đường
+    }
+
+    // ===== Tự gỡ kẹt (dốc, vách, hố) =====
+
+    private boolean solidAt(BlockPos p) {
+        ServerLevel level = bot.serverLevel();
+        return !level.getBlockState(p).getCollisionShape(level, p).isEmpty();
+    }
+
+    /** Khối nên đào để đi tiếp theo hướng đang đi: vách ngang đầu, hoặc trần chắn không cho nhảy lên bậc. */
+    private BlockPos blockingAhead() {
+        Vec3 h = nav.heading();
+        Direction d = Direction.getNearest(h.x, 0.0D, h.z);
+        BlockPos feet = bot.blockPosition();
+        BlockPos f0 = feet.relative(d), f1 = f0.above();
+        if (solidAt(f1)) return f1;                              // vách cao 2 khối: đào phần ngang đầu trước
+        if (solidAt(f0) && solidAt(feet.above(2))) return feet.above(2); // trần thấp trên đầu: không nhảy lên bậc được
+        if (solidAt(f0) && solidAt(f0.above(2))) return f0.above(2);     // trên bậc bị chắn
+        return null;
+    }
+
+    /**
+     * Bị kẹt hơn 2 giây khi đang đi: đào khối chắn phía trước, hoặc (đích ở cao hơn) nhảy và kê khối dưới chân
+     * để leo lên. Trả true khi tick này dành cho việc gỡ kẹt.
+     */
+    private boolean escape() {
+        if (digOut != null) {
+            if (mineTick(digOut) || age - escapeSince > 200) {
+                final BlockPos was = digOut;
+                if (solidAt(was)) escapeCooldown = age + 100; // không đào được: thôi, chờ cách khác
+                digOut = null;
+                nav.resetStuck();
+                BotLog.log(bot, "ESCAPE", () -> "xong đào khối chắn " + was.toShortString());
+            }
+            return true;
+        }
+        if (pillarFeet != null) {
+            if (age - escapeSince > 40) { // quá lâu: hủy
+                pillarFeet = null;
+                escapeCooldown = age + 100;
+                return false;
+            }
+            nav.stop();
+            if (bot.getY() < pillarFeet.getY() + 0.05D) {
+                bot.setJumping(true);
+            } else if (bot.getY() >= pillarFeet.getY() + 1.0D && placeBlock(pillarFeet)) {
+                final BlockPos was = pillarFeet;
+                BotLog.log(bot, "ESCAPE", () -> "kê khối leo lên tại " + was.toShortString());
+                pillarFeet = null;
+                nav.resetStuck();
+            }
+            return true;
+        }
+        if (age < escapeCooldown || nav.stuckLevel() < 2 || nav.goal() == null) return false;
+        BlockPos b = blockingAhead();
+        if (b != null) {
+            digOut = b;
+            escapeSince = age;
+            BotLog.log(bot, "ESCAPE", () -> "kẹt, đào khối chắn " + b.toShortString());
+            return true;
+        }
+        boolean goalAbove = nav.goal().getY() > bot.blockPosition().getY();
+        if (goalAbove && placeable > 0 && bot.onGround() && !solidAt(bot.blockPosition().above(2))) {
+            pillarFeet = bot.blockPosition();
+            escapeSince = age;
+            BotLog.log(bot, "ESCAPE", () -> "kẹt dưới hố, kê khối leo lên");
+            return true;
+        }
+        escapeCooldown = age + 60; // không có cách nào: để bộ tìm đường thử hướng khác
+        return false;
     }
 
     private boolean inRoam(BlockPos p) {

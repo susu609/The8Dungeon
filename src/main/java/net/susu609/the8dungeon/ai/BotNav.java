@@ -22,6 +22,7 @@ final class BotNav {
     private int stuck;
     private int checkAt;
     private Vec3 checkPos = Vec3.ZERO;
+    private Vec3 heading = new Vec3(0.0D, 0.0D, 1.0D);
 
     /** true nếu đích hiện tại không đi tới được. Reset khi đổi đích. */
     boolean failed;
@@ -105,9 +106,31 @@ final class BotNav {
         bot.setYHeadRot(yaw);
         bot.yBodyRot = yaw;
         bot.setXRot(0.0F);
-        bot.zza = 1.0F;
         bot.xxa = 0.0F;
-        bot.setSprinting(sprint);
+        double hd = Math.sqrt(dx * dx + dz * dz);
+        heading = new Vec3(dx / Math.max(hd, 1.0E-4D), 0.0D, dz / Math.max(hd, 1.0E-4D));
+
+        // Đi cẩn thận: sắp rẽ / đổi độ cao thì chậm lại; xuống dốc thì chậm
+        boolean turnSoon = false;
+        int idx = path.getNextNodeIndex();
+        if (idx + 1 < path.getNodeCount()) {
+            net.minecraft.world.level.pathfinder.Node n2 = path.getNode(idx + 1);
+            double ax = n2.x + 0.5D - next.x, az = n2.z + 0.5D - next.z;
+            double dot = (ax * dx + az * dz) / Math.max(1.0E-4D, Math.sqrt(ax * ax + az * az) * hd);
+            turnSoon = dot < 0.7D || n2.y != np.getY(); // góc rẽ > ~45° hoặc lên/xuống bậc
+        }
+        float speed = 1.0F;
+        if (hd < 1.3D && turnSoon) speed = 0.5F;
+        if (dy < -0.5D) speed = Math.min(speed, 0.6F);
+        // Mép vực: phía trước sâu hơn 3 khối (hoặc dung nham) mà đường không định đi xuống đó -> dừng, tìm đường khác
+        boolean edge = dangerousEdgeAhead(heading);
+        if (edge && dy > -0.5D) {
+            speed = 0.0F;
+            path = null;
+            BotLog.log(bot, "NAV", () -> "dừng trước mép vực tại " + bot.blockPosition().toShortString());
+        }
+        bot.zza = speed;
+        bot.setSprinting(sprint && speed >= 1.0F && Math.abs(dy) < 0.5D && !turnSoon && hd > 2.0D);
 
         // Nhảy: bậc cao hơn, va chạm ngang, hoặc đang bơi
         if (bot.isInWater() || bot.isInLava() || dy > 0.6D || bot.horizontalCollision) {
@@ -129,6 +152,46 @@ final class BotNav {
             checkAt = now + 20;
         }
         return false;
+    }
+
+    /** Hướng đang đi (để biết khối nào chắn phía trước khi bị kẹt). */
+    Vec3 heading() {
+        return heading;
+    }
+
+    int stuckLevel() {
+        return stuck;
+    }
+
+    /** Đích hiện tại (null nếu không đi đâu). */
+    BlockPos goal() {
+        return goal;
+    }
+
+    /** Sau khi tự gỡ kẹt (đào, kê khối): tính lại đường từ đầu. */
+    void resetStuck() {
+        stuck = 0;
+        failed = false;
+        path = null;
+        checkPos = bot.position();
+    }
+
+    /** Phía trước 0,8 khối: rơi sâu hơn 3 khối, hoặc có dung nham bên dưới. */
+    private boolean dangerousEdgeAhead(Vec3 dir) {
+        if (!bot.onGround()) return false;
+        net.minecraft.world.level.Level level = bot.level();
+        int x = net.minecraft.util.Mth.floor(bot.getX() + dir.x * 0.8D);
+        int z = net.minecraft.util.Mth.floor(bot.getZ() + dir.z * 0.8D);
+        int y = net.minecraft.util.Mth.floor(bot.getY() + 0.01D);
+        BlockPos.MutableBlockPos m = new BlockPos.MutableBlockPos();
+        if (!level.getBlockState(m.set(x, y, z)).getCollisionShape(level, m).isEmpty()) return false; // phía trước là tường/bậc
+        for (int k = 1; k <= 4; k++) {
+            m.set(x, y - k, z);
+            net.minecraft.world.level.block.state.BlockState s = level.getBlockState(m);
+            if (s.getFluidState().is(net.minecraft.tags.FluidTags.LAVA)) return true;
+            if (!s.getCollisionShape(level, m).isEmpty() || !s.getFluidState().isEmpty()) return false; // có chỗ đứng / nước đỡ
+        }
+        return true;
     }
 
     private Path computePath(BlockPos target) {
