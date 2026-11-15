@@ -20,6 +20,8 @@ final class BotSocial {
 
     static final float HOSTILE = -20.0F;
     static final float FRIEND = 30.0F;
+    /** Đánh nhau chỉ đẩy xuống tới mức này; còn đường làm hòa khi một bên bị thương. */
+    private static final float FIGHT_FLOOR = -70.0F;
     private static final float TRUCE = HOSTILE + 5.0F; // điểm sau khi làm hòa: hết thù nhưng chưa thân
 
     private static final class Rel {
@@ -106,6 +108,12 @@ final class BotSocial {
             log(attacker, "trúng nhầm", r);
             return;
         }
+        if (r.trust <= HOSTILE) { // đã là thù: mỗi đòn chỉ trừ chút ít, không xuống dưới FIGHT_FLOOR
+            if (r.trust > FIGHT_FLOOR) setTrust(attacker.getUUID(), r, Math.max(FIGHT_FLOOR, r.trust - 2.0F));
+            avoid = null;
+            log(attacker, "đánh tiếp khi đang thù", r);
+            return;
+        }
         if (now - r.windowStart > 100) {
             r.windowStart = now;
             r.hits = 0;
@@ -113,7 +121,7 @@ final class BotSocial {
         r.hits++;
         float drop = 8.0F * r.hits;
         if (r.trust >= FRIEND) drop *= 0.5F; // bạn thân thì dễ bỏ qua hơn
-        setTrust(attacker.getUUID(), r, r.trust - drop);
+        setTrust(attacker.getUUID(), r, Math.max(FIGHT_FLOOR, r.trust - drop));
         if (r.trust > HOSTILE && r.hits < 3) {
             say(r.hits == 1 ? "Này " + name + ", đừng đánh mình!" : "Mình cảnh báo lần cuối đấy, " + name + "!", now);
             avoid(attacker, now + 60);
@@ -160,7 +168,7 @@ final class BotSocial {
     boolean offerPeaceInFight(BotPlayer foe, int now) {
         Rel r = rel(foe);
         String name = foe.getGameProfile().getName();
-        say(name + ", dừng tay đi, làm hòa nhé!", now);
+        say(name + ", dừng tay đi, làm hòa nhé!", now, true);
         if (!foe.acceptPeaceInFight(bot)) {
             log(foe, "đề nghị làm hòa giữa trận bị từ chối", r);
             return false;
@@ -178,14 +186,14 @@ final class BotSocial {
         Rel r = rel(from);
         String name = from.getGameProfile().getName();
         if (r.trust < -80.0F || (myHp >= 0.6F && r.trust < -60.0F)) {
-            say("Không đời nào, " + name + "!", now);
+            say("Không đời nào, " + name + "!", now, true);
             return false;
         }
         setTrust(from.getUUID(), r, Math.max(r.trust, TRUCE));
         r.truceUntil = now + 100;
         r.hits = 0;
         avoid = null;
-        say("Được, dừng tay. Làm hòa, " + name + ".", now);
+        say("Được, dừng tay. Làm hòa, " + name + ".", now, true);
         log(from, "đồng ý làm hòa giữa trận", r);
         return true;
     }
@@ -296,7 +304,12 @@ final class BotSocial {
     }
 
     private void say(String text, int now) {
-        if (now - lastSpeak < 60) return; // không nói liên tục
+        say(text, now, false);
+    }
+
+    /** force=true: câu quan trọng (làm hòa) luôn được nói, không bị giới hạn tần suất. */
+    private void say(String text, int now, boolean force) {
+        if (!force && now - lastSpeak < 60) return; // không nói liên tục
         lastSpeak = now;
         MinecraftServer server = bot.getServer();
         if (server != null) {
