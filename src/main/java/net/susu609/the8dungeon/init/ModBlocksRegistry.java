@@ -42,7 +42,7 @@ public final class ModBlocksRegistry {
     }
 
     /** Gọi một lần trong constructor của mod, với mod event bus. */
-    public static void register(IEventBus modBus) {
-        BLOCKS.register(modBus);
+    public static void register(IEventBus bus) {
+        BLOCKS.register(bus);
     }
 }

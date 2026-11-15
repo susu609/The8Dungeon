@@ -25,7 +25,7 @@ public final class ModCreativeTabsRegistry {
     private ModCreativeTabsRegistry() {}
 
     /** Gọi một lần trong constructor của mod, với mod event bus. */
-    public static void register(IEventBus modBus) {
-        TABS.register(modBus);
+    public static void register(IEventBus bus) {
+        TABS.register(bus);
     }
 }
