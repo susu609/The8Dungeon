@@ -53,6 +53,10 @@ public class Susu609Mod {
 				net.susu609.the8dungeon.network.BotStatusPacket::encode,
 				net.susu609.the8dungeon.network.BotStatusPacket::decode,
 				net.susu609.the8dungeon.network.BotStatusPacket::handle);
+		addNetworkMessage(net.susu609.the8dungeon.network.OpenBotInventoryPacket.class,
+				net.susu609.the8dungeon.network.OpenBotInventoryPacket::encode,
+				net.susu609.the8dungeon.network.OpenBotInventoryPacket::decode,
+				net.susu609.the8dungeon.network.OpenBotInventoryPacket::handle);
 
 		// End of user code block mod init
 	}

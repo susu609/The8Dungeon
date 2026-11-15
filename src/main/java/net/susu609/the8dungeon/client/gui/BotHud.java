@@ -29,6 +29,12 @@ public final class BotHud {
         receivedAt = mc.level != null ? mc.level.getGameTime() : 0L;
     }
 
+    /** true khi đang có dữ liệu bot mới (nghĩa là người chơi đang theo dõi một bot). */
+    public static boolean isActive() {
+        Minecraft mc = Minecraft.getInstance();
+        return info != null && mc.level != null && mc.level.getGameTime() - receivedAt <= 60L;
+    }
+
     @SubscribeEvent
     public static void onOverlays(RegisterGuiOverlaysEvent event) {
         event.registerAboveAll("bot_status", BotHud::render);

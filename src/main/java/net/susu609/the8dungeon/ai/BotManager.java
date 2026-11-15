@@ -12,6 +12,12 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
@@ -76,6 +82,30 @@ public final class BotManager {
                 Susu609Mod.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> p), new BotStatusPacket(info));
             }
         }
+    }
+
+    /** Mở kho đồ của bot đang xem cho spectator, ở dạng chỉ đọc. */
+    public static void openInventory(ServerPlayer viewer) {
+        BotPlayer bot = viewer.getCamera() instanceof BotPlayer cam ? cam : nearest(viewer);
+        if (bot == null || !bot.isAlive()) return;
+        viewer.openMenu(new SimpleMenuProvider(
+                (id, inv, player) -> new ChestMenu(MenuType.GENERIC_9x4, id, inv, bot.getInventory(), 4) {
+                    @Override
+                    public void clicked(int slot, int button, ClickType type, Player p) {
+                        // chỉ xem: bỏ qua mọi thao tác chuột
+                    }
+
+                    @Override
+                    public ItemStack quickMoveStack(Player p, int index) {
+                        return ItemStack.EMPTY;
+                    }
+
+                    @Override
+                    public boolean stillValid(Player p) {
+                        return bot.isAlive();
+                    }
+                },
+                Component.literal("Kho đồ của " + bot.getGameProfile().getName())));
     }
 
     private static BotPlayer nearest(ServerPlayer p) {
