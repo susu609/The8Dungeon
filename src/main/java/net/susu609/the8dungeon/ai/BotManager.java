@@ -51,6 +51,7 @@ public final class BotManager {
     }
 
     private static final java.util.List<ShelterPlan> SHARED_SHELTERS = new ArrayList<>();
+    private static final Map<Long, String> BED_CLAIMS = new HashMap<>(); // giường -> bot đã giữ chỗ (đêm nay)
     private static final Map<UUID, String> WATCH = new HashMap<>(); // spectator -> bot đã chọn bằng [ ]
     private static final Map<UUID, Object> LAST_SENT = new HashMap<>();
 
@@ -109,6 +110,7 @@ public final class BotManager {
         humans = server.getPlayerList().getPlayers().stream().anyMatch(p -> !(p instanceof BotPlayer));
         long day = server.overworld().getDayTime() % 24000L;
         if (day < 11000L && !SHARED_SHELTERS.isEmpty()) SHARED_SHELTERS.clear(); // ban ngày: giải tán hầm nhóm
+        if (day < 11000L && !BED_CLAIMS.isEmpty()) BED_CLAIMS.clear();
         Runtime rt = Runtime.getRuntime();
         double ratio = (double) (rt.totalMemory() - rt.freeMemory()) / rt.maxMemory();
         if (!reduced && ratio > 0.90D) reduced = true;       // có độ trễ: vào ở 90%, ra ở 75%
@@ -202,6 +204,15 @@ public final class BotManager {
                 && giver != bot) {
             bot.onGift(giver, event.getStack().getCount());
         }
+    }
+
+    /** Giữ chỗ giường cho bot; false nếu bot khác đã giữ trước. */
+    static boolean claimBed(String bot, net.minecraft.core.BlockPos bed) {
+        String owner = BED_CLAIMS.get(bed.asLong());
+        if (owner != null && !owner.equals(bot) && BOTS.containsKey(owner)) return false;
+        BED_CLAIMS.values().removeIf(bot::equals); // mỗi bot chỉ giữ một giường
+        BED_CLAIMS.put(bed.asLong(), bot);
+        return true;
     }
 
     /** Mọi bot còn sống ở overworld đều đang ngủ, và đang là đêm. */

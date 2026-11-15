@@ -1034,6 +1034,15 @@ final class BotBrain {
             rethink = true;
             return;
         }
+        BlockState bedState = bot.level().getBlockState(bed);
+        if (!BotManager.claimBed(bot.getGameProfile().getName(), bed)
+                || (bedState.hasProperty(net.minecraft.world.level.block.BedBlock.OCCUPIED)
+                && bedState.getValue(net.minecraft.world.level.block.BedBlock.OCCUPIED))) {
+            senses.ban(bed, age + 2400); // giường của bot khác / đã có người nằm: tìm giường khác
+            BotLog.log(bot, "SLEEP", () -> "giường " + bed.toShortString() + " đã có người, tìm giường khác");
+            rethink = true;
+            return;
+        }
         if (bot.position().distanceToSqr(Vec3.atBottomCenterOf(bed)) > 2.0D * 2.0D) {
             nav.moveTo(bed, age, false);
             if (nav.failed) {
