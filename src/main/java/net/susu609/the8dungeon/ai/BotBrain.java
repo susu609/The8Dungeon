@@ -227,7 +227,10 @@ final class BotBrain {
         boolean roamOk = rules.roam <= 0 || bot.home().distSqr(p) <= (double) rules.roam * rules.roam;
         // Đi cùng nhóm: chỉ chọn việc trong vòng 32 khối quanh tâm nhóm
         boolean groupOk = groupCenter == null || Vec3.atCenterOf(p).distanceToSqr(groupCenter) <= 32.0D * 32.0D;
-        return roamOk && groupOk;
+        // Có base: mọi việc chọn trong vòng 64 khối quanh base
+        boolean baseOk = base == null || !base.dim.equals(bot.level().dimension().location().toString())
+                || base.origin.distSqr(p) <= 64 * 64;
+        return roamOk && groupOk && baseOk;
     }
 
     /** Cập nhật danh sách đồng đội trong 64 khối, đồng đội gần nhất và tâm nhóm. */
@@ -444,6 +447,11 @@ final class BotBrain {
         if (rules.shelter && baseReady && shelter == null) {
             if (night) sc[Goal.BASE.ordinal()] = 0.83F;
             else if (dusk && base.origin.distSqr(bot.blockPosition()) > 12 * 12) sc[Goal.BASE.ordinal()] = 0.6F;
+        }
+        if (base != null && !night && !inShelter && base.dim.equals(bot.level().dimension().location().toString())) {
+            double d2 = base.origin.distSqr(bot.blockPosition());
+            double lim = goal == Goal.BASE ? 40.0D : 64.0D; // đi quá xa base thì quay về (có độ trễ)
+            if (d2 > lim * lim) sc[Goal.BASE.ordinal()] = Math.max(sc[Goal.BASE.ordinal()], 0.56F);
         }
         boolean groupShelter = rules.coop && BotManager.sharedShelterNear(bot) != null;
         boolean canShelter = shelter != null || placeable >= 9 || groupShelter || (allyBotNear(16.0D) && placeable >= 6);
@@ -1297,7 +1305,8 @@ final class BotBrain {
         int[] c = Blueprint.insideCell(base.tier);
         BlockPos cell = base.origin.offset(c[0], c[1], c[2]);
         if (bot.blockPosition().distSqr(cell) > 2) {
-            nav.moveTo(cell, age, false);
+            nav.moveTo(cell, age, bot.blockPosition().distSqr(cell) > 48 * 48); // xa thì chạy nhanh
+            if (!isNight() && bot.blockPosition().distSqr(cell) < 24 * 24) rethink = true; // ban ngày: về gần là đủ
             return;
         }
         nav.stop();
