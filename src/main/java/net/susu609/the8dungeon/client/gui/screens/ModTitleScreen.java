@@ -151,9 +151,11 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
      * Lấy sprite đá từ atlas block. Block không có file PNG riêng trong GUI nên phải qua atlas.
      */
     private static TextureAtlasSprite[] loadTileSprites() {
+        //TODO LOCATION_BLOCKS' is deprecated
         TextureAtlas atlas = mc.getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS);
         TextureAtlasSprite[] sprites = new TextureAtlasSprite[STONE_BRICK_TILES.length];
         for (int i = 0; i < sprites.length; i++) {
+            //TODO Argument 'ResourceLocation.tryParse(STONE_BRICK_TILES[i])' might be null
             sprites[i] = atlas.getSprite(ResourceLocation.tryParse(STONE_BRICK_TILES[i]));
         }
         return sprites;
@@ -448,6 +450,7 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
         int vH = vanillaLogoHeight();
 
         // 1. Logo Minecraft: co theo chiều rộng nút
+        //TODO Argument 'VANILLA_LOGO' might be null
         g.blit(VANILLA_LOGO, x, top, w, vH, 0, 0, VANILLA_LOGO_W, VANILLA_LOGO_H, VANILLA_LOGO_W, VANILLA_TEX_H);
 
         // 2. Logo mod: đặt ở vị trí của Edition, chồng lên đáy logo vanilla
