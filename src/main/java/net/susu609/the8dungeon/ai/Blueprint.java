@@ -12,7 +12,8 @@ import net.minecraft.core.Direction;
 final class Blueprint {
 
     /** Loại vật liệu của một ô. Khối thật lấy từ món bot có (gỗ sồi hay vân sam đều được). */
-    enum Mat { AIR, SOLID, PLANKS, LOG, COBBLE, DOOR, BED, TABLE, FURNACE, CHEST, TORCH, LADDER, FENCE }
+    /** HEAD: phần phụ của khối 2 ô (đầu giường, nửa trên cửa): phải trống, trừ khi đã là giường/cửa. */
+    enum Mat { AIR, HEAD, SOLID, PLANKS, LOG, COBBLE, DOOR, BED, TABLE, FURNACE, CHEST, TORCH, LADDER, FENCE }
 
     /** facing: hướng của cửa/giường (chân -> đầu)/lò/rương/đuốc/thang; optional: không bắt buộc để hoàn thành cấp. */
     record Entry(int dx, int dy, int dz, Mat mat, Direction facing, boolean optional) {}
@@ -53,6 +54,7 @@ final class Blueprint {
                     else if (edgeX || edgeZ) {
                         if (z == z0 && x == doorX && y <= y0 + 1) {
                             if (y == y0) add(l, x, y, z, Mat.DOOR, Direction.NORTH, false); // cửa 2 khối, ghi ở nửa dưới
+                            else add(l, x, y, z, Mat.HEAD);                                  // nửa trên cửa phải trống
                         } else {
                             add(l, x, y, z, wall);
                         }
@@ -127,7 +129,8 @@ final class Blueprint {
         l.removeIf(e -> e.dx() == x && e.dy() == y && e.dz() == z);
         if (m == Mat.BED) {
             int hx = x + f.getStepX(), hz = z + f.getStepZ();
-            l.removeIf(e -> e.dx() == hx && e.dy() == y && e.dz() == hz); // ô đầu giường do giường tự đặt
+            l.removeIf(e -> e.dx() == hx && e.dy() == y && e.dz() == hz);
+            l.add(new Entry(hx, y, hz, Mat.HEAD, f, false)); // ô đầu giường: phải dọn trống, giường tự đặt phần này
         }
         l.add(new Entry(x, y, z, m, f, optional));
     }

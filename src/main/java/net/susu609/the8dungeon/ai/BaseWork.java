@@ -52,6 +52,7 @@ final class BaseWork {
         BlockState s = level.getBlockState(p);
         return switch (m) {
             case AIR -> s.canBeReplaced() && s.getFluidState().isEmpty();
+            case HEAD -> (s.canBeReplaced() && s.getFluidState().isEmpty()) || s.is(BlockTags.BEDS) || s.is(BlockTags.WOODEN_DOORS);
             case SOLID -> s.isFaceSturdy(level, p, Direction.UP);
             case PLANKS -> s.is(BlockTags.PLANKS);
             case LOG -> s.is(BlockTags.LOGS);
@@ -108,11 +109,11 @@ final class BaseWork {
                     st.missing.merge(e.mat(), 1, Integer::sum);
                     all = false;
                     if (e.mat() != Mat.BED && e.mat() != Mat.TABLE && e.mat() != Mat.FURNACE
-                            && e.mat() != Mat.CHEST && e.mat() != Mat.LADDER) structure = false;
+                            && e.mat() != Mat.CHEST && e.mat() != Mat.LADDER && e.mat() != Mat.HEAD) structure = false;
                 }
                 // việc làm được ngay: phá khối chiếm chỗ (luôn làm được), hoặc đặt nếu có món
                 boolean mine = blocked && e.mat() != Mat.SOLID;
-                boolean can = mine || (e.mat() != Mat.AIR && BotItems.count(inv, itemFor(e.mat())) > 0);
+                boolean can = mine || (e.mat() != Mat.AIR && e.mat() != Mat.HEAD && BotItems.count(inv, itemFor(e.mat())) > 0);
                 if (!can || skipped) continue;
                 double d = p.distSqr(bot.blockPosition()) + pass * 400.0D; // ưu tiên pha trước, rồi gần
                 if (d < bestD) {
@@ -129,7 +130,7 @@ final class BaseWork {
 
     private static int phase(Mat m) {
         return switch (m) {
-            case AIR -> 0;
+            case AIR, HEAD -> 0;
             case SOLID -> 1;
             case LOG, PLANKS, COBBLE -> 2;
             default -> 3;
@@ -233,7 +234,7 @@ final class BaseWork {
     static Map<Mat, Integer> deficit(Status st, Inventory inv) {
         Map<Mat, Integer> d = new EnumMap<>(Mat.class);
         st.missing.forEach((m, n) -> {
-            if (m == Mat.AIR || m == Mat.SOLID) return;
+            if (m == Mat.AIR || m == Mat.HEAD || m == Mat.SOLID) return;
             int have = BotItems.count(inv, itemFor(m));
             if (n > have) d.put(m, n - have);
         });
