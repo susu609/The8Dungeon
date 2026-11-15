@@ -9,7 +9,8 @@
   ],
   "client": [
     "RenderChunkRegionMixin",
-    "MinecraftGlowMixin"
+    "MinecraftGlowMixin",
+    "CameraFollowMixin"
   ],
   "injectors": {
     "defaultRequire": 1

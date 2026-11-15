@@ -82,6 +82,7 @@ public final class SpectatorCam {
     private static int radius = 2;             // độ rộng vùng cắt quanh đường nhìn
     private static Player target;              // bot đang theo dõi (null nếu không hoạt động)
     private static double dist = FAR;
+    private static double prevDist = FAR; // để nội suy khoảng cách theo khung hình
     private static int ticks;
 
     private SpectatorCam() {}
@@ -159,6 +160,7 @@ public final class SpectatorCam {
         Vec3 dir = direction(p);
         boolean covered = mc.level.clip(new ClipContext(eye, eye.add(dir.scale(FAR)),
                 ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, bot)).getType() == HitResult.Type.BLOCK;
+        prevDist = dist;
         dist += ((covered ? NEAR : FAR) - dist) * 0.25D; // tiến/lùi camera mượt
         place(p, eye.add(dir.scale(dist)));
 
@@ -169,17 +171,21 @@ public final class SpectatorCam {
         }
     }
 
-    /** Mỗi khung hình đặt lại camera theo vị trí nội suy của bot, để camera không bị giật. */
-    @SubscribeEvent
-    public static void onRenderTick(TickEvent.RenderTickEvent event) {
-        if (event.phase != TickEvent.Phase.START || target == null) return;
+    /**
+     * Vị trí camera cho khung hình này (gọi từ CameraFollowMixin), hoặc null nếu không theo dõi.
+     * Dùng vị trí nội suy của bot và hướng nhìn hiện tại của chuột nên không giật theo tick.
+     */
+    public static Vec3 cameraPosition(float partialTick) {
+        Player bot = target;
         LocalPlayer p = Minecraft.getInstance().player;
-        if (p == null) return;
-        Vec3 cam = target.getEyePosition(event.renderTickTime).add(direction(p).scale(dist));
-        place(p, cam);
-        p.xo = cam.x;
-        p.yo = cam.y;
-        p.zo = cam.z;
+        if (bot == null || p == null || mode == Mode.FREE) return null;
+        double d = Mth.lerp(partialTick, prevDist, dist);
+        return bot.getEyePosition(partialTick).add(direction(p).scale(d));
+    }
+
+    /** Chế độ trên xuống: khóa nhìn thẳng xuống. */
+    public static boolean lockPitchDown() {
+        return target != null && mode == Mode.TOP;
     }
 
     /** Chuyển sang bot trước/sau trong danh sách; server ghi nhớ lựa chọn và dịch chuyển tới nếu bot ở xa. */
