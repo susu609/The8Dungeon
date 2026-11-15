@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 15 class/kiểu Java, 984 dòng, 22 phụ thuộc nội bộ
+- 27 class/kiểu Java, 2085 dòng, 52 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -20,6 +20,17 @@ flowchart LR
     TitleScreenHook["TitleScreenHook<br/><small>class · 24 dòng</small>"]
     TitleScreenInterface["TitleScreenInterface<br/><small>interface · 13 dòng</small>"]
   end
+  subgraph pkg_dungeon["dungeon"]
+    DungeonBuilder["DungeonBuilder<br/><small>class · 107 dòng</small>"]
+    DungeonClientState["DungeonClientState<br/><small>class · 27 dòng</small>"]
+    DungeonCommand["DungeonCommand<br/><small>class · 71 dòng</small>"]
+    DungeonInspector["DungeonInspector<br/><small>class · 159 dòng</small>"]
+    DungeonLayout["DungeonLayout<br/><small>class · 382 dòng</small>"]
+    DungeonNetwork["DungeonNetwork<br/><small>class · 68 dòng</small>"]
+    DungeonParams["DungeonParams<br/><small>record · 43 dòng</small>"]
+    DungeonSavedData["DungeonSavedData<br/><small>class · 55 dòng</small>"]
+    RoomPreset["RoomPreset<br/><small>enum · 40 dòng</small>"]
+  end
   subgraph pkg_init["init"]
     ModBlockEntitiesRegistry["ModBlockEntitiesRegistry<br/><small>class · 16 dòng</small>"]
     ModBlocksRegistry["ModBlocksRegistry<br/><small>class · 49 dòng</small>"]
@@ -31,11 +42,47 @@ flowchart LR
   subgraph pkg_mixin["mixin"]
     ModBlockBehaviour["ModBlockBehaviour<br/><small>class · 45 dòng</small>"]
   end
+  subgraph pkg_network["network"]
+    ClientboundDungeonSeedPacket["ClientboundDungeonSeedPacket<br/><small>class · 44 dòng</small>"]
+  end
+  subgraph pkg_world["world"]
+    VoidSpawn["VoidSpawn<br/><small>class · 38 dòng</small>"]
+    WorldRandom["WorldRandom<br/><small>class · 67 dòng</small>"]
+  end
   subgraph pkg_world_torch["world.torch"]
     ModUnlitTorchBlock["ModUnlitTorchBlock<br/><small>class · 22 dòng</small>"]
     ModUnlitWallTorchBlock["ModUnlitWallTorchBlock<br/><small>class · 22 dòng</small>"]
     TorchBurn["TorchBurn<br/><small>class · 47 dòng</small>"]
   end
+  ClientboundDungeonSeedPacket --> DungeonClientState
+  ClientboundDungeonSeedPacket --> Susu609Mod
+  DungeonBuilder --> DungeonLayout
+  DungeonBuilder --> DungeonParams
+  DungeonBuilder --> RoomPreset
+  DungeonClientState --> DungeonLayout
+  DungeonClientState --> DungeonParams
+  DungeonClientState --> WorldRandom
+  DungeonCommand --> ClientboundDungeonSeedPacket
+  DungeonCommand --> DungeonBuilder
+  DungeonCommand --> DungeonLayout
+  DungeonCommand --> DungeonParams
+  DungeonCommand --> DungeonSavedData
+  DungeonCommand --> RoomPreset
+  DungeonCommand --> Susu609Mod
+  DungeonCommand --> WorldRandom
+  DungeonInspector --> DungeonBuilder
+  DungeonInspector --> DungeonClientState
+  DungeonInspector --> DungeonLayout
+  DungeonInspector --> RoomPreset
+  DungeonInspector --> Susu609Mod
+  DungeonLayout --> DungeonParams
+  DungeonLayout --> RoomPreset
+  DungeonLayout --> WorldRandom
+  DungeonNetwork --> DungeonClientState
+  DungeonNetwork --> DungeonSavedData
+  DungeonNetwork --> Susu609Mod
+  DungeonParams --> DungeonLayout
+  DungeonParams --> RoomPreset
   ModBlockBehaviour --> ModBlocksRegistry
   ModBlockBehaviour --> TorchBurn
   ModBlockEntitiesRegistry --> Susu609Mod
@@ -58,6 +105,7 @@ flowchart LR
   Susu609Mod --> ModItemsRegistry
   TitleScreenHook --> ModTitleScreen
   TitleScreenHook --> Susu609Mod
+  VoidSpawn --> Susu609Mod
 ```
 
 ## Class theo package
@@ -82,6 +130,20 @@ flowchart LR
 | `TitleScreenHook` | class | 24 | ModTitleScreen, Susu609Mod | ScreenEvent, ScreenEvent.Opening |
 | `TitleScreenInterface` | interface | 13 | - | - |
 
+### dungeon
+
+| Class | Loại | Dòng | Dùng tới | Event Forge |
+|---|---|---|---|---|
+| `DungeonBuilder` | class | 107 | DungeonLayout, DungeonParams, RoomPreset | - |
+| `DungeonClientState` | class | 27 | DungeonLayout, DungeonParams, WorldRandom | - |
+| `DungeonCommand` | class | 71 | ClientboundDungeonSeedPacket, DungeonBuilder, DungeonLayout, DungeonParams, DungeonSavedData, RoomPreset, Susu609Mod, WorldRandom | RegisterCommandsEvent |
+| `DungeonInspector` | class | 159 | DungeonBuilder, DungeonClientState, DungeonLayout, RoomPreset, Susu609Mod | RegisterGuiOverlaysEvent, RenderLevelStageEvent, RenderLevelStageEvent.Stage |
+| `DungeonLayout` | class | 382 | DungeonParams, RoomPreset, WorldRandom | - |
+| `DungeonNetwork` | class | 68 | DungeonClientState, DungeonSavedData, Susu609Mod | NetworkEvent, NetworkEvent.Context, PlayerEvent, PlayerEvent.PlayerLoggedInEvent |
+| `DungeonParams` | record | 43 | DungeonLayout, RoomPreset | - |
+| `DungeonSavedData` | class | 55 | - | - |
+| `RoomPreset` | enum | 40 | - | - |
+
 ### init
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
@@ -98,6 +160,19 @@ flowchart LR
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
 | `ModBlockBehaviour` | class | 45 | ModBlocksRegistry, TorchBurn | - |
+
+### network
+
+| Class | Loại | Dòng | Dùng tới | Event Forge |
+|---|---|---|---|---|
+| `ClientboundDungeonSeedPacket` | class | 44 | DungeonClientState, Susu609Mod | FMLCommonSetupEvent, NetworkEvent, NetworkEvent.Context |
+
+### world
+
+| Class | Loại | Dòng | Dùng tới | Event Forge |
+|---|---|---|---|---|
+| `VoidSpawn` | class | 38 | Susu609Mod | LevelEvent, LevelEvent.CreateSpawnPosition |
+| `WorldRandom` | class | 67 | - | - |
 
 ### world.torch
 
