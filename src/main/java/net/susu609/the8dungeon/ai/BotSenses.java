@@ -28,8 +28,8 @@ import net.minecraft.world.phys.AABB;
  */
 final class BotSenses {
 
-    static final int LOG = 0, STONE = 1, DIRT = 2, BED = 3, TABLE = 4;
-    private static final int KINDS = 5;
+    static final int LOG = 0, STONE = 1, DIRT = 2, BED = 3, TABLE = 4, GRASS = 5, ORE = 6;
+    private static final int KINDS = 7;
 
     private static final int R = 16, RY = 6;
     private static final int W = 2 * R + 1, H = 2 * RY + 1, TOTAL = W * W * H;
@@ -174,6 +174,8 @@ final class BotSenses {
             case STONE -> s.is(Blocks.STONE) || s.is(Blocks.COBBLESTONE);
             case DIRT -> s.is(Blocks.DIRT) || s.is(Blocks.GRASS_BLOCK) || s.is(Blocks.COARSE_DIRT);
             case TABLE -> s.is(Blocks.CRAFTING_TABLE);
+            case GRASS -> s.is(Blocks.GRASS) || s.is(Blocks.TALL_GRASS) || s.is(Blocks.FERN); // cỏ: đập ra hạt lúa mì
+            case ORE -> isOre(s);
             // giường trống: chỉ lấy phần đầu giường (vị trí dùng để nằm)
             default -> s.is(BlockTags.BEDS) && s.getValue(net.minecraft.world.level.block.BedBlock.PART)
                     == net.minecraft.world.level.block.state.properties.BedPart.HEAD
@@ -239,8 +241,22 @@ final class BotSenses {
         if (banned.containsKey(pos.asLong())) return;
         BlockPos cur = best[kind];
         if (cur != null && cur.distSqr(here) <= pos.distSqr(here)) return;
-        if (kind != BED && kind != TABLE && !safeAndExposed(level, pos)) return;
+        if (kind != BED && kind != TABLE && kind != GRASS && !safeAndExposed(level, pos)) return;
         best[kind] = pos.immutable();
+    }
+
+    /** Quặng đáng đào (than, sắt, đồng, vàng, kim cương, đỏ, lưu ly), cả biến thể deepslate. */
+    static boolean isOre(BlockState s) {
+        return s.is(BlockTags.COAL_ORES) || s.is(BlockTags.IRON_ORES) || s.is(BlockTags.COPPER_ORES)
+                || s.is(BlockTags.GOLD_ORES) || s.is(BlockTags.DIAMOND_ORES) || s.is(BlockTags.REDSTONE_ORES)
+                || s.is(BlockTags.LAPIS_ORES);
+    }
+
+    /** Cuốc tối thiểu để quặng rơi ra đồ (1 gỗ, 2 đá, 3 sắt). */
+    static int pickNeeded(BlockState s) {
+        if (s.is(BlockTags.DIAMOND_ORES) || s.is(BlockTags.GOLD_ORES) || s.is(BlockTags.REDSTONE_ORES)) return 3;
+        if (s.is(BlockTags.IRON_ORES) || s.is(BlockTags.LAPIS_ORES) || s.is(BlockTags.COPPER_ORES)) return 2;
+        return 1;
     }
 
     /** Có ít nhất một mặt hở (với tới được) và không kề chất lỏng (tránh dung nham/nước tràn). */

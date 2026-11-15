@@ -146,6 +146,11 @@ final class BotItems {
         return !r.isEmpty() && r.isEdible();
     }
 
+    /** Bỏ được vào lò: đồ sống ăn được, hoặc quặng sắt/vàng thô. */
+    static boolean isSmeltable(net.minecraft.server.level.ServerLevel level, ItemStack s) {
+        return isRawFood(level, s) || s.is(Items.RAW_IRON) || s.is(Items.RAW_GOLD);
+    }
+
     /** Số món nung được với một đơn vị nhiên liệu này (than 8, gỗ 1,5), 0 nếu không dùng làm nhiên liệu. */
     static float smeltsPerFuel(ItemStack s) {
         if (s.is(Items.COAL) || s.is(Items.CHARCOAL)) return 8.0F;

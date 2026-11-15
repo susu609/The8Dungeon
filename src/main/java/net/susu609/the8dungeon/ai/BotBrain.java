@@ -33,7 +33,7 @@ import net.minecraft.world.phys.Vec3;
  */
 final class BotBrain {
 
-    private enum Goal { IDLE, FLEE, FIGHT, EAT, HUNT, COLLECT, SHELTER, WOOD, STONE, DIRT, EXPLORE, HOME, COOK, GROUP, SHARE, SLEEP, CRAFT, BUILD, BASE, STAY, FOLLOW, SCOUT }
+    private enum Goal { IDLE, FLEE, FIGHT, EAT, HUNT, COLLECT, SHELTER, WOOD, STONE, DIRT, EXPLORE, HOME, COOK, GROUP, SHARE, SLEEP, CRAFT, BUILD, BASE, STAY, FOLLOW, SCOUT, FARM, MINE }
 
     private static final double REACH = 4.0D;
 
@@ -80,6 +80,13 @@ final class BotBrain {
     private int scoutSince = -1;       // bắt đầu dò chỗ làm base lúc nào
     private BlockPos scoutTarget;      // chỗ hợp làm base đã biết, đang đi tới
     private int nextShareMemory;
+    // Trồng trọt và khai khoáng
+    private BotCrafting.Wants wants = BotCrafting.Wants.NONE;
+    private BlockPos farmWater;        // nguồn nước cạnh ruộng
+    private BlockPos farmTask;         // ô ruộng đang xử lý
+    private int farmTaskKind;          // 1 thu hoạch, 2 gieo, 3 xới, 4 nhặt hạt (đập cỏ)
+    private int mineBlockedUntil;      // bậc thang gặp dung nham/nước: tạm ngưng
+    private BlockPos digTask;          // khối đang đào ở lối xuống
     // Tự gỡ kẹt
     private BlockPos digOut;          // khối chắn phía trước cần đào để đi tiếp
     private BlockPos pillarFeet;      // đang kê khối dưới chân để leo ra khỏi hố
@@ -542,9 +549,13 @@ final class BotBrain {
     private void think() {
         rules = BotRulesStore.get(bot.getServer()).effective(bot.getGameProfile().getName());
         snapshotInventory();
+        boolean baseDone = base != null && baseStatus != null && baseStatus.structureDone;
+        wants = new BotCrafting.Wants(baseDone && rules.mine
+                && BotItems.count(bot.getInventory(), st -> st.getItem() instanceof net.minecraft.world.item.HoeItem) == 0,
+                BotItems.count(bot.getInventory(), st -> st.is(Items.BREAD)) < 6);
         wantFurnace = rules.cook && rawFood > 0 && furnacePos == null
                 && BotItems.count(bot.getInventory(), st -> st.is(Items.FURNACE)) == 0;
-        for (int i = 0; i < 6 && BotCrafting.stepInventory(bot, wantFurnace, tableUse != null, baseNeed); i++) {
+        for (int i = 0; i < 6 && BotCrafting.stepInventory(bot, wantFurnace, tableUse != null, baseNeed, wants); i++) {
             // công thức 2x2 chế liền trong túi
         }
         snapshotInventory();
@@ -670,7 +681,7 @@ final class BotBrain {
             // Có món 3x3 chế được: ra bàn (bàn có sẵn gần đó, hoặc đặt bàn mang theo)
             boolean haveTable = BotItems.count(bot.getInventory(), st -> st.is(Items.CRAFTING_TABLE)) > 0
                     || senses.best(BotSenses.TABLE) != null;
-            if (tableUse != null || (haveTable && age >= craftBlockedUntil && BotCrafting.needsTable(bot, wantFurnace, baseNeed))) {
+            if (tableUse != null || (haveTable && age >= craftBlockedUntil && BotCrafting.needsTable(bot, wantFurnace, baseNeed, wants))) {
                 sc[Goal.CRAFT.ordinal()] = 0.7F;
             }
             if (rules.cook && h == null) {
@@ -727,6 +738,18 @@ final class BotBrain {
         }
 
         if (scoutTarget != null && !night && !inShelter) sc[Goal.SCOUT.ordinal()] = 0.52F; // đi tới chỗ hợp làm base
+        // Sau khi nhà đã kín: trồng trọt, khai khoáng (việc dài hạn)
+        if (!inShelter && !night && !dusk && base != null && baseStatus != null && baseStatus.structureDone) {
+            if (rules.mine && age % 40 == 0) planFarm();
+            if (farmTask != null) sc[Goal.FARM.ordinal()] = farmTaskKind == 1 ? 0.5F : 0.46F;
+            if (rules.mine && pickRank >= 1 && age >= mineBlockedUntil) {
+                BlockPos ore = senses.best(BotSenses.ORE);
+                boolean oreOk = ore != null && inRoamLoose(ore)
+                        && pickRank >= BotSenses.pickNeeded(bot.level().getBlockState(ore));
+                if (oreOk) sc[Goal.MINE.ordinal()] = 0.5F;
+                else if (planDig()) sc[Goal.MINE.ordinal()] = 0.42F; // không thấy quặng: đào lối xuống
+            }
+        }
         applyOrder(sc);
         lastScores = sc;
         // Chọn điểm cao nhất, thêm quán tính cho mục tiêu hiện tại
@@ -807,7 +830,7 @@ final class BotBrain {
         foodCount = BotItems.count(inv, s -> s.isEdible() && !s.is(Items.ROTTEN_FLESH) && !s.is(Items.SPIDER_EYE));
         pickRank = BotItems.rank(inv, PickaxeItem.class);
         ServerLevel lvl = bot.serverLevel();
-        rawFood = BotItems.count(inv, st -> BotItems.isRawFood(lvl, st));
+        rawFood = BotItems.count(inv, st -> BotItems.isSmeltable(lvl, st)); // đồ sống + quặng thô
     }
 
     private boolean isNight() {
@@ -861,6 +884,8 @@ final class BotBrain {
             case BASE -> actBase();
             case STAY -> actStay();
             case FOLLOW -> actFollow();
+            case FARM -> actFarm();
+            case MINE -> actMine();
             case SCOUT -> {
                 if (scoutTarget == null || nav.moveTo(scoutTarget, age, false) || nav.failed) {
                     baseCheckAt = age; // tới nơi (hoặc không tới được): kiểm tra lại để lập base
@@ -1204,7 +1229,7 @@ final class BotBrain {
         if (in.isEmpty() || in.getCount() < in.getMaxStackSize()) {
             for (int i = 0; i < inv.getContainerSize(); i++) {
                 ItemStack st = inv.getItem(i);
-                if (!BotItems.isRawFood(level, st) || (!in.isEmpty() && !ItemStack.isSameItemSameTags(st, in))) continue;
+                if (!BotItems.isSmeltable(level, st) || (!in.isEmpty() && !ItemStack.isSameItemSameTags(st, in))) continue;
                 int move = in.isEmpty() ? st.getCount() : Math.min(st.getCount(), in.getMaxStackSize() - in.getCount());
                 if (in.isEmpty()) {
                     f.setItem(0, st.split(move));
@@ -1425,7 +1450,7 @@ final class BotBrain {
         nav.stop();
         bot.lookAt(EntityAnchorArgument.Anchor.EYES, center); // nhìn vào bàn khi chế
         if (age % 10 != 0) return; // mỗi món nửa giây
-        if (BotCrafting.stepTable(bot, wantFurnace, baseNeed)) {
+        if (BotCrafting.stepTable(bot, wantFurnace, baseNeed, wants)) {
             bot.swing(InteractionHand.MAIN_HAND, true);
             snapshotInventory();
             return;
@@ -1474,6 +1499,8 @@ final class BotBrain {
                     BotLog.log(bot, "MEMORY", () -> "nhớ chỗ hợp làm base (đồng bằng, gần nước) tại " + site.toShortString());
                 }
             }
+            BlockPos ore = senses.best(BotSenses.ORE);
+            if (ore != null) m.remember(BotMemory.PoiType.ORE, ore, now);
             // đang ở dưới mặt đất mà xung quanh trống: cửa hang
             int surfaceY = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, here.getX(), here.getZ());
             if (here.getY() < surfaceY - 6 && level.getBrightness(net.minecraft.world.level.LightLayer.SKY, here) == 0
@@ -1685,6 +1712,192 @@ final class BotBrain {
                     && ds.getValue(net.minecraft.world.level.block.DoorBlock.OPEN)) {
                 door.setOpen(bot, level, ds, dp, false);
             }
+        }
+    }
+
+    // ===== Trồng trọt: lúa mì cạnh nguồn nước gần base =====
+
+    /** Khu khai thác/ruộng được phép xa base hơn một chút (96 khối). */
+    private boolean inRoamLoose(BlockPos p) {
+        return base == null || base.origin.distSqr(p) <= 96 * 96;
+    }
+
+    /** Ô đất trồng được quanh nguồn nước (bán kính 4 = vùng nước tưới tới), không thuộc khung nhà. */
+    private java.util.List<BlockPos> farmCells(ServerLevel level) {
+        java.util.List<BlockPos> cells = new java.util.ArrayList<>();
+        if (farmWater == null) return cells;
+        BaseStore store = BaseStore.get(bot.getServer());
+        for (int dx = -4; dx <= 4; dx++) {
+            for (int dz = -4; dz <= 4; dz++) {
+                BlockPos c = farmWater.offset(dx, 0, dz);
+                BlockState s = level.getBlockState(c);
+                boolean soil = s.is(Blocks.GRASS_BLOCK) || s.is(Blocks.DIRT) || s.is(Blocks.FARMLAND);
+                if (!soil || BaseWork.protects(store, level, c)) continue;
+                BlockState up = level.getBlockState(c.above());
+                if (!(up.isAir() || up.is(Blocks.WHEAT) || up.is(Blocks.GRASS) || up.is(Blocks.FERN))) continue;
+                cells.add(c);
+                if (cells.size() >= 24) return cells;
+            }
+        }
+        return cells;
+    }
+
+    /** Chọn việc ruộng: thu hoạch lúa chín > gieo hạt > xới đất > đập cỏ lấy hạt. */
+    private void planFarm() {
+        farmTask = null;
+        ServerLevel level = bot.serverLevel();
+        if (farmWater == null || !level.getFluidState(farmWater).is(net.minecraft.tags.FluidTags.WATER)) {
+            farmWater = BaseWork.waterNear(level, base.origin.offset(3, 0, 3), 16);
+            if (farmWater == null) return;
+        }
+        Inventory inv = bot.getInventory();
+        int seeds = BotItems.count(inv, st -> st.is(Items.WHEAT_SEEDS));
+        boolean hoe = BotItems.count(inv, st -> st.getItem() instanceof net.minecraft.world.item.HoeItem) > 0;
+        int bestKind = 99;
+        double bestD = Double.MAX_VALUE;
+        for (BlockPos c : farmCells(level)) {
+            BlockState s = level.getBlockState(c), up = level.getBlockState(c.above());
+            int kind;
+            if (up.getBlock() instanceof net.minecraft.world.level.block.CropBlock crop && crop.isMaxAge(up)) kind = 1;
+            else if (s.is(Blocks.FARMLAND) && up.isAir() && seeds > 0) kind = 2;
+            else if (!s.is(Blocks.FARMLAND) && hoe) kind = 3;
+            else continue;
+            double d = c.distSqr(bot.blockPosition());
+            if (kind < bestKind || (kind == bestKind && d < bestD)) {
+                bestKind = kind;
+                bestD = d;
+                farmTask = kind == 1 ? c.above() : c;
+                farmTaskKind = kind;
+            }
+        }
+        if (farmTask == null && seeds < 4) { // chưa có hạt: đập cỏ quanh đây
+            BlockPos grass = senses.best(BotSenses.GRASS);
+            if (grass != null && inRoamLoose(grass)) {
+                farmTask = grass;
+                farmTaskKind = 4;
+            }
+        }
+    }
+
+    private void actFarm() {
+        ServerLevel level = bot.serverLevel();
+        if (farmTask == null) {
+            nav.stop();
+            rethink = true;
+            return;
+        }
+        BlockPos p = farmTask;
+        if (farmTaskKind == 1 || farmTaskKind == 4) { // thu hoạch / đập cỏ: phá khối (rơi lúa mì, hạt)
+            allowBasePos = p;
+            if (mineTick(p)) {
+                allowBasePos = null;
+                final int k = farmTaskKind;
+                BotLog.log(bot, "FARM", () -> (k == 1 ? "thu hoạch lúa mì tại " : "đập cỏ lấy hạt tại ") + p.toShortString());
+                farmTask = null;
+                planFarm();
+            }
+            return;
+        }
+        Vec3 c = Vec3.atCenterOf(p);
+        if (bot.getEyePosition().distanceToSqr(c) > REACH * REACH) {
+            nav.moveTo(p, age, false);
+            if (nav.failed) farmTask = null;
+            return;
+        }
+        nav.stop();
+        bot.lookAt(EntityAnchorArgument.Anchor.EYES, c);
+        if (age % 6 != 0) return;
+        Inventory inv = bot.getInventory();
+        if (farmTaskKind == 3) { // xới đất bằng cuốc xới
+            BotItems.equipBest(bot, Blocks.FARMLAND.defaultBlockState());
+            for (int i = 0; i < 9; i++) {
+                if (inv.getItem(i).getItem() instanceof net.minecraft.world.item.HoeItem) inv.selected = i;
+            }
+            ItemStack hoe = bot.getMainHandItem();
+            if (!(hoe.getItem() instanceof net.minecraft.world.item.HoeItem)) {
+                farmTask = null;
+                return;
+            }
+            BlockState above = level.getBlockState(p.above());
+            if (!above.isAir()) level.destroyBlock(p.above(), true, bot); // cỏ trên mặt đất
+            level.setBlock(p, Blocks.FARMLAND.defaultBlockState(), 11);
+            level.playSound(null, p, net.minecraft.sounds.SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1.0F, 1.0F);
+            hoe.hurtAndBreak(1, bot, b -> b.broadcastBreakEvent(InteractionHand.MAIN_HAND));
+            BotLog.log(bot, "FARM", () -> "xới đất tại " + p.toShortString());
+        } else if (farmTaskKind == 2 && BotItems.take(inv, st -> st.is(Items.WHEAT_SEEDS), 1)) { // gieo hạt
+            level.setBlock(p.above(), Blocks.WHEAT.defaultBlockState(), 3);
+            level.playSound(null, p, net.minecraft.sounds.SoundEvents.CROP_PLANTED, SoundSource.BLOCKS, 1.0F, 1.0F);
+            BotLog.log(bot, "FARM", () -> "gieo hạt tại " + p.toShortString());
+        }
+        bot.swing(InteractionHand.MAIN_HAND, true);
+        planFarm();
+    }
+
+    // ===== Khai khoáng: quặng lộ ra, không có thì đào lối xuống bậc thang ngoài base =====
+
+    private static final int MINE_BOTTOM_Y = 16; // tầng sắt
+
+    /** Bậc thang đi xuống phía tây base: bậc i ở entrance + (-i, -i, 0), cần trống 3 khối để đi xuống. */
+    private BlockPos stairStep(int i) {
+        BlockPos entrance = base.origin.offset(-5, 0, 3);
+        int depth = Math.min(i, entrance.getY() - MINE_BOTTOM_Y);
+        int tunnel = Math.max(0, i - depth); // tới đáy thì đào hầm ngang tiếp
+        return entrance.offset(-depth - tunnel, -depth, 0);
+    }
+
+    /** Tìm khối cần đào tiếp ở lối xuống. Trả false nếu đã xong (hầm ngang đủ dài) hoặc không có base. */
+    private boolean planDig() {
+        if (base == null) return false;
+        ServerLevel level = bot.serverLevel();
+        int maxSteps = (base.origin.getY() - MINE_BOTTOM_Y) + 48;
+        for (int i = 0; i <= maxSteps; i++) {
+            BlockPos st = stairStep(i);
+            boolean bottom = st.getY() <= MINE_BOTTOM_Y;
+            int height = bottom ? 2 : 3; // hầm ngang cao 2, bậc thang cần 3 để bước xuống
+            for (int h = height - 1; h >= 0; h--) { // đào từ trên xuống
+                BlockPos q = st.above(h);
+                if (!level.isLoaded(q)) return false;
+                BlockState s = level.getBlockState(q);
+                if (!s.getCollisionShape(level, q).isEmpty()) {
+                    digTask = q.immutable();
+                    return true;
+                }
+            }
+        }
+        digTask = null;
+        return false;
+    }
+
+    private void actMine() {
+        ServerLevel level = bot.serverLevel();
+        BlockPos ore = senses.best(BotSenses.ORE);
+        BlockPos target = ore != null && pickRank >= BotSenses.pickNeeded(level.getBlockState(ore)) ? ore : digTask;
+        if (target == null) {
+            nav.stop();
+            rethink = true;
+            return;
+        }
+        if (mineTick(target)) {
+            BlockState after = level.getBlockState(target);
+            if (target.equals(digTask) && !after.getCollisionShape(level, target).isEmpty()) {
+                mineBlockedUntil = age + 2400; // không đào được (dung nham/nước kề bên): tạm ngưng
+                BotLog.log(bot, "MINE", () -> "lối xuống bị chặn tại " + target.toShortString() + ", tạm ngưng");
+            } else if (target.equals(ore)) {
+                BotLog.log(bot, "MINE", () -> "đào quặng tại " + target.toShortString());
+                BotMemory.Mind m = mind();
+                if (m != null) m.forget(BotMemory.PoiType.ORE, target);
+            }
+            // cứ 6 bậc đặt một ngọn đuốc nếu có
+            if (target.equals(digTask) && BotItems.count(bot.getInventory(), st -> st.is(Items.TORCH)) > 0) {
+                BlockPos floor = target.below();
+                if (Math.floorMod(target.getX(), 6) == 0 && level.getBlockState(target).isAir()
+                        && level.getBlockState(floor).isFaceSturdy(level, floor, Direction.UP)) {
+                    BotItems.take(bot.getInventory(), st -> st.is(Items.TORCH), 1);
+                    level.setBlock(target, Blocks.TORCH.defaultBlockState(), 3);
+                }
+            }
+            planDig();
+            rethink = true;
         }
     }
 

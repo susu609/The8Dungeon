@@ -30,13 +30,24 @@ final class BotCrafting {
 
     private BotCrafting() {}
 
+    /** Mong muốn thêm ngoài công cụ/base: cuốc xới (trồng trọt), bánh mì (từ lúa mì). */
+    record Wants(boolean hoe, boolean bread) {
+        static final Wants NONE = new Wants(false, false);
+    }
+
+    private static final Predicate<ItemStack> IRON = s -> s.is(Items.IRON_INGOT);
+    private static final Predicate<ItemStack> WHEAT = s -> s.is(Items.WHEAT);
+
     private static int n(Map<Mat, Integer> need, Mat m) {
         return need == null ? 0 : need.getOrDefault(m, 0);
     }
 
     private static boolean wantTools(Inventory inv) {
-        return BotItems.rank(inv, PickaxeItem.class) < 2 || BotItems.rank(inv, SwordItem.class) < 2
+        boolean stoneMissing = BotItems.rank(inv, PickaxeItem.class) < 2 || BotItems.rank(inv, SwordItem.class) < 2
                 || BotItems.rank(inv, AxeItem.class) < 2;
+        boolean ironUpgrade = BotItems.count(inv, IRON) >= 2 && (BotItems.rank(inv, PickaxeItem.class) < 3
+                || BotItems.rank(inv, SwordItem.class) < 3);
+        return stoneMissing || ironUpgrade;
     }
 
     /** Số ván cần thêm cho đồ base (ô ván + nguyên liệu cửa/rương/giường/rào). */
@@ -52,7 +63,7 @@ final class BotCrafting {
 
     // ===== 2x2: chế ngay trong túi =====
 
-    static boolean stepInventory(BotPlayer bot, boolean wantFurnace, boolean tablePlaced, Map<Mat, Integer> need) {
+    static boolean stepInventory(BotPlayer bot, boolean wantFurnace, boolean tablePlaced, Map<Mat, Integer> need, Wants w) {
         Inventory inv = bot.getInventory();
         int logs = BotItems.count(inv, LOG);
         int planks = BotItems.count(inv, PLANK);
@@ -60,14 +71,14 @@ final class BotCrafting {
         boolean tools = wantTools(inv);
         boolean hasTable = tablePlaced || BotItems.count(inv, TABLE) > 0; // bàn đang đặt dưới đất cũng tính
         boolean baseCraft = n(need, Mat.DOOR) + n(need, Mat.CHEST) + n(need, Mat.BED) + n(need, Mat.LADDER)
-                + n(need, Mat.FENCE) > 0;
+                + n(need, Mat.FENCE) > 0 || w.hoe() || w.bread();
         if ((tools || wantFurnace || baseCraft) && !hasTable && planks >= 4) {
             BotItems.take(inv, PLANK, 4);
             BotItems.give(bot, new ItemStack(Items.CRAFTING_TABLE));
             BotLog.log(bot, "CRAFT", () -> "bàn chế tạo (từ 4 ván, trong túi)");
             return true;
         }
-        int needSticks = (tools ? 4 : 0) + baseSticks(need);
+        int needSticks = (tools ? 4 : 0) + baseSticks(need) + (w.hoe() ? 2 : 0);
         if (sticks < needSticks && planks >= 2 && (hasTable || planks >= 6)) {
             BotItems.take(inv, PLANK, 2);
             BotItems.give(bot, new ItemStack(Items.STICK, 4));
@@ -81,7 +92,7 @@ final class BotCrafting {
             BotLog.log(bot, "CRAFT", () -> "4 đuốc (than + gậy)");
             return true;
         }
-        int wantPlanks = Math.max((tools || !hasTable) ? 12 : 0, basePlanks(need) + 4);
+        int wantPlanks = Math.max((tools || !hasTable || w.hoe()) ? 12 : 0, basePlanks(need) + 4);
         int keepLogs = n(need, Mat.LOG); // giữ gỗ nguyên khúc làm cột nhà
         if (planks < wantPlanks && logs > keepLogs) {
             BotItems.take(inv, LOG, 1);
@@ -95,16 +106,16 @@ final class BotCrafting {
     // ===== 3x3: chỉ ở bàn chế tạo =====
 
     /** Có món 3x3 nào chế được ngay bây giờ không (cần ra bàn chế tạo). */
-    static boolean needsTable(BotPlayer bot, boolean wantFurnace, Map<Mat, Integer> need) {
-        return tableStep(bot, wantFurnace, need, true);
+    static boolean needsTable(BotPlayer bot, boolean wantFurnace, Map<Mat, Integer> need, Wants w) {
+        return tableStep(bot, wantFurnace, need, w, true);
     }
 
     /** Chế một món 3x3. Chỉ gọi khi bot đang đứng cạnh và nhìn vào bàn chế tạo. */
-    static boolean stepTable(BotPlayer bot, boolean wantFurnace, Map<Mat, Integer> need) {
-        return tableStep(bot, wantFurnace, need, false);
+    static boolean stepTable(BotPlayer bot, boolean wantFurnace, Map<Mat, Integer> need, Wants w) {
+        return tableStep(bot, wantFurnace, need, w, false);
     }
 
-    private static boolean tableStep(BotPlayer bot, boolean wantFurnace, Map<Mat, Integer> need, boolean dry) {
+    private static boolean tableStep(BotPlayer bot, boolean wantFurnace, Map<Mat, Integer> need, Wants w, boolean dry) {
         Inventory inv = bot.getInventory();
         int planks = BotItems.count(inv, PLANK);
         int sticks = BotItems.count(inv, STICK);
@@ -120,6 +131,19 @@ final class BotCrafting {
         if (axe == 0 && planks >= 3 && sticks >= 2) return dry || tool(bot, PLANK, 3, Items.WOODEN_AXE, 2);
         if (sword == 1 && cobble >= 2 && sticks >= 1) return dry || tool(bot, COBBLE, 2, Items.STONE_SWORD, 1);
         if (axe == 1 && cobble >= 3 && sticks >= 2) return dry || tool(bot, COBBLE, 3, Items.STONE_AXE, 2);
+        // Đồ sắt (sau khi nung quặng sắt): cuốc trước rồi kiếm, rìu
+        int iron = BotItems.count(inv, IRON);
+        if (pick == 2 && iron >= 3 && sticks >= 2) return dry || tool(bot, IRON, 3, Items.IRON_PICKAXE, 2);
+        if (sword == 2 && iron >= 2 && sticks >= 1) return dry || tool(bot, IRON, 2, Items.IRON_SWORD, 1);
+        if (axe == 2 && iron >= 3 && sticks >= 2 && BotItems.rank(inv, PickaxeItem.class) >= 3) return dry || tool(bot, IRON, 3, Items.IRON_AXE, 2);
+        // Cuốc xới để trồng trọt
+        boolean hasHoe = BotItems.count(inv, s -> s.getItem() instanceof net.minecraft.world.item.HoeItem) > 0;
+        if (w.hoe() && !hasHoe) {
+            if (cobble >= 2 && sticks >= 2) return dry || tool(bot, COBBLE, 2, Items.STONE_HOE, 2);
+            if (planks >= 2 && sticks >= 2) return dry || tool(bot, PLANK, 2, Items.WOODEN_HOE, 2);
+        }
+        // Bánh mì: 3 lúa mì
+        if (w.bread() && BotItems.count(inv, WHEAT) >= 3) return dry || make(bot, WHEAT, 3, null, 0, Items.BREAD, 1);
         // Lò: để nấu ăn, hoặc base cần
         boolean furnaceNeeded = wantFurnace || n(need, Mat.FURNACE) > 0;
         if (furnaceNeeded && cobble >= 8 && BotItems.count(inv, s -> s.is(Items.FURNACE)) == 0) {
@@ -132,8 +156,8 @@ final class BotCrafting {
             Item wool = woolWithAtLeast(inv, 3);
             if (wool != null) {
                 if (dry) return true;
-                final Item w = wool;
-                return make(bot, PLANK, 3, s -> s.is(w), 3, BaseWork.bedForWool(wool), 1);
+                final Item woolItem = wool;
+                return make(bot, PLANK, 3, s -> s.is(woolItem), 3, BaseWork.bedForWool(wool), 1);
             }
         }
         if (n(need, Mat.LADDER) > 0 && sticks >= 7) return dry || make(bot, STICK, 7, null, 0, Items.LADDER, 3);
