@@ -17,6 +17,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
@@ -67,8 +68,12 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     /**
      * Pool biến thể đá; mỗi ô lưới chọn ngẫu nhiên một cái.
      */
-    private static final String[] STONE_BRICK_TILES = {"minecraft:block/stone_bricks", "minecraft:block/mossy_stone_bricks", "minecraft:block/cracked_stone_bricks", "minecraft:block/chiseled_stone_bricks"};
-
+    private static final ResourceLocation[] STONE_BRICK_TILES = {
+            ResourceLocation.fromNamespaceAndPath("minecraft", "block/stone_bricks"),
+            ResourceLocation.fromNamespaceAndPath("minecraft", "block/mossy_stone_bricks"),
+            ResourceLocation.fromNamespaceAndPath("minecraft", "block/cracked_stone_bricks"),
+            ResourceLocation.fromNamespaceAndPath("minecraft", "block/chiseled_stone_bricks")
+    };
     // --- Logo mod ---
     private static final long LOGO_ANIM_MS = 900L;      // logo rơi vào chỗ trong 0,9 giây
     /**
@@ -104,7 +109,8 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     // Kích thước icon ở hàng dưới; trước đây là biến cục bộ trong init()
     private static final int ICON_SIZE = 20;
     // Logo Minecraft gốc (vanilla): vùng vẽ 256x44 trong file 256x64
-    private static final ResourceLocation VANILLA_LOGO = ResourceLocation.tryParse("minecraft:textures/gui/title/minecraft.png");
+    private static final ResourceLocation VANILLA_LOGO =
+            ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/title/minecraft.png");
     private static final int VANILLA_LOGO_W = 256;
     private static final int VANILLA_LOGO_H = 44;
     private static final int VANILLA_TEX_H = 64;
@@ -139,24 +145,24 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
      */
     private int cols;
 
-    // ===================== 5. HÀNH ĐỘNG CỦA NÚT =====================
+    // Số hàng của lưới nền.
     private int rows;
-    // ===================== 6. TẠO VÀ XÓA WORLD =====================
 
+    /**
+     * Hàm khởi tạo màn hình menu chính của mod. Gọi TitleScreen(false) để tắt hiệu ứng hiện dần (fade-in) mặc định của Minecraft.
+     */
     public ModTitleScreen() {
         super(false); // false = không dùng hiệu ứng fade-in của vanilla
     }
 
     /**
-     * Lấy sprite đá từ atlas block. Block không có file PNG riêng trong GUI nên phải qua atlas.
+     * Đọc các hình (sprite) dùng để vẽ nền từ atlas chứa texture block. Trả về một mảng sprite cho các ô nền. LƯU Ý: dòng atlas.getSprite(...) hiện đang dùng đường dẫn logo mod thay vì STONE_BRICK_TILES[i], nên chưa lấy đúng bốn loại đá; cần kiểm tra và sửa tại chính dòng đó.
      */
     private static TextureAtlasSprite[] loadTileSprites() {
-        //TODO LOCATION_BLOCKS' is deprecated
-        TextureAtlas atlas = mc.getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS);
+        TextureAtlas atlas = mc.getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS);
         TextureAtlasSprite[] sprites = new TextureAtlasSprite[STONE_BRICK_TILES.length];
         for (int i = 0; i < sprites.length; i++) {
-            //TODO Argument 'ResourceLocation.tryParse(STONE_BRICK_TILES[i])' might be null
-            sprites[i] = atlas.getSprite(ResourceLocation.tryParse(STONE_BRICK_TILES[i]));
+            sprites[i] = atlas.getSprite(ResourceLocation.fromNamespaceAndPath(Susu609Mod.MODID, "textures/gui/title/mod_title.png"));
         }
         return sprites;
     }
@@ -164,22 +170,21 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     // ===================== 7. LAYOUT VÀ TIỆN ÍCH =====================
 
     /**
-     * Giới hạn v trong [min, max].
+     * Giữ số v trong khoảng từ min đến max: nhỏ hơn min thì trả về min, lớn hơn max thì trả về max, còn lại giữ nguyên. Dùng để giới hạn kích thước panel và nút.
      */
     private static int clamp(int v, int min, int max) {
         return Math.max(min, Math.min(max, v));
     }
 
     /**
-     * Bỏ phần tick của vanilla (kiểm tra Realms, đồng hồ hiệu ứng) vì không dùng đến.
+     * Được Minecraft gọi định kỳ để cập nhật màn hình. Hàm để trống nhằm bỏ các cập nhật mặc định của TitleScreen, ví dụ phần Realms.
      */
     @Override
     public void tick() {
     }
 
     /**
-     * Gọi khi mở màn hình hoặc đổi kích thước cửa sổ. Vanilla đã xóa widget cũ trước đó,
-     * nên ở đây phải thêm lại toàn bộ.
+     * Được gọi khi mở menu hoặc thay đổi kích thước cửa sổ. Tạo lại lưới nền, tính vị trí giao diện, thêm các nút New Game/Continue/Mods/Options, nút ngôn ngữ/trợ năng/Quit và dòng bản quyền. Không gọi super.init() vì sẽ tạo thêm các nút menu vanilla.
      */
     @Override
     public void init() {
@@ -234,8 +239,7 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     }
 
     /**
-     * Ghi đè hoàn toàn render của vanilla: không có panorama, logo Minecraft hay splash text.
-     * Thứ tự vẽ từ dưới lên: nền -> logo -> widget -> chấm cập nhật.
+     * Vẽ một khung hình của menu. Thứ tự: nền đá -> panel tối -> hai logo -> các nút -> thông báo cập nhật mod. g là đối tượng vẽ; mouseX/mouseY là vị trí chuột; partialTick là phần thời gian giữa các tick.
      */
     @Override
     public void render(@NotNull GuiGraphics g, int mouseX, int mouseY, float partialTick) {
@@ -256,7 +260,7 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     // ===================== 8. KIỂU DỮ LIỆU =====================
 
     /**
-     * Vẽ lưới đá. Hàng/cột tính theo thời gian: nền đi xuống, quay vòng không giật.
+     * Vẽ các ô đá phủ màn hình và cho chúng trôi xuống theo thời gian. shiftPx là quãng đường đã trôi, wraps đếm số ô đã đi qua, offsetY là độ lệch còn lại. Dùng floorMod để chọn hàng sprite hợp lệ khi lặp nền.
      */
     private void renderStoneBackground(GuiGraphics g) {
         float elapsedMs = System.currentTimeMillis() - openedAt;
@@ -277,7 +281,7 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     }
 
     /**
-     * New Game: nếu đã có world thì hỏi xác nhận, xóa rồi tạo lại; chưa có thì tạo luôn.
+     * Xử lý khi nhấn New Game. Nếu chưa có world The8Dungeons thì tạo ngay. Nếu đã có, mở hộp thoại xác nhận; chọn Đồng ý sẽ xóa world cũ rồi tạo lại, chọn Hủy sẽ quay về menu. Xóa world làm mất dữ liệu cũ.
      */
     private void onNewGame() {
         if (!mc.getLevelSource().levelExists(WORLD_NAME)) {
@@ -301,8 +305,7 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     }
 
     /**
-     * Continue: mở world {@link #WORLD_NAME}. Nút đã bị làm mờ nếu world chưa có;
-     * kiểm tra lại ở đây để an toàn.
+     * Xử lý khi nhấn Continue. Kiểm tra world The8Dungeons có tồn tại không; nếu có thì mở world đó. Nếu không có thì không làm gì.
      */
     private void onContinue() {
         if (mc.getLevelSource().levelExists(WORLD_NAME)) {
@@ -312,9 +315,7 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     }
 
     /**
-     * Tạo world mới {@link #WORLD_NAME} rồi vào chơi ngay. Overworld dùng preset void,
-     * các dimension khác giữ bình thường. Lỗi chỉ ghi vào log: nếu không có gì xảy ra,
-     * tìm "Failed to load datapacks" trong logs/latest.log.
+     * Tạo world mới với tên cố định The8Dungeons và tự vào chơi. Cài Creative, độ khó Normal, bật lệnh, seed ngẫu nhiên; lấy bộ sinh Overworld từ world preset void của mod và giữ cấu hình dimension thông thường cho các dimension khác. Nếu thiếu preset, ném IllegalStateException.
      */
     private void createWorld() {
         // Luật chơi
@@ -344,8 +345,7 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     }
 
     /**
-     * Xóa thư mục world {@link #WORLD_NAME}. Chỉ xóa đúng world này.
-     * Ném IOException nếu không xóa được (ví dụ world đang bị khóa).
+     * Xóa world có tên The8Dungeons trong thư mục saves. Dùng try-with-resources để tự giải phóng khóa truy cập sau khi xóa. Có thể ném IOException nếu xóa thất bại.
      */
     private void deleteOldWorld() throws IOException {
         // try-with-resources: tự đóng access (giải phóng khóa thư mục) kể cả khi lỗi
@@ -355,7 +355,7 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     }
 
     /**
-     * Tính layout theo kích thước cửa sổ. Panel bên trái, nút căn giữa trong panel.
+     * Tính kích thước và vị trí các nút dựa trên chiều rộng/chiều cao cửa sổ. Panel rộng khoảng 30% màn hình (giới hạn 168–280 px); nút được căn giữa trong panel. Trả về Layout chứa các số đo để các hàm vẽ dùng chung.
      */
     private Layout calculateLayout() {
         int panelWidth = clamp(Math.round(width * 0.30f), 168, 280);   // panel 30% màn hình
@@ -372,9 +372,7 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     }
 
     /**
-     * Thêm nút ở hàng {@code row} (từ 0, hàng 0 trên cùng) trong cột nút chính.
-     *
-     * @return chính nút vừa tạo, để gắn thêm chỉ báo hoặc làm mờ
+     * Tạo một nút trong cột nút chính. row là số thứ tự hàng (bắt đầu từ 0), label là chữ trên nút, action là hành động khi bấm. Trả về Button để có thể bật/tắt nút hoặc gắn thông báo.
      */
     private Button addMainButton(int row, Component label, Button.OnPress action) {
         int y = layout.buttonTop() + row * (layout.buttonHeight() + layout.buttonGap());
@@ -382,7 +380,7 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     }
 
     /**
-     * Tính hình chữ nhật bao quanh tiêu đề và cột nút.
+     * Tính bốn tọa độ của khung nền tối bao quanh logo và các nút. Lấy vị trí nút, vị trí logo và khoảng đệm PANEL_PAD để trả về Box(x0, y0, x1, y1).
      */
     private Box panelBox() {
         // Cạnh trái/phải: bám theo cột nút, chừa đệm 12px mỗi bên
@@ -400,6 +398,9 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
         return new Box(x0, y0, x1, y1);
     }
 
+    /**
+     * Vẽ khung panel phía sau logo và các nút: nền đen bán trong suốt và viền trắng mờ. Gọi panelBox() để lấy tọa độ khung.
+     */
     private void renderPanel(GuiGraphics g) {
         Box b = panelBox();
 
@@ -411,33 +412,36 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     }
 
     /**
-     * Chiều cao logo vanilla khi co theo chiều rộng nút (giữ tỉ lệ).
+     * Tính chiều cao logo Minecraft gốc theo chiều rộng nút, giữ nguyên tỉ lệ hình 256:44.
      */
     private int vanillaLogoHeight() {
         return layout.buttonWidth() * VANILLA_LOGO_H / VANILLA_LOGO_W;
     }
 
     /**
-     * Chiều cao logo mod (tỉ lệ 4:1).
+     * Tính chiều cao logo The8Dungeon theo tỉ lệ 4:1 (chiều cao bằng một phần tư chiều rộng).
      */
     private int modLogoHeight() {
         return layout.buttonWidth() / 4;
     }
 
     /**
-     * Tổng chiều cao khối tiêu đề, đã trừ phần chồng lên nhau.
+     * Tính tổng chiều cao của hai logo sau khi trừ phần chúng chồng lên nhau (TITLE_OVERLAP).
      */
     private int titleHeight() {
         return vanillaLogoHeight() + modLogoHeight() - TITLE_OVERLAP;
     }
 
     /**
-     * Y đỉnh khối tiêu đề khi đã đứng yên, ngay trên cột nút.
+     * Tính tọa độ Y của mép trên cụm logo khi animation đã kết thúc, đặt phía trên cột nút và cách 12 px.
      */
     private int titleTop() {
         return layout.buttonTop() - titleHeight() - 12;
     }
 
+    /**
+     * Vẽ logo Minecraft và logo mod. Trong LOGO_ANIM_MS mili giây đầu, cụm logo dịch dần về vị trí chuẩn theo đường cong ease-out; sau đó đứng yên. Logo mod nằm chồng lên phần đáy logo Minecraft.
+     */
     private void renderTitle(GuiGraphics g) {
         // Chuyển động rơi nhẹ (giống renderModLogo cũ)
         float t = Math.min(1f, (System.currentTimeMillis() - openedAt) / (float) LOGO_ANIM_MS);
@@ -450,7 +454,6 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
         int vH = vanillaLogoHeight();
 
         // 1. Logo Minecraft: co theo chiều rộng nút
-        //TODO Argument 'VANILLA_LOGO' might be null
         g.blit(VANILLA_LOGO, x, top, w, vH, 0, 0, VANILLA_LOGO_W, VANILLA_LOGO_H, VANILLA_LOGO_W, VANILLA_TEX_H);
 
         // 2. Logo mod: đặt ở vị trí của Edition, chồng lên đáy logo vanilla
