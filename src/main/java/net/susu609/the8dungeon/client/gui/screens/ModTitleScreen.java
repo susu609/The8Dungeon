@@ -104,7 +104,7 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     // Kích thước icon ở hàng dưới; trước đây là biến cục bộ trong init()
     private static final int ICON_SIZE = 20;
     // Logo Minecraft gốc (vanilla): vùng vẽ 256x44 trong file 256x64
-    private static final ResourceLocation VANILLA_LOGO = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/title/minecraft.png");
+    private static final ResourceLocation VANILLA_LOGO = ResourceLocation.withDefaultNamespace("textures/gui/title/minecraft.png");
     private static final int VANILLA_LOGO_W = 256;
     private static final int VANILLA_LOGO_H = 44;
     private static final int VANILLA_TEX_H = 64;
@@ -156,7 +156,7 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
         TextureAtlas atlas = mc.getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS);
         TextureAtlasSprite[] sprites = new TextureAtlasSprite[STONE_BRICK_TILES.length];
         for (int i = 0; i < sprites.length; i++) {
-            sprites[i] = atlas.getSprite(ResourceLocation.fromNamespaceAndPath(Susu609Mod.MODID, "textures/gui/title/mod_title.png"));
+            sprites[i] = atlas.getSprite(STONE_BRICK_TILES[i]);
         }
         return sprites;
     }
