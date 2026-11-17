@@ -49,6 +49,7 @@ public final class DungeonLayout {
     private final int[][] grid;                       // grid[z][x] = id phòng chiếm ô đó, -1 nếu trống
     private final Set<Integer> tagged = new HashSet<>();   // phòng đã nhận nhánh cụt hoặc là cầu nối
     private Role[] roles;                             // vai trò của từng phòng, theo id
+    // TODO (boss 1x2, bước 2): thêm trường `private int bossId = -1;` để nhớ phòng boss (tạo ở pha 2, trước assignRoles).
     private int[] dist;                               // số cửa phải đi qua từ phòng vào tới từng phòng
 
     private DungeonLayout(DungeonParams params) {
@@ -135,6 +136,9 @@ public final class DungeonLayout {
         }
         // TODO: tầng 1, phòng 1x2 (R16X32) chủ yếu là phòng boss. preset chọn trước, vai trò gán sau (pha 3), nên phải quyết:
         //       (a) ưu tiên chọn boss trong các phòng cụt đang là R16X32, hoặc (b) ép phòng cụt xa nhất thành R16X32 ở pha 2.
+        // TODO (boss 1x2, bước 5): bỏ cách chọn boss theo phòng cụt xa nhất (đoạn này và vòng for ngay dưới).
+        //       Thay bằng: Room boss = rooms.get(bossId); phần còn lại (deadEnds.remove(boss), chia TREASURE/SHOP/LIBRARY) giữ nguyên.
+        //       Tầng 1: phòng boss là phòng 1x2 DUY NHẤT; dist/BFS ở trên vẫn dùng cho distanceFromStart().
         Room boss = deadEnds.get(0);
         for (Room room : deadEnds) {
             if (dist[room.id()] > dist[boss.id()]) boss = room;
@@ -198,11 +202,18 @@ public final class DungeonLayout {
         }
         if (l.rooms.size() < p.minRooms()) return null;   // không đủ phòng tối thiểu thì bỏ lần thử này
 
+        // TODO (boss 1x2, bước 4): gọi hàm tạo phòng boss TRƯỚC ensureDeadEnds để phòng cụt boss được tính vào minDeadEnds.
+        //       Hàm trả false (không chỗ nào vừa) thì `return null` để generate() thử lại với attempt kế tiếp.
         if (!l.ensureDeadEnds(r)) return null;
         l.assignRoles(r);
         return l;
     }
 
+    // TODO (boss 1x2, bước 3): viết hàm tạo phòng boss (ví dụ ensureBossRoom(WorldRandom r), trả boolean), mô phỏng ensureDeadEnds/tryBranch:
+    //   - phòng cha hợp lệ: không phải phòng vào (id != 0), degree >= 2, chưa nằm trong `tagged`; xáo trộn danh sách cha và các Side.
+    //   - với mỗi (cha, hướng): child = tryAttach(r, parent, side, RoomPreset.R16X32, rotated) với rotated = r.chance(0.5).
+    //   - child != null: bossId = child.id(); tagged.add(parent.id()); return true. Hết chỗ: return false.
+    //   - chỉ dùng r (WorldRandom), không dùng Math.random(), để cùng seed ra cùng dungeon.
     // Pha 2: bù phòng cụt cho đủ minDeadEnds.
     private boolean ensureDeadEnds(WorldRandom r) {
         while (deadEndCount() < params.minDeadEnds()) {
@@ -364,6 +375,8 @@ public final class DungeonLayout {
     }
 
     // TODO: nếu giảm số phòng 1x2 ở tầng 1 thì sửa tại đây hoặc ở presetWeights (xem TODO trong DungeonParams).
+    // TODO (boss 1x2, bước 1): tầng 1 dùng presetWeights {1,0,0} (xem TODO trong DungeonParams) để phòng thường không bao giờ là 1x2;
+    //       phòng 1x2 chỉ đến từ hàm tạo boss, không đến từ pickPreset.
     private RoomPreset pickPreset(WorldRandom r) {
         int[] w = params.presetWeights();
         int total = 0;

@@ -38,8 +38,11 @@ public record DungeonParams(int gridW, int gridD, int minRooms, int maxRooms,
     // Mặc định duy nhất: lưới 13x13 chunk (208x208 block), phòng vào ở ô giữa (6, 6),
     // tối thiểu 16 phòng (tối đa 24 ở pha chính), tối thiểu 4 phòng cụt.
     //                                                    16x16  16x32  32x32
-    // TODO: tầng 1 hiếm phòng 1x2 (R16X32): hạ trọng số R16X32 trong presetWeights (hiện {6,3,1} = 30% là 16x32); cần chốt con số.
-    //       Hiện chỉ có một DEFAULT cho mọi tầng; nếu mỗi tầng một bộ thông số thì cần thêm cách chọn theo số tầng.
+    // TODO (tầng 1): phòng boss là phòng 1x2 (R16X32) DUY NHẤT của tầng 1; mọi phòng thường chỉ 1x1.
+    //       presetWeights hiện {9,1,0} cho 10% phòng thường là 1x2, MÂU THUẪN với quy tắc này: tầng 1 phải là {1,0,0}
+    //       và phòng boss được ép thành R16X32 ở DungeonLayout (xem TODO trong assignRoles).
+    // TODO (tầng sau): trọng số R16X32 tăng dần theo số tầng (gợi ý: tầng 2 = {9,1,0}); cần chốt bảng số từng tầng.
+    //       Hiện chỉ có một DEFAULT cho mọi tầng; cần thêm cách chọn bộ thông số theo số tầng.
     public static final DungeonParams DEFAULT =
-            new DungeonParams(13, 13, 16, 24, 4, new int[]{6, 3, 1});
+            new DungeonParams(13, 13, 16, 24, 4, new int[]{9, 1, 0});
 }
