@@ -68,12 +68,7 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     /**
      * Pool biến thể đá; mỗi ô lưới chọn ngẫu nhiên một cái.
      */
-    private static final ResourceLocation[] STONE_BRICK_TILES = {
-            ResourceLocation.fromNamespaceAndPath("minecraft", "block/stone_bricks"),
-            ResourceLocation.fromNamespaceAndPath("minecraft", "block/mossy_stone_bricks"),
-            ResourceLocation.fromNamespaceAndPath("minecraft", "block/cracked_stone_bricks"),
-            ResourceLocation.fromNamespaceAndPath("minecraft", "block/chiseled_stone_bricks")
-    };
+    private static final ResourceLocation[] STONE_BRICK_TILES = {ResourceLocation.withDefaultNamespace("block/stone_bricks"), ResourceLocation.withDefaultNamespace("block/mossy_stone_bricks"), ResourceLocation.withDefaultNamespace("block/cracked_stone_bricks"), ResourceLocation.withDefaultNamespace("block/chiseled_stone_bricks")};
     // --- Logo mod ---
     private static final long LOGO_ANIM_MS = 900L;      // logo rơi vào chỗ trong 0,9 giây
     /**
@@ -109,8 +104,7 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
     // Kích thước icon ở hàng dưới; trước đây là biến cục bộ trong init()
     private static final int ICON_SIZE = 20;
     // Logo Minecraft gốc (vanilla): vùng vẽ 256x44 trong file 256x64
-    private static final ResourceLocation VANILLA_LOGO =
-            ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/title/minecraft.png");
+    private static final ResourceLocation VANILLA_LOGO = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/title/minecraft.png");
     private static final int VANILLA_LOGO_W = 256;
     private static final int VANILLA_LOGO_H = 44;
     private static final int VANILLA_TEX_H = 64;
