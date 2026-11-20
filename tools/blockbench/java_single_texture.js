@@ -7,7 +7,7 @@
  * Cài: Blockbench -> File -> Plugins -> nút "Load Plugin from File" -> chọn file này.
  * Dùng: File -> Export ->
  *   "Export Java Block (Single Texture)"      : model block JSON (dùng với renderSingleBlock / đặt như block)
- *   "Export Java Entity Model (Single Texture)": lớp Java vẽ bằng quad, giữ UV từng mặt (dùng cho prop entity)
+ *   "Export Java Entity Model (Vanilla Box UV)": lớp model kiểu vanilla (createBodyLayer, texOffs/addBox, PartPose)
  *
  * Giới hạn của model block Java (plugin báo lỗi rõ thay vì xuất sai):
  *  - khối chỉ xoay MỘT trục, góc 0 / ±22.5 / ±45; nhóm (bone) không được xoay
@@ -83,145 +83,247 @@
         return {model, errors, warnings};
     }
 
-    // ---------- Xuất lớp model entity (quad, giữ UV từng mặt) ----------
-    // Góc mỗi mặt theo thứ tự TL, BL, BR, TR (nhìn từ ngoài vào), khớp cách Java dán UV cho model block.
-    // Dùng hàm theo (x1,y1,z1,x2,y2,z2) để tính toạ độ góc.
-    const CORNERS = {
-        north: (a, b) => [[b[0], b[1], a[2]], [b[0], a[1], a[2]], [a[0], a[1], a[2]], [a[0], b[1], a[2]]],
-        south: (a, b) => [[a[0], b[1], b[2]], [a[0], a[1], b[2]], [b[0], a[1], b[2]], [b[0], b[1], b[2]]],
-        west:  (a, b) => [[a[0], b[1], a[2]], [a[0], a[1], a[2]], [a[0], a[1], b[2]], [a[0], b[1], b[2]]],
-        east:  (a, b) => [[b[0], b[1], b[2]], [b[0], a[1], b[2]], [b[0], a[1], a[2]], [b[0], b[1], a[2]]],
-        up:    (a, b) => [[a[0], b[1], a[2]], [a[0], b[1], b[2]], [b[0], b[1], b[2]], [b[0], b[1], a[2]]],
-        down:  (a, b) => [[a[0], a[1], b[2]], [a[0], a[1], a[2]], [b[0], a[1], a[2]], [b[0], a[1], b[2]]]
+    // ---------- Xuất lớp model entity kiểu vanilla (box UV) ----------
+    //
+    // Đổi toạ độ Blockbench (Y lên, X hướng đông) sang ModelPart (Y xuống, X bị lật vì renderer scale(-1,-1,1)):
+    //   pivot của part      : x_m = -x, y_m = 24 - y, z_m = z   (root ở y = 24 = mặt đất, như mọi model mob vanilla)
+    //   offset so với cha   : (cha.x - x, cha.y - y, z - cha.z)
+    //   hộp so với pivot    : addBox(pivot.x - to.x, pivot.y - to.y, from.z - pivot.z, rộng, cao, sâu)
+    //   góc xoay của group  : (-rx, -ry, rz) đổi sang radian
+    const BASES = {
+        HierarchicalModel: 'HierarchicalModel (mặc định, giống FrogModel)',
+        EntityModel: 'EntityModel (tự gọi root.render)',
+        Model: 'Model (không gắn entity)'
     };
-    const NORMALS = {north: [0, 0, -1], south: [0, 0, 1], west: [-1, 0, 0], east: [1, 0, 0], up: [0, 1, 0], down: [0, -1, 0]};
+    const RENDER_TYPES = {
+        entityCutoutNoCull: 'entityCutoutNoCull (mặc định)',
+        entityCutout: 'entityCutout',
+        entitySolid: 'entitySolid',
+        entityTranslucent: 'entityTranslucent'
+    };
+    const JAVA_KEYWORDS = new Set(['abstract','assert','boolean','break','byte','case','catch','char','class','const','continue',
+        'default','do','double','else','enum','extends','final','finally','float','for','goto','if','implements','import',
+        'instanceof','int','interface','long','native','new','package','private','protected','public','return','short',
+        'static','strictfp','super','switch','synchronized','this','throw','throws','transient','try','void','volatile','while',
+        'true','false','null','var','record','yield','mesh','parts']);
 
-    /**
-     * Tạo danh sách quad. Toạ độ tính bằng pixel (1/16 block), gốc ở TÂM ĐÁY entity:
-     * khối nằm giữa vị trí entity, khớp hitbox (không cần dịch -0.5 trong renderer).
-     * opts: {uvWidth, uvHeight, shift}  (shift = -8 nếu project dùng lưới góc như Java Block, 0 nếu lưới căn giữa)
-     */
-    function buildEntityQuads(cubes, opts) {
-        const errors = [], warnings = [], quads = [];
-        for (const c of cubes) {
-            for (const g of c.parentRotations || []) {
-                if (g.rotation.some(x => x)) errors.push(`Nhóm "${g.name}" có xoay: bản này chưa hỗ trợ xoay khi xuất entity.`);
-            }
-            if ((c.rotation || [0, 0, 0]).some(x => x)) errors.push(`Khối "${c.name}" có xoay: bản này chưa hỗ trợ xoay khi xuất entity.`);
-            const inf = c.inflate || 0;
-            const a = [c.from[0] - inf + opts.shift, c.from[1] - inf, c.from[2] - inf + opts.shift].map(r4);
-            const b = [c.to[0] + inf + opts.shift, c.to[1] + inf, c.to[2] + inf + opts.shift].map(r4);
-            for (const dir of FACES) {
-                const f = c.faces[dir];
-                if (!f || f.texture === null) continue;
-                const u1 = r4(f.uv[0] * 16 / opts.uvWidth), v1 = r4(f.uv[1] * 16 / opts.uvHeight);
-                const u2 = r4(f.uv[2] * 16 / opts.uvWidth), v2 = r4(f.uv[3] * 16 / opts.uvHeight);
-                let uvs = [[u1, v1], [u1, v2], [u2, v2], [u2, v1]];          // TL, BL, BR, TR
-                const steps = ((f.rotation || 0) / 90) % 4;                    // xoay texture theo chiều kim đồng hồ
-                for (let i = 0; i < steps; i++) uvs = [uvs[1], uvs[2], uvs[3], uvs[0]];
-                const pos = CORNERS[dir](a, b);
-                quads.push({cube: c.name, dir, verts: pos.map((p, i) => [...p, ...uvs[i]]), normal: NORMALS[dir]});
-            }
-        }
-        return {quads, errors, warnings};
-    }
-
-    const jf = v => (Number.isInteger(v) ? String(v) : String(r4(v))) + 'f';
+    const ff = v => { const x = r4(v) + 0; return (Number.isInteger(x) ? x.toFixed(1) : String(x)) + 'F'; };
+    const rad = d => ff(d * Math.PI / 180);
 
     function toPascal(name) {
         const p = String(name || 'model').replace(/\.[^.]+$/, '').split(/[^A-Za-z0-9]+/).filter(Boolean)
             .map(w => w[0].toUpperCase() + w.slice(1)).join('');
         return /^[A-Za-z]/.test(p) ? p : 'Model' + p;
     }
-
-    /** texture "minecraft:block/stone_bricks" -> ["minecraft", "textures/block/stone_bricks.png"] */
+    /** "pedestal" / "PedestalModel" / "my pedestal" -> "PedestalModel" (luôn đúng một đuôi Model) */
+    function modelClassName(name) {
+        return (toPascal(name).replace(/Model$/, '') || 'Prop') + 'Model';
+    }
     function textureFile(id) {
         const [ns, path] = id.includes(':') ? id.split(':') : ['minecraft', id];
         return [ns, path.startsWith('textures/') ? path : `textures/${path}.png`];
     }
+    const snake = n => (String(n || 'part').replace(/[^A-Za-z0-9_]+/g, '_').replace(/^_+|_+$/g, '').toLowerCase() || 'part');
+    const camel = n => snake(n).replace(/_([a-z0-9])/g, (m, c) => c.toUpperCase());
 
-    function buildEntityModelJava(cubes, opts) {
-        const {quads, errors, warnings} = buildEntityQuads(cubes, opts);
+    /**
+     * tree: [{type:'group', name, origin, rotation, children:[...]} | {type:'cube', name, from, to, inflate, rotation, uv_offset, mirror_uv, box_uv}]
+     * opts: {className, pkg, modId, base, entityClass, renderType, texture, texWidth, texHeight, shift, boxUvProject}
+     */
+    function buildVanillaModelJava(tree, opts) {
+        const errors = [], warnings = [];
+        const S = opts.shift || 0;
+        const P = v => [v[0] + S, v[1], v[2] + S];          // đưa về hệ lưới căn giữa
+        const usedFields = new Set(['root']), usedVars = new Set(['root']);
+        const uniq = (set, n) => { let k = n, i = 2; while (set.has(k) || JAVA_KEYWORDS.has(k)) k = n + i++; set.add(k); return k; };
+        let needDeform = false, cubeCount = 0;
+        const fields = [], getters = [], layer = [];
+        if (!opts.boxUvProject) warnings.push('Project đang dùng UV từng mặt: lớp vanilla chỉ có box UV, nên lấy texOffs từ "UV offset" của từng hộp. Hình vẫn đúng, chỉ vị trí vân texture có thể khác.');
+
+        function cubeLines(cubes, pivot) {
+            return cubes.map(c => {
+                cubeCount++;
+                if ((c.rotation || [0, 0, 0]).some(x => x)) errors.push(`Hộp "${c.name}" tự xoay: ModelPart không xoay từng hộp. Hãy cho hộp vào một group riêng rồi xoay group.`);
+                const f = P(c.from), t = P(c.to);
+                const w = r4(t[0] - f[0]), h = r4(t[1] - f[1]), d = r4(t[2] - f[2]);
+                const [u, v] = c.uv_offset || [0, 0];
+                const needW = u + 2 * (Math.ceil(w) + Math.ceil(d)), needH = v + Math.ceil(d) + Math.ceil(h);
+                if (needW > opts.texWidth || needH > opts.texHeight)
+                    warnings.push(`Hộp "${c.name}" cần vùng box UV ${needW}x${needH} nhưng texture là ${opts.texWidth}x${opts.texHeight}: UV vượt mép sẽ lặp lại texture (ổn với texture lặp liền như stone).`);
+                const args = [pivot[0] - t[0], pivot[1] - t[1], f[2] - pivot[2], w, h, d].map(ff);
+                let line = `.texOffs(${u}, ${v})`;
+                if (c.mirror_uv) line += '.mirror()';
+                if (c.inflate) { needDeform = true; args.push(`new CubeDeformation(${ff(c.inflate)})`); }
+                line += `.addBox(${args.join(', ')})`;
+                if (c.mirror_uv) line += '.mirror(false)';
+                return `${line} // ${c.name}`;
+            });
+        }
+        function builder(lines, indent) {
+            if (!lines.length) return 'CubeListBuilder.create()';
+            return 'CubeListBuilder.create()\n' + lines.map(l => `${indent}        ${l}`).join('\n').replace(/ \/\/ ([^\n]*)$/, ' /* $1 */');
+        }
+        // root: pivot (0,0,0) của Blockbench = mặt đất ở tâm entity
+        const ROOT = [0, 0, 0];
+        function walk(nodes, parentVar, parentPivot, parentField, siblings) {
+            const groups = nodes.filter(n => n.type === 'group');
+            for (const g of groups) {
+                const o = P(g.origin || [0, 0, 0]);
+                const partName = uniq(siblings, snake(g.name));
+                const field = uniq(usedFields, camel(g.name));
+                const hasChildGroups = (g.children || []).some(n => n.type === 'group');
+                const varName = hasChildGroups ? uniq(usedVars, field) : null;
+                const off = [parentPivot[0] - o[0], parentPivot[1] - o[1], o[2] - parentPivot[2]].map(ff);
+                const rot = g.rotation || [0, 0, 0];
+                const pose = rot.some(x => x)
+                    ? `PartPose.offsetAndRotation(${off.join(', ')}, ${rad(-rot[0])}, ${rad(-rot[1])}, ${rad(rot[2])})`
+                    : `PartPose.offset(${off.join(', ')})`;
+                const cubes = cubeLines((g.children || []).filter(n => n.type === 'cube'), o);
+                layer.push(`        ${varName ? `PartDefinition ${varName} = ` : ''}${parentVar}.addOrReplaceChild("${partName}", ${builder(cubes, '        ')}, ${pose});`);
+                fields.push(`    private final ModelPart ${field};`);
+                getters.push(`        this.${field} = this.${parentField}.getChild("${partName}");`);
+                walk(g.children || [], varName || parentVar, o, field, new Set());
+                if (!varName && hasChildGroups) errors.push('lỗi nội bộ: thiếu biến cho group ' + g.name);
+            }
+        }
+        const rootCubes = cubeLines(tree.filter(n => n.type === 'cube'), ROOT);
+        layer.push(`        PartDefinition root = parts.addOrReplaceChild("root", ${builder(rootCubes, '        ')}, PartPose.offset(0.0F, 24.0F, 0.0F));`);
+        walk(tree, 'root', ROOT, 'root', new Set());
+        if (!cubeCount) errors.push('Model không có hộp nào để xuất.');
+
+        const base = BASES[opts.base] ? opts.base : 'HierarchicalModel';
+        const rt = RENDER_TYPES[opts.renderType] ? opts.renderType : 'entityCutoutNoCull';
+        const ent = (opts.entityClass || '').trim();
+        const entSimple = ent ? ent.split('.').pop() : 'T';
+        const generic = base !== 'Model' && !ent ? '<T extends Entity>' : '';
+        const superType = base === 'Model' ? 'Model' : `${base}<${entSimple}>`;
+        const cls = opts.className;
         const [ns, file] = textureFile(opts.texture);
-        const rows = quads.map(q => `            {${q.verts.map(v => v.map(jf).join(', ')).join(',  ')},  ${q.normal.map(jf).join(', ')}}, // ${q.cube} ${q.dir}`);
-        const code = `package ${opts.pkg};
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.model.Model;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
+        const imports = new Set(['net.minecraft.client.model.geom.ModelLayerLocation', 'net.minecraft.client.model.geom.ModelPart',
+            'net.minecraft.client.model.geom.PartPose', 'net.minecraft.client.model.geom.builders.CubeListBuilder',
+            'net.minecraft.client.model.geom.builders.LayerDefinition', 'net.minecraft.client.model.geom.builders.MeshDefinition',
+            'net.minecraft.client.model.geom.builders.PartDefinition', 'net.minecraft.client.renderer.RenderType',
+            'net.minecraft.resources.ResourceLocation', `net.minecraft.client.model.${base}`]);
+        if (needDeform) imports.add('net.minecraft.client.model.geom.builders.CubeDeformation');
+        if (base !== 'Model') imports.add(ent || 'net.minecraft.world.entity.Entity');
+        if (base !== 'HierarchicalModel') { imports.add('com.mojang.blaze3d.vertex.PoseStack'); imports.add('com.mojang.blaze3d.vertex.VertexConsumer'); }
 
-/**
- * Model "${opts.className}" sinh tự động bởi plugin Blockbench java_single_texture.
- * Đừng sửa tay: sửa trong Blockbench rồi xuất lại.
- *
- * Vẽ bằng quad nên giữ được UV từng mặt (ModelPart của vanilla chỉ có box UV).
- * Gốc toạ độ ở TÂM ĐÁY entity, trục Y hướng lên: KHÔNG lật (scale -1) như model mob thường.
- *
- * Dùng trong renderer:
- *   private final ${opts.className} model = new ${opts.className}();
- *   model.renderToBuffer(pose, buffers.getBuffer(model.renderType(${opts.className}.TEXTURE)),
- *           light, OverlayTexture.NO_OVERLAY, 1f, 1f, 1f, 1f);
- */
-public class ${opts.className} extends Model {
-
-    public static final ResourceLocation TEXTURE = new ResourceLocation("${ns}", "${file}");
-
-    // Mỗi dòng là một mặt: 4 đỉnh (x, y, z, u, v) theo thứ tự trên-trái, dưới-trái, dưới-phải, trên-phải,
-    // rồi pháp tuyến (nx, ny, nz). x, y, z tính bằng pixel (1/16 block); u, v trên lưới 0..16 của texture.
-    private static final float[][] QUADS = {
-${rows.join('\n')}
-    };
-
-    public ${opts.className}() {
-        super(RenderType::entityCutoutNoCull);
+        const setupAnim = base === 'Model' ? '' : `
+    @Override
+    public void setupAnim(${entSimple} entity, float limbSwing, float limbSwingAmount, float ageInTicks,
+                          float netHeadYaw, float headPitch) {
+${base === 'HierarchicalModel' ? '        this.root().getAllParts().forEach(ModelPart::resetPose);   // đứng yên: về tư thế gốc' : '        // đứng yên: không có chuyển động'}
     }
-
+`;
+        const tail = base === 'HierarchicalModel' ? `
+    @Override
+    public ModelPart root() {
+        return this.root;
+    }
+` : `
     @Override
     public void renderToBuffer(PoseStack pose, VertexConsumer buffer, int light, int overlay,
                                float red, float green, float blue, float alpha) {
-        Matrix4f matrix = pose.last().pose();
-        Matrix3f normal = pose.last().normal();
-        for (float[] q : QUADS) {
-            for (int i = 0; i < 4; i++) {
-                int k = i * 5;
-                buffer.vertex(matrix, q[k] / 16f, q[k + 1] / 16f, q[k + 2] / 16f)
-                        .color(red, green, blue, alpha)
-                        .uv(q[k + 3] / 16f, q[k + 4] / 16f)
-                        .overlayCoords(overlay)
-                        .uv2(light)
-                        .normal(normal, q[20], q[21], q[22])
-                        .endVertex();
-            }
-        }
+        this.root.render(pose, buffer, light, overlay, red, green, blue, alpha);
     }
-}
 `;
-        return {code, errors, warnings, quadCount: quads.length};
+        const g2 = generic ? '<>' : '';
+        const code = `package ${opts.pkg};
+
+${[...imports].sort().map(i => `import ${i};`).join('\n')}
+
+/**
+ * Model "${cls}" sinh bởi plugin Blockbench java_single_texture, theo mẫu vanilla (như FrogModel).
+ * Đừng sửa tay: sửa trong Blockbench rồi xuất lại.
+ *
+ * Đăng ký layer (ModEntityRenderersRegistry, sự kiện RegisterLayerDefinitions):
+ *   event.registerLayerDefinition(${cls}.LAYER_LOCATION, ${cls}::createBodyLayer);
+ *
+ * Trong renderer (EntityRenderer thường, ví dụ PropRenderer):
+ *   model = new ${cls}${g2}(ctx.bakeLayer(${cls}.LAYER_LOCATION));
+ *   pose.pushPose();
+ *   pose.scale(-1F, -1F, 1F);          // model entity có trục Y hướng xuống -> lật lại
+ *   pose.translate(0F, -1.501F, 0F);   // root ở y = 24 rơi đúng mặt đất
+ *   model.renderToBuffer(pose, buffers.getBuffer(model.renderType(${cls}.TEXTURE)),
+ *           light, OverlayTexture.NO_OVERLAY, 1F, 1F, 1F, 1F);
+ *   pose.popPose();
+ */
+public class ${cls}${generic} extends ${superType} {
+
+    public static final ModelLayerLocation LAYER_LOCATION =
+            new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath("${opts.modId}", "${snake(cls.replace(/Model$/, ''))}"), "main");
+    public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("${ns}", "${file}");
+
+    private final ModelPart root;
+${fields.join('\n')}
+
+    public ${cls}(ModelPart part) {
+        super(RenderType::${rt});
+        this.root = part.getChild("root");
+${getters.join('\n')}
+    }
+
+    public static LayerDefinition createBodyLayer() {
+        MeshDefinition mesh = new MeshDefinition();
+        PartDefinition parts = mesh.getRoot();
+
+${layer.join('\n')}
+
+        return LayerDefinition.create(mesh, ${opts.texWidth}, ${opts.texHeight});
+    }
+${setupAnim}${tail}}
+`.replace(/\n{3,}/g, '\n\n');
+        return {code, errors, warnings, cubeCount, partCount: fields.length + 1};
+    }
+
+    function collectTree() {
+        const conv = n => {
+            if (n instanceof Group) {
+                if (n.export === false) return null;
+                return {type: 'group', name: n.name, origin: n.origin.slice(), rotation: n.rotation.slice(),
+                        children: n.children.map(conv).filter(Boolean)};
+            }
+            if (n instanceof Cube) {
+                if (n.export === false) return null;
+                return {type: 'cube', name: n.name, from: n.from.slice(), to: n.to.slice(), inflate: n.inflate,
+                        rotation: n.rotation.slice(), uv_offset: (n.uv_offset || [0, 0]).slice(), mirror_uv: !!n.mirror_uv,
+                        box_uv: n.box_uv};
+            }
+            return null;   // mesh, locator… không hỗ trợ
+        };
+        return Outliner.root.map(conv).filter(Boolean);
     }
 
     function runEntityExport(form) {
         if (!Cube.all.length) { Blockbench.showQuickMessage('Model chưa có khối nào', 2000); return; }
-        const className = (form.class_name || '').trim() || toPascal(Project.name) + 'Model';
-        if (!/^[A-Z][A-Za-z0-9_]*$/.test(className)) { Blockbench.showMessageBox({title: 'Tên lớp không hợp lệ', message: `"${className}" phải bắt đầu bằng chữ in hoa, chỉ gồm chữ, số, _.`}); return; }
+        const className = modelClassName((form.name || '').trim() || Project.name);
+        const ent = (form.entity_class || '').trim();
+        if (ent && !/^([a-z_][a-z0-9_]*\.)+[A-Z][A-Za-z0-9_]*$/.test(ent)) {
+            Blockbench.showMessageBox({title: 'Lớp entity không hợp lệ', message: `"${ent}" phải là tên đầy đủ, ví dụ net.susu609.the8dungeon.world.prop.PropEntity, hoặc để trống.`});
+            return;
+        }
+        const boxUv = Cube.all.every(c => c.box_uv !== undefined ? c.box_uv : Project.box_uv);
         const opts = {
-            texture: (form.texture || '').trim() || 'minecraft:block/stone_bricks',
-            pkg: (form.package || '').trim() || 'net.susu609.the8dungeon.client.model',
             className,
-            uvWidth: Project.texture_width || 16,
-            uvHeight: Project.texture_height || 16,
-            shift: Format.centered_grid ? 0 : -8    // entity: gốc ở tâm đáy
+            pkg: (form.package || '').trim() || 'net.susu609.the8dungeon.client.model',
+            modId: (form.mod_id || '').trim() || 'susu609',
+            base: form.base || 'HierarchicalModel',
+            entityClass: form.base === 'Model' ? '' : ent,
+            renderType: form.render_type || 'entityCutoutNoCull',
+            texture: (form.texture || '').trim() || 'minecraft:block/stone',
+            texWidth: Project.texture_width || 16,
+            texHeight: Project.texture_height || 16,
+            shift: Format.centered_grid ? 0 : -8,
+            boxUvProject: boxUv
         };
-        const {code, errors, warnings, quadCount} = buildEntityModelJava(collectCubes(), opts);
+        const {code, errors, warnings, cubeCount, partCount} = buildVanillaModelJava(collectTree(), opts);
         if (errors.length) {
             Blockbench.showMessageBox({title: 'Không xuất được lớp model', message: errors.map(e => '• ' + e).join('\n')});
             return;
         }
         Blockbench.export({type: 'Java Class', extensions: ['java'], name: className, content: code}, () => {
-            Blockbench.showQuickMessage(`Đã xuất ${className}.java (${quadCount} mặt)`, 2000);
+            Blockbench.showQuickMessage(`Đã xuất ${className}.java (${partCount} part, ${cubeCount} hộp)`, 2500);
             if (warnings.length) Blockbench.showMessageBox({title: 'Lưu ý khi xuất', message: warnings.map(n => '• ' + n).join('\n')});
         });
     }
@@ -313,17 +415,26 @@ ${rows.join('\n')}
 
                 entityDialog = new Dialog({
                     id: 'java_single_texture_entity_dialog',
-                    title: 'Export Java Entity Model (Single Texture)',
+                    title: 'Export Java Entity Model (Vanilla Box UV)',
                     form: {
-                        class_name: {label: 'Tên lớp (để trống = theo tên project)', type: 'text', value: ''},
+                        name: {label: 'Tên (tự thêm đuôi Model)', type: 'text', value: ''},
+                        base: {label: 'Thừa kế lớp', type: 'select', options: BASES, value: 'HierarchicalModel'},
+                        entity_class: {label: 'Lớp entity (để trống = generic T extends Entity)', type: 'text', value: '',
+                            condition: f => f.base !== 'Model'},
+                        render_type: {label: 'RenderType', type: 'select', options: RENDER_TYPES, value: 'entityCutoutNoCull'},
+                        mod_id: {label: 'Mod ID (cho LAYER_LOCATION)', type: 'text', value: 'susu609'},
                         package: {label: 'Package', type: 'text', value: 'net.susu609.the8dungeon.client.model'},
-                        texture: {label: 'Texture', type: 'text', value: 'minecraft:block/stone_bricks'}
+                        texture: {label: 'Texture', type: 'text', value: 'minecraft:block/stone'}
+                    },
+                    onOpen() {
+                        const n = modelClassName(Project && Project.name).replace(/Model$/, '');
+                        if (this.setFormValues) this.setFormValues({name: n});
                     },
                     onConfirm(form) { runEntityExport(form); }
                 });
                 entityAction = new Action('export_java_single_texture_entity', {
-                    name: 'Export Java Entity Model (Single Texture)',
-                    description: 'Lớp Java vẽ bằng quad, một texture, giữ UV từng mặt (cho prop entity)',
+                    name: 'Export Java Entity Model (Vanilla Box UV)',
+                    description: 'Lớp model kiểu vanilla: createBodyLayer, texOffs/addBox, PartPose',
                     icon: 'fa-cubes',
                     click() { entityDialog.show(); }
                 });
@@ -338,5 +449,5 @@ ${rows.join('\n')}
         });
     }
 
-    if (typeof module !== 'undefined') module.exports = {buildJavaModel, buildEntityQuads, buildEntityModelJava};
+    if (typeof module !== 'undefined') module.exports = {buildJavaModel, buildVanillaModelJava, modelClassName};
 })();

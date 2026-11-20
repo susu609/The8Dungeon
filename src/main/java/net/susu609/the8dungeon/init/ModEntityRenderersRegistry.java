@@ -7,8 +7,9 @@ import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.susu609.the8dungeon.Susu609Mod;
+import net.susu609.the8dungeon.client.model.GateModel;
 import net.susu609.the8dungeon.client.model.PedestalModel;
-import net.susu609.the8dungeon.client.renderer.entity.*;
+import net.susu609.the8dungeon.client.renderer.entity.PedestalRenderer;
 
 /**
  * Đăng ký renderer và layer model của entity. Chỉ chạy phía client.
@@ -32,6 +33,7 @@ public final class ModEntityRenderersRegistry {
 
     private static void onRegisterLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(PedestalModel.LAYER_LOCATION, PedestalModel::createBodyLayer);
+        event.registerLayerDefinition(GateModel.LAYER_LOCATION, GateModel::createBodyLayer);
     }
 
     private static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
