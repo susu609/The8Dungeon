@@ -8,6 +8,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.susu609.the8dungeon.Susu609Mod;
 import net.susu609.the8dungeon.client.model.PedestalModel;
+import net.susu609.the8dungeon.client.renderer.entity.*;
 
 /**
  * Đăng ký renderer và layer model của entity. Chỉ chạy phía client.
