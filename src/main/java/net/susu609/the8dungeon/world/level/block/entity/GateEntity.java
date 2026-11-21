@@ -6,10 +6,11 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 public class GateEntity extends PropEntity {
-    public GateEntity(EntityType<?> p_19870_, Level p_19871_)
-    {
-        super(p_19870_, p_19871_);
+
+    public GateEntity(EntityType<? extends PropEntity> type, Level level) {
+        super(type, level);
     }
+
     @Override protected void defineSynchedData() {
     }
     @Override protected void readAdditionalSaveData(CompoundTag compoundTag) {
