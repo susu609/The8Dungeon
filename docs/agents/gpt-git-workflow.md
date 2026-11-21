@@ -15,7 +15,8 @@ Repository: `susu609/The8Dungeon`
 - Chỉ tạo commit và push theo yêu cầu rõ ràng của người dùng.
 - Ưu tiên ghi `GPT` là Git author khi công cụ cho phép thiết lập tên và email hợp lệ.
 - Nếu công cụ GitHub không hỗ trợ tùy chỉnh Git author, phải thông báo danh tính tác giả thực tế; không được nhận là `GPT` khi metadata không đúng.
-- Có thể ghi nhận hỗ trợ của Codex qua commit trailer `Co-authored-by: Codex <codex@openai.com>` khi phù hợp.
+- Nếu người dùng muốn ghi nhận đóng góp AI bằng tài khoản Codex trên GitHub, có thể sử dụng trailer `Co-authored-by: Codex <199175422+chatgpt-codex-connector[bot]@users.noreply.github.com>` cho những commit thực sự có AI hỗ trợ. Trailer không làm thay đổi Git Author hoặc Git Committer.
+- GitHub chỉ tính đóng góp trên nhánh mặc định hoặc các nhánh đủ điều kiện; không merge `gpt/draft` chỉ để làm tăng số Contributors.
 
 ## Phạm vi commit thử nghiệm
 
