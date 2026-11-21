@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 34 class/kiểu Java, 2500 dòng, 68 phụ thuộc nội bộ
+- 35 class/kiểu Java, 2585 dòng, 69 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -13,6 +13,7 @@ flowchart LR
     Susu609Mod(["Susu609Mod<br/><small>class · 123 dòng</small>"])
   end
   subgraph pkg_client_gui["client.gui"]
+    MiniMapHud["MiniMapHud<br/><small>class · 84 dòng</small>"]
     ScreenUtil["ScreenUtil<br/><small>class · 16 dòng</small>"]
   end
   subgraph pkg_client_gui_screens["client.gui.screens"]
@@ -58,7 +59,7 @@ flowchart LR
     WorldRandom["WorldRandom<br/><small>class · 68 dòng</small>"]
   end
   subgraph pkg_world_level_block_entity["world.level.block.entity"]
-    GateEntity["GateEntity<br/><small>class · 27 dòng</small>"]
+    GateEntity["GateEntity<br/><small>class · 28 dòng</small>"]
     PedestalEntity["PedestalEntity<br/><small>class · 11 dòng</small>"]
     PropEntity["PropEntity<br/><small>class · 95 dòng</small>"]
   end
@@ -100,6 +101,7 @@ flowchart LR
   GateModel --> GateEntity
   GateRenderer --> GateEntity
   GateRenderer --> GateModel
+  MiniMapHud --> Susu609Mod
   ModBlockBehaviour --> ModBlocksRegistry
   ModBlockBehaviour --> TorchBurn
   ModBlockEntitiesRegistry --> Susu609Mod
@@ -149,6 +151,7 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
+| `MiniMapHud` | class | 84 | Susu609Mod | RenderGuiEvent, RenderGuiEvent.Post |
 | `ScreenUtil` | class | 16 | - | - |
 
 ### client.gui.screens
@@ -221,7 +224,7 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `GateEntity` | class | 27 | PropEntity | - |
+| `GateEntity` | class | 28 | PropEntity | - |
 | `PedestalEntity` | class | 11 | PropEntity | - |
 | `PropEntity` | class | 95 | - | - |
 
