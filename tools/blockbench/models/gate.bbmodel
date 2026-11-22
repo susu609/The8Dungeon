@@ -1,0 +1,76 @@
+{
+ "meta": {
+  "format_version": "4.10",
+  "model_format": "modded_entity",
+  "box_uv": true
+ },
+ "name": "gate",
+ "model_identifier": "gate",
+ "modded_entity_version": "1.17",
+ "resolution": {
+  "width": 16,
+  "height": 16
+ },
+ "elements": [
+  {
+   "name": "gate",
+   "uuid": "bffd7a91-5dc0-4bd9-b067-d33411fb91b4",
+   "box_uv": true,
+   "rescale": false,
+   "color": 0,
+   "from": [
+    -16,
+    0,
+    -8
+   ],
+   "to": [
+    16,
+    48,
+    8
+   ],
+   "origin": [
+    0,
+    0,
+    0
+   ],
+   "uv_offset": [
+    0,
+    0
+   ],
+   "inflate": 0.0,
+   "mirror_uv": false,
+   "faces": {}
+  }
+ ],
+ "outliner": [
+  {
+   "name": "gate",
+   "uuid": "9f870443-25a8-4808-93f9-6bdd234dd963",
+   "origin": [
+    0,
+    0,
+    0
+   ],
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "children": [
+    "bffd7a91-5dc0-4bd9-b067-d33411fb91b4"
+   ]
+  }
+ ],
+ "textures": [
+  {
+   "name": "stone.png",
+   "id": "0",
+   "width": 16,
+   "height": 16,
+   "uv_width": 16,
+   "uv_height": 16,
+   "uuid": "abf689d5-e507-43fb-8a1f-2b32fe244d3a",
+   "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAuUlEQVQ4y51SQQqEMBCbb67X3oS9ireeF1+w4F8rETLEUO2yh1AnzsSxSWyfre3f/Wegn5heUwuQtdaT4OkA77gI6HCvWYXXZU3usgFf6FeV0xonkAIo5vecL3wb5dmbG3AtkjrggtqXG4D4F6dAKaUBKACvleshnvzG8CgngX+58x0CbrP3hQ74zVOANS9S+8K9V6sooBZ6uMITp828g14+yAUfGCRapAK9QLGOkc+jLMSdv5qDpywcWbpt2r8russAAAAASUVORK5CYII="
+  }
+ ]
+}
