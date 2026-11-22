@@ -4,7 +4,6 @@ import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
@@ -15,7 +14,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 import net.susu609.the8dungeon.Susu609Mod;
 import net.susu609.the8dungeon.network.ClientboundDungeonSeedPacket;
-import net.susu609.the8dungeon.world.WorldRandom;
 
 /**
  * Lệnh thử nhanh:
@@ -40,17 +38,9 @@ public final class DungeonCommand {
             source.sendFailure(Component.literal("Chỉ dựng được dungeon ở Overworld."));
             return 0;
         }
-
-        DungeonParams params = DungeonParams.DEFAULT;
-
-        // Vị trí cố định: phòng vào ở chunk (0, 0), sàn ở y = 0.
-        BlockPos origin = DungeonBuilder.fixedOrigin(params);
-
         DungeonLayout layout;
         try {
-            WorldRandom world = new WorldRandom(seed);
             layout = DungeonService.build(source.getLevel(), seed);
-            DungeonBuilder.build(source.getLevel(), layout, origin, world);
         } catch (IllegalStateException | IllegalArgumentException e) {
             source.sendFailure(Component.literal("Không dựng được dungeon: " + e.getMessage()));
             return 0;

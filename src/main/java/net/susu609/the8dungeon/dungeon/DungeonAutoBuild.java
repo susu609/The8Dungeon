@@ -26,21 +26,19 @@ public final class DungeonAutoBuild {
         DungeonSavedData data = DungeonSavedData.get(level);
 
         try {
-        if (!data.present()) {
-            // World mới, chưa có dungeon: dựng ngay
-            long seed = level.getSeed();                         // cùng seed world -> cùng dungeon
-            DungeonLayout layout = DungeonService.build(level, seed);
-            Vec3 p = DungeonService.startPos(layout);
-            player.teleportTo(p.x, p.y, p.z);
-            level.setDefaultSpawnPos(BlockPos.containing(p), 0F);   // chết thì hồi sinh trong phòng vào
-        }
+            if (!data.present()) {
+                // World mới, chưa có dungeon: dựng ngay
+                long seed = level.getSeed();                         // cùng seed world -> cùng dungeon
+                DungeonLayout layout = DungeonService.build(level, seed);
+                Vec3 p = DungeonService.startPos(layout);
+                player.teleportTo(p.x, p.y, p.z);
+                level.setDefaultSpawnPos(BlockPos.containing(p), 0F);   // chết thì hồi sinh trong phòng vào
+            }
         } catch (IllegalStateException | IllegalArgumentException e) {
             player.sendSystemMessage(Component.literal("Không dựng được dungeon: " + e.getMessage()));
             return;
         }
-        Susu609Mod.PACKET_HANDLER.send(
-                PacketDistributor.PLAYER.with(() -> player),
-                new ClientboundDungeonSeedPacket(true, data.seed()));
+        Susu609Mod.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new ClientboundDungeonSeedPacket(true, data.seed()));
 
     }
 }
