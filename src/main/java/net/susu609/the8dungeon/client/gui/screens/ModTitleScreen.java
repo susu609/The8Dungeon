@@ -31,6 +31,7 @@ import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraftforge.client.gui.ModListScreen;
 import net.minecraftforge.client.gui.TitleScreenModUpdateIndicator;
 import net.susu609.the8dungeon.Susu609Mod;
+import net.susu609.the8dungeon.client.PendingCharacter;
 import net.susu609.the8dungeon.client.gui.ScreenUtil;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -198,8 +199,11 @@ public class ModTitleScreen extends TitleScreen implements TitleScreenInterface 
         layout = calculateLayout();
 
         // Bước 3: cột nút chính (hàng 0..MAIN_BUTTON_COUNT-1)
-        addMainButton(0, Component.literal("New Game"), b -> onNewGame());
-
+        addMainButton(0, Component.literal("New Game"),
+                b -> ScreenUtil.open(new CharacterScreen(this, cls -> {
+                    PendingCharacter.set(cls);     // nhớ tạm ở client
+                    onNewGame();                   // tạo world như cũ
+                })));
         // Continue chỉ bấm được khi world đã tồn tại. init() chạy lại mỗi lần quay về
         // màn hình tiêu đề nên trạng thái này luôn mới.
         Button continueButton = addMainButton(1, Component.literal("Continue"), b -> onContinue());

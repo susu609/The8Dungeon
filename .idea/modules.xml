@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/IdeaProjects.The8Dungeon.main.iml" filepath="$PROJECT_DIR$/.idea/modules/IdeaProjects.The8Dungeon.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/The8Dungeon.iml" filepath="$PROJECT_DIR$/.idea/modules/The8Dungeon.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/The8Dungeon.main.iml" filepath="$PROJECT_DIR$/.idea/modules/The8Dungeon.main.iml" />
     </modules>
   </component>
