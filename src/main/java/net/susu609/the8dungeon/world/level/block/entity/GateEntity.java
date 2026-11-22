@@ -53,7 +53,7 @@ public class GateEntity extends PropEntity {
     @Override
     public void onSyncedDataUpdated(@NotNull EntityDataAccessor<?> key) {
         super.onSyncedDataUpdated(key);
-        //'Level' used without 'try'-with-resources statement
+        if (activeState == null) return;   // đang dựng dở, bỏ qua
         if (DATA_OPEN.equals(key) && level().isClientSide) {
             if (isOpen()) {
                 closeState.stop();
@@ -62,9 +62,9 @@ public class GateEntity extends PropEntity {
                 openState.stop();
                 closeState.start(tickCount);
             }
+            activeState.start(tickCount);                        // ◄ phải nằm ở đây
+            activeUntil = tickCount + (isOpen() ? 20 : 10);      // ◄ và ở đây
         }
-        activeState.start(tickCount);
-        activeUntil = tickCount + (isOpen() ? 20 : 10);   // mở 1 giây, đóng 0.5 giây (lúc rơi)
     }
 
     @Override
