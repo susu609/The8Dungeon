@@ -1,5 +1,7 @@
 {
   "entity.susu609.clawd_agent": "Clawd",
+  "entity.susu609.pedestal": "Bệ đỡ",
+  "entity.susu609.gate": "Cửa hầm ngục",
   "item.susu609.clawd_spawn_egg": "Trứng triệu hồi Clawd",
   "subtitles.susu609.entity.clawd.ambient": "Clawd líu lo",
   "subtitles.susu609.entity.clawd.hurt": "Clawd bị đau",

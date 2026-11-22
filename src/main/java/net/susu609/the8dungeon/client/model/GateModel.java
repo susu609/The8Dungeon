@@ -56,7 +56,7 @@ public class GateModel<T extends GateEntity> extends HierarchicalModel<T> {
     }
 
     @Override
-    public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks,
+    public void setupAnim(@NotNull T entity, float limbSwing, float limbSwingAmount, float ageInTicks,
                           float netHeadYaw, float headPitch) {
         this.root().getAllParts().forEach(ModelPart::resetPose);   // đứng yên: về tư thế gốc
     }

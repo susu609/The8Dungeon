@@ -1,14 +1,12 @@
 package net.susu609.the8dungeon.init;
 
-import net.minecraft.client.model.geom.ModelLayerLocation;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.susu609.the8dungeon.Susu609Mod;
 import net.susu609.the8dungeon.client.model.GateModel;
 import net.susu609.the8dungeon.client.model.PedestalModel;
+import net.susu609.the8dungeon.client.renderer.entity.GateRenderer;
 import net.susu609.the8dungeon.client.renderer.entity.PedestalRenderer;
 
 /**
@@ -18,9 +16,6 @@ public final class ModEntityRenderersRegistry {
 
     private ModEntityRenderersRegistry() {
     }
-    public static final ModelLayerLocation PEDESTAL_LAYER =
-            new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(Susu609Mod.MODID, "pedestal"), "main");
-
 
     /**
      * Gọi một lần trong constructor của mod, với mod event bus.
@@ -38,6 +33,7 @@ public final class ModEntityRenderersRegistry {
 
     private static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntitiesRegistry.PEDESTAL.get(), PedestalRenderer::new);
+        event.registerEntityRenderer(ModEntitiesRegistry.GATE.get(), GateRenderer::new);
     }
 
 }

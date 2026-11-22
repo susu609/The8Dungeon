@@ -1,5 +1,7 @@
 {
   "entity.susu609.clawd_agent": "Clawd",
+  "entity.susu609.pedestal": "Pedestal",
+  "entity.susu609.gate": "Dungeon Gate",
   "item.susu609.clawd_spawn_egg": "Clawd Spawn Egg",
   "subtitles.susu609.entity.clawd.ambient": "Clawd chirps",
   "subtitles.susu609.entity.clawd.hurt": "Clawd hurts",
