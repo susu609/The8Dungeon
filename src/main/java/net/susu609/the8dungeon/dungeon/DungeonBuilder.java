@@ -8,6 +8,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.WallTorchBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.susu609.the8dungeon.dungeon.DungeonLayout.Door;
 import net.susu609.the8dungeon.dungeon.DungeonLayout.Room;
 import net.susu609.the8dungeon.init.ModBlocksRegistry;
@@ -77,7 +78,10 @@ public final class DungeonBuilder {
         BlockState bricks = Blocks.STONE_BRICKS.defaultBlockState();
         BlockState air = Blocks.AIR.defaultBlockState();
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-
+        int span = 13 * CELL;
+        AABB area = new AABB(
+                origin.getX(), origin.getY(), origin.getZ(),
+                origin.getX() + span, origin.getY() + totalHeight(), origin.getZ() + span);
         level.getEntitiesOfClass(PropEntity.class, area).forEach(Entity::discard);
         for (Room room : layout.rooms()) {
             int x0 = origin.getX() + room.cx() * CELL;
