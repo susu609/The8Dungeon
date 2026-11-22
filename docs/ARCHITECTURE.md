@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 38 class/kiểu Java, 2816 dòng, 83 phụ thuộc nội bộ
+- 38 class/kiểu Java, 2814 dòng, 83 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -16,7 +16,7 @@ flowchart LR
     GateAnimation["GateAnimation<br/><small>class · 15 dòng</small>"]
   end
   subgraph pkg_client_gui["client.gui"]
-    MiniMapOverlay["MiniMapOverlay<br/><small>class · 123 dòng</small>"]
+    MiniMapOverlay["MiniMapOverlay<br/><small>class · 121 dòng</small>"]
     ScreenUtil["ScreenUtil<br/><small>class · 16 dòng</small>"]
   end
   subgraph pkg_client_gui_screens["client.gui.screens"]
@@ -176,7 +176,7 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `MiniMapOverlay` | class | 123 | DungeonClientState, DungeonLayout, Susu609Mod | RenderGuiEvent, RenderGuiEvent.Post |
+| `MiniMapOverlay` | class | 121 | DungeonClientState, DungeonLayout, Susu609Mod | RenderGuiEvent, RenderGuiEvent.Post |
 | `ScreenUtil` | class | 16 | - | - |
 
 ### client.gui.screens
