@@ -1,0 +1,13 @@
+<templateSet group="The8Dungeon">
+  <template name="regent" value="public static final RegistryObject&lt;EntityType&lt;$CLASS$&gt;&gt; $CONST$ = ENTITIES.register(&quot;$NAME$&quot;,&#10;        () -&gt; EntityType.Builder.&lt;$CLASS$&gt;of($CLASS$::new, MobCategory.$CATEGORY$)&#10;                .sized($WIDTH$F, $HEIGHT$F)&#10;                .build(&quot;$NAME$&quot;));$END$" description="Đăng ký EntityType mới (ModEntitiesRegistry)" toReformat="true" toShortenFQNames="true">
+    <variable name="NAME" expression="" defaultValue="&quot;gate&quot;" alwaysStopAt="true" />
+    <variable name="CONST" expression="capitalizeAndUnderscore(NAME)" defaultValue="" alwaysStopAt="false" />
+    <variable name="CLASS" expression="concat(capitalize(camelCase(NAME)), &quot;Entity&quot;)" defaultValue="" alwaysStopAt="true" />
+    <variable name="CATEGORY" expression="enum(&quot;MISC&quot;, &quot;MONSTER&quot;, &quot;CREATURE&quot;, &quot;AMBIENT&quot;)" defaultValue="" alwaysStopAt="true" />
+    <variable name="WIDTH" expression="" defaultValue="&quot;1.0&quot;" alwaysStopAt="true" />
+    <variable name="HEIGHT" expression="" defaultValue="&quot;1.0&quot;" alwaysStopAt="true" />
+    <context>
+      <option name="JAVA_DECLARATION" value="true" />
+    </context>
+  </template>
+</templateSet>
