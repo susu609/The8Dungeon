@@ -27,7 +27,7 @@ public final class MiniMapOverlay {
     private static final int CELL_PX = 8;                 // 1 ô dungeon = 8 px trên màn hình
     private static final int SIZE = GRID * CELL_PX;       // 104, thay cho 100
     private static final int MARGIN = 8;
-    private static final Set<Integer> visited = new HashSet<>();
+
     private MiniMapOverlay() {
     }
 
@@ -49,7 +49,6 @@ public final class MiniMapOverlay {
         int x = big ? (int) ((g.guiWidth() - SIZE * scale) / 2) : g.guiWidth() - SIZE - MARGIN;
         int y = big ? (int) ((g.guiHeight() - SIZE * scale) / 2) : MARGIN;
 
-        g.setColor(1F, 1F, 1F, 1F);          // ◄ trước popPose(), trả lại màu
         g.pose().pushPose();
         RenderSystem.enableBlend();
         g.setColor(1F, 1F, 1F, big ? 1F : 0.5F);
@@ -70,13 +69,19 @@ public final class MiniMapOverlay {
         }
         DungeonLayout layout = DungeonClientState.layout();
         if (layout != null) {
+            Set<Integer> seen = DungeonClientState.visited();
             Set<Integer> near = new HashSet<>();
-            if (here != null) {
-                for (DungeonLayout.Exit e : layout.exitsOf(here)) near.add(e.toRoom());
+            for (DungeonLayout.Room r : layout.rooms()) {
+                if (seen.contains(r.id())) {
+                    for (DungeonLayout.Exit e : layout.exitsOf(r)) near.add(e.toRoom());
+                }
             }
+
             for (DungeonLayout.Room room : layout.rooms()) {
-                int sx = x + room.cx() * CELL_PX;
-                int sy = y + room.cz() * CELL_PX;
+                g.fill(-2, -2, SIZE + 2, SIZE + 2, 0xDD000000);
+                g.fill(0, 0, SIZE, SIZE, 0xFF454545);
+                int sx = room.cx() * CELL_PX;
+                int sy = room.cz() * CELL_PX;
                 int w = room.cellsX(), h = room.cellsZ();
                 if (w == 1 && h == 1) {
                     g.blit(ICONS, sx, sy, 8, 8, 0, 32, 16, 16, 256, 256);
@@ -113,8 +118,9 @@ public final class MiniMapOverlay {
 
         // Tọa độ người chơi
         String pos = "X: " + mc.player.getBlockX() + " Z: " + mc.player.getBlockZ();
-
-        g.drawString(mc.font, pos, x, y + SIZE + 6, 0xFFFFFF, true);
+        g.setColor(1F, 1F, 1F, 1F);          // ◄ trước popPose(), trả lại màu
         g.pose().popPose();
+        g.drawString(mc.font, pos, x, y + SIZE + 6, 0xFFFFFF, true);
+
     }
 }

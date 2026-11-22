@@ -6,6 +6,9 @@ import net.minecraft.world.phys.Vec3;
 import net.susu609.the8dungeon.world.WorldRandom;
 
 public final class DungeonService {
+    private static long cachedSeed;
+    private static DungeonLayout cached;
+
     private DungeonService() {
     }
 
@@ -19,6 +22,14 @@ public final class DungeonService {
         DungeonBuilder.build(level, layout, DungeonBuilder.fixedOrigin(params), world);
         DungeonSavedData.get(level).set(seed);
         return layout;
+    }
+
+    public static DungeonLayout layout(long seed) {
+        if (cached == null || cachedSeed != seed) {
+            cached = DungeonLayout.generate(new WorldRandom(seed), DungeonParams.DEFAULT);
+            cachedSeed = seed;
+        }
+        return cached;
     }
 
     /**
