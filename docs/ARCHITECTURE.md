@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 40 class/kiểu Java, 3032 dòng, 90 phụ thuộc nội bộ
+- 45 class/kiểu Java, 3213 dòng, 100 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -11,6 +11,13 @@ Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry po
 flowchart LR
   subgraph pkg__g_c_["(gốc)"]
     Susu609Mod(["Susu609Mod<br/><small>class · 123 dòng</small>"])
+  end
+  subgraph pkg_character["character"]
+    CharacterApply["CharacterApply<br/><small>class · 38 dòng</small>"]
+    CharacterClass["CharacterClass<br/><small>enum · 18 dòng</small>"]
+  end
+  subgraph pkg_client["client"]
+    PendingCharacter["PendingCharacter<br/><small>class · 30 dòng</small>"]
   end
   subgraph pkg_client_animation_definitions["client.animation.definitions"]
     GateAnimation["GateAnimation<br/><small>class · 15 dòng</small>"]
@@ -20,7 +27,8 @@ flowchart LR
     ScreenUtil["ScreenUtil<br/><small>class · 16 dòng</small>"]
   end
   subgraph pkg_client_gui_screens["client.gui.screens"]
-    ModTitleScreen["ModTitleScreen<br/><small>class · 469 dòng</small>"]
+    CharacterScreen["CharacterScreen<br/><small>class · 47 dòng</small>"]
+    ModTitleScreen["ModTitleScreen<br/><small>class · 473 dòng</small>"]
     TitleScreenHook["TitleScreenHook<br/><small>class · 24 dòng</small>"]
     TitleScreenInterface["TitleScreenInterface<br/><small>interface · 13 dòng</small>"]
   end
@@ -60,6 +68,7 @@ flowchart LR
   subgraph pkg_network["network"]
     ClientboundDungeonSeedPacket["ClientboundDungeonSeedPacket<br/><small>class · 44 dòng</small>"]
     ClientboundVisitedRoomsPacket["ClientboundVisitedRoomsPacket<br/><small>class · 39 dòng</small>"]
+    ServerboundCharacterPacket["ServerboundCharacterPacket<br/><small>class · 44 dòng</small>"]
   end
   subgraph pkg_world["world"]
     VoidSpawn["VoidSpawn<br/><small>class · 38 dòng</small>"]
@@ -75,6 +84,9 @@ flowchart LR
     ModUnlitWallTorchBlock["ModUnlitWallTorchBlock<br/><small>class · 22 dòng</small>"]
     TorchBurn["TorchBurn<br/><small>class · 50 dòng</small>"]
   end
+  CharacterApply --> CharacterClass
+  CharacterScreen --> CharacterClass
+  CharacterScreen --> ScreenUtil
   ClientboundDungeonSeedPacket --> DungeonClientState
   ClientboundDungeonSeedPacket --> Susu609Mod
   ClientboundVisitedRoomsPacket --> DungeonClientState
@@ -147,6 +159,8 @@ flowchart LR
   ModEntityRenderersRegistry --> PedestalRenderer
   ModItemsRegistry --> ModBlocksRegistry
   ModItemsRegistry --> Susu609Mod
+  ModTitleScreen --> CharacterScreen
+  ModTitleScreen --> PendingCharacter
   ModTitleScreen --> ScreenUtil
   ModTitleScreen --> Susu609Mod
   ModTitleScreen --> TitleScreenInterface
@@ -155,7 +169,12 @@ flowchart LR
   PedestalModel --> Susu609Mod
   PedestalRenderer --> PedestalEntity
   PedestalRenderer --> PedestalModel
+  PendingCharacter --> CharacterClass
+  PendingCharacter --> ServerboundCharacterPacket
+  PendingCharacter --> Susu609Mod
   PropRenderer --> PropEntity
+  ServerboundCharacterPacket --> CharacterApply
+  ServerboundCharacterPacket --> Susu609Mod
   Susu609Mod --> ModBlockEntitiesRegistry
   Susu609Mod --> ModBlocksRegistry
   Susu609Mod --> ModCreativeTabsRegistry
@@ -175,6 +194,19 @@ flowchart LR
 |---|---|---|---|---|
 | `Susu609Mod` | class | 123 | ModBlockEntitiesRegistry, ModBlocksRegistry, ModCreativeTabsRegistry, ModEntitiesRegistry, ModEntityRenderersRegistry, ModItemsRegistry | NetworkEvent, NetworkEvent.Context, TickEvent, TickEvent.Phase, TickEvent.ServerTickEvent |
 
+### character
+
+| Class | Loại | Dòng | Dùng tới | Event Forge |
+|---|---|---|---|---|
+| `CharacterApply` | class | 38 | CharacterClass | - |
+| `CharacterClass` | enum | 18 | - | - |
+
+### client
+
+| Class | Loại | Dòng | Dùng tới | Event Forge |
+|---|---|---|---|---|
+| `PendingCharacter` | class | 30 | CharacterClass, ServerboundCharacterPacket, Susu609Mod | ClientPlayerNetworkEvent, ClientPlayerNetworkEvent.LoggingIn |
+
 ### client.animation.definitions
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
@@ -192,7 +224,8 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `ModTitleScreen` | class | 469 | ScreenUtil, Susu609Mod, TitleScreenInterface | - |
+| `CharacterScreen` | class | 47 | CharacterClass, ScreenUtil | - |
+| `ModTitleScreen` | class | 473 | CharacterScreen, PendingCharacter, ScreenUtil, Susu609Mod, TitleScreenInterface | - |
 | `TitleScreenHook` | class | 24 | ModTitleScreen, Susu609Mod | ScreenEvent, ScreenEvent.Opening |
 | `TitleScreenInterface` | interface | 13 | - | - |
 
@@ -250,6 +283,7 @@ flowchart LR
 |---|---|---|---|---|
 | `ClientboundDungeonSeedPacket` | class | 44 | DungeonClientState, Susu609Mod | FMLCommonSetupEvent, NetworkEvent, NetworkEvent.Context |
 | `ClientboundVisitedRoomsPacket` | class | 39 | DungeonClientState, Susu609Mod | FMLCommonSetupEvent, NetworkEvent, NetworkEvent.Context |
+| `ServerboundCharacterPacket` | class | 44 | CharacterApply, Susu609Mod | FMLCommonSetupEvent, NetworkEvent, NetworkEvent.Context |
 
 ### world
 
