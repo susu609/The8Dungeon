@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 39 class/kiểu Java, 2920 dòng, 86 phụ thuộc nội bộ
+- 39 class/kiểu Java, 2930 dòng, 86 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -16,7 +16,7 @@ flowchart LR
     GateAnimation["GateAnimation<br/><small>class · 15 dòng</small>"]
   end
   subgraph pkg_client_gui["client.gui"]
-    MiniMapOverlay["MiniMapOverlay<br/><small>class · 127 dòng</small>"]
+    MiniMapOverlay["MiniMapOverlay<br/><small>class · 131 dòng</small>"]
     ScreenUtil["ScreenUtil<br/><small>class · 16 dòng</small>"]
   end
   subgraph pkg_client_gui_screens["client.gui.screens"]
@@ -34,7 +34,7 @@ flowchart LR
     PropRenderer["PropRenderer<br/><small>class · 40 dòng</small>"]
   end
   subgraph pkg_dungeon["dungeon"]
-    DungeonAutoBuild["DungeonAutoBuild<br/><small>class · 71 dòng</small>"]
+    DungeonAutoBuild["DungeonAutoBuild<br/><small>class · 77 dòng</small>"]
     DungeonBuilder["DungeonBuilder<br/><small>class · 202 dòng</small>"]
     DungeonClientState["DungeonClientState<br/><small>class · 38 dòng</small>"]
     DungeonCommand["DungeonCommand<br/><small>class · 60 dòng</small>"]
@@ -180,7 +180,7 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `MiniMapOverlay` | class | 127 | DungeonClientState, DungeonLayout, Susu609Mod | RenderGuiEvent, RenderGuiEvent.Post |
+| `MiniMapOverlay` | class | 131 | DungeonClientState, DungeonLayout, Susu609Mod | RenderGuiEvent, RenderGuiEvent.Post |
 | `ScreenUtil` | class | 16 | - | - |
 
 ### client.gui.screens
@@ -210,7 +210,7 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `DungeonAutoBuild` | class | 71 | ClientboundDungeonSeedPacket, ClientboundVisitedRoomsPacket, DungeonLayout, DungeonSavedData, DungeonService, Susu609Mod | PlayerEvent, PlayerEvent.PlayerLoggedInEvent, ServerStartedEvent, TickEvent, TickEvent.Phase, TickEvent.PlayerTickEvent |
+| `DungeonAutoBuild` | class | 77 | ClientboundDungeonSeedPacket, ClientboundVisitedRoomsPacket, DungeonLayout, DungeonSavedData, DungeonService, Susu609Mod | PlayerEvent, PlayerEvent.PlayerLoggedInEvent, ServerStartedEvent, TickEvent, TickEvent.Phase, TickEvent.PlayerTickEvent |
 | `DungeonBuilder` | class | 202 | DungeonLayout, DungeonParams, GateEntity, ModBlocksRegistry, ModEntitiesRegistry, PropEntity, RoomPreset, TorchBurn, WorldRandom | - |
 | `DungeonClientState` | class | 38 | DungeonLayout, DungeonParams, WorldRandom | - |
 | `DungeonCommand` | class | 60 | ClientboundDungeonSeedPacket, DungeonLayout, DungeonService, Susu609Mod | RegisterCommandsEvent |
