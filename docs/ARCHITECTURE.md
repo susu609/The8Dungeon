@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 38 class/kiểu Java, 2677 dòng, 77 phụ thuộc nội bộ
+- 38 class/kiểu Java, 2703 dòng, 80 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -35,7 +35,7 @@ flowchart LR
   end
   subgraph pkg_dungeon["dungeon"]
     DungeonAutoBuild["DungeonAutoBuild<br/><small>class · 44 dòng</small>"]
-    DungeonBuilder["DungeonBuilder<br/><small>class · 172 dòng</small>"]
+    DungeonBuilder["DungeonBuilder<br/><small>class · 198 dòng</small>"]
     DungeonClientState["DungeonClientState<br/><small>class · 27 dòng</small>"]
     DungeonCommand["DungeonCommand<br/><small>class · 60 dòng</small>"]
     DungeonInspector["DungeonInspector<br/><small>class · 159 dòng</small>"]
@@ -82,7 +82,10 @@ flowchart LR
   DungeonAutoBuild --> Susu609Mod
   DungeonBuilder --> DungeonLayout
   DungeonBuilder --> DungeonParams
+  DungeonBuilder --> GateEntity
   DungeonBuilder --> ModBlocksRegistry
+  DungeonBuilder --> ModEntitiesRegistry
+  DungeonBuilder --> PropEntity
   DungeonBuilder --> RoomPreset
   DungeonBuilder --> TorchBurn
   DungeonBuilder --> WorldRandom
@@ -201,7 +204,7 @@ flowchart LR
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
 | `DungeonAutoBuild` | class | 44 | ClientboundDungeonSeedPacket, DungeonLayout, DungeonSavedData, DungeonService, Susu609Mod | PlayerEvent, PlayerEvent.PlayerLoggedInEvent |
-| `DungeonBuilder` | class | 172 | DungeonLayout, DungeonParams, ModBlocksRegistry, RoomPreset, TorchBurn, WorldRandom | - |
+| `DungeonBuilder` | class | 198 | DungeonLayout, DungeonParams, GateEntity, ModBlocksRegistry, ModEntitiesRegistry, PropEntity, RoomPreset, TorchBurn, WorldRandom | - |
 | `DungeonClientState` | class | 27 | DungeonLayout, DungeonParams, WorldRandom | - |
 | `DungeonCommand` | class | 60 | ClientboundDungeonSeedPacket, DungeonLayout, DungeonService, Susu609Mod | RegisterCommandsEvent |
 | `DungeonInspector` | class | 159 | DungeonBuilder, DungeonClientState, DungeonLayout, RoomPreset, Susu609Mod | RegisterGuiOverlaysEvent, RenderLevelStageEvent, RenderLevelStageEvent.Stage |
