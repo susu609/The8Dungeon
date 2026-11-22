@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 35 class/kiểu Java, 2585 dòng, 69 phụ thuộc nội bộ
+- 36 class/kiểu Java, 2609 dòng, 70 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -11,6 +11,9 @@ Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry po
 flowchart LR
   subgraph pkg__g_c_["(gốc)"]
     Susu609Mod(["Susu609Mod<br/><small>class · 123 dòng</small>"])
+  end
+  subgraph pkg_client_animation_definitions["client.animation.definitions"]
+    GateAnimation["GateAnimation<br/><small>class · 15 dòng</small>"]
   end
   subgraph pkg_client_gui["client.gui"]
     MiniMapHud["MiniMapHud<br/><small>class · 84 dòng</small>"]
@@ -26,7 +29,7 @@ flowchart LR
     PedestalModel["PedestalModel<br/><small>class · 47 dòng</small>"]
   end
   subgraph pkg_client_renderer_entity["client.renderer.entity"]
-    GateRenderer["GateRenderer<br/><small>class · 40 dòng</small>"]
+    GateRenderer["GateRenderer<br/><small>class · 45 dòng</small>"]
     PedestalRenderer["PedestalRenderer<br/><small>class · 42 dòng</small>"]
     PropRenderer["PropRenderer<br/><small>class · 40 dòng</small>"]
   end
@@ -44,8 +47,8 @@ flowchart LR
     ModBlockEntitiesRegistry["ModBlockEntitiesRegistry<br/><small>class · 16 dòng</small>"]
     ModBlocksRegistry["ModBlocksRegistry<br/><small>class · 49 dòng</small>"]
     ModCreativeTabsRegistry["ModCreativeTabsRegistry<br/><small>class · 31 dòng</small>"]
-    ModEntitiesRegistry["ModEntitiesRegistry<br/><small>class · 39 dòng</small>"]
-    ModEntityRenderersRegistry["ModEntityRenderersRegistry<br/><small>class · 43 dòng</small>"]
+    ModEntitiesRegistry["ModEntitiesRegistry<br/><small>class · 50 dòng</small>"]
+    ModEntityRenderersRegistry["ModEntityRenderersRegistry<br/><small>class · 39 dòng</small>"]
     ModItemsRegistry["ModItemsRegistry<br/><small>class · 42 dòng</small>"]
   end
   subgraph pkg_mixin["mixin"]
@@ -59,9 +62,9 @@ flowchart LR
     WorldRandom["WorldRandom<br/><small>class · 68 dòng</small>"]
   end
   subgraph pkg_world_level_block_entity["world.level.block.entity"]
-    GateEntity["GateEntity<br/><small>class · 28 dòng</small>"]
+    GateEntity["GateEntity<br/><small>class · 26 dòng</small>"]
     PedestalEntity["PedestalEntity<br/><small>class · 11 dòng</small>"]
-    PropEntity["PropEntity<br/><small>class · 95 dòng</small>"]
+    PropEntity["PropEntity<br/><small>class · 94 dòng</small>"]
   end
   subgraph pkg_world_torch["world.torch"]
     ModUnlitTorchBlock["ModUnlitTorchBlock<br/><small>class · 22 dòng</small>"]
@@ -110,13 +113,14 @@ flowchart LR
   ModBlocksRegistry --> Susu609Mod
   ModCreativeTabsRegistry --> ModItemsRegistry
   ModCreativeTabsRegistry --> Susu609Mod
+  ModEntitiesRegistry --> GateEntity
   ModEntitiesRegistry --> PedestalEntity
   ModEntitiesRegistry --> Susu609Mod
   ModEntityRenderersRegistry --> GateModel
+  ModEntityRenderersRegistry --> GateRenderer
   ModEntityRenderersRegistry --> ModEntitiesRegistry
   ModEntityRenderersRegistry --> PedestalModel
   ModEntityRenderersRegistry --> PedestalRenderer
-  ModEntityRenderersRegistry --> Susu609Mod
   ModItemsRegistry --> ModBlocksRegistry
   ModItemsRegistry --> Susu609Mod
   ModTitleScreen --> ScreenUtil
@@ -147,6 +151,12 @@ flowchart LR
 |---|---|---|---|---|
 | `Susu609Mod` | class | 123 | ModBlockEntitiesRegistry, ModBlocksRegistry, ModCreativeTabsRegistry, ModEntitiesRegistry, ModEntityRenderersRegistry, ModItemsRegistry | NetworkEvent, NetworkEvent.Context, TickEvent, TickEvent.Phase, TickEvent.ServerTickEvent |
 
+### client.animation.definitions
+
+| Class | Loại | Dòng | Dùng tới | Event Forge |
+|---|---|---|---|---|
+| `GateAnimation` | class | 15 | - | - |
+
 ### client.gui
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
@@ -173,7 +183,7 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `GateRenderer` | class | 40 | GateEntity, GateModel | - |
+| `GateRenderer` | class | 45 | GateEntity, GateModel | - |
 | `PedestalRenderer` | class | 42 | PedestalEntity, PedestalModel | - |
 | `PropRenderer` | class | 40 | PropEntity | - |
 
@@ -197,8 +207,8 @@ flowchart LR
 | `ModBlockEntitiesRegistry` | class | 16 | Susu609Mod | - |
 | `ModBlocksRegistry` | class | 49 | ModUnlitTorchBlock, ModUnlitWallTorchBlock, Susu609Mod | - |
 | `ModCreativeTabsRegistry` | class | 31 | ModItemsRegistry, Susu609Mod | - |
-| `ModEntitiesRegistry` | class | 39 | PedestalEntity, Susu609Mod | EntityAttributeCreationEvent |
-| `ModEntityRenderersRegistry` | class | 43 | GateModel, ModEntitiesRegistry, PedestalModel, PedestalRenderer, Susu609Mod | EntityRenderersEvent, EntityRenderersEvent.RegisterLayerDefinitions, EntityRenderersEvent.RegisterRenderers |
+| `ModEntitiesRegistry` | class | 50 | GateEntity, PedestalEntity, Susu609Mod | EntityAttributeCreationEvent |
+| `ModEntityRenderersRegistry` | class | 39 | GateModel, GateRenderer, ModEntitiesRegistry, PedestalModel, PedestalRenderer | EntityRenderersEvent, EntityRenderersEvent.RegisterLayerDefinitions, EntityRenderersEvent.RegisterRenderers |
 | `ModItemsRegistry` | class | 42 | ModBlocksRegistry, Susu609Mod | BuildCreativeModeTabContentsEvent |
 
 ### mixin
@@ -224,9 +234,9 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `GateEntity` | class | 28 | PropEntity | - |
+| `GateEntity` | class | 26 | PropEntity | - |
 | `PedestalEntity` | class | 11 | PropEntity | - |
-| `PropEntity` | class | 95 | - | - |
+| `PropEntity` | class | 94 | - | - |
 
 ### world.torch
 
