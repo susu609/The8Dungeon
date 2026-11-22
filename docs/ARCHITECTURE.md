@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 39 class/kiểu Java, 2997 dòng, 86 phụ thuộc nội bộ
+- 40 class/kiểu Java, 3032 dòng, 90 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -34,16 +34,17 @@ flowchart LR
     PropRenderer["PropRenderer<br/><small>class · 40 dòng</small>"]
   end
   subgraph pkg_dungeon["dungeon"]
-    DungeonAutoBuild["DungeonAutoBuild<br/><small>class · 77 dòng</small>"]
-    DungeonBuilder["DungeonBuilder<br/><small>class · 202 dòng</small>"]
+    DungeonAutoBuild["DungeonAutoBuild<br/><small>class · 80 dòng</small>"]
+    DungeonBuilder["DungeonBuilder<br/><small>class · 222 dòng</small>"]
     DungeonClientState["DungeonClientState<br/><small>class · 38 dòng</small>"]
     DungeonCommand["DungeonCommand<br/><small>class · 60 dòng</small>"]
     DungeonInspector["DungeonInspector<br/><small>class · 159 dòng</small>"]
     DungeonLayout["DungeonLayout<br/><small>class · 399 dòng</small>"]
     DungeonParams["DungeonParams<br/><small>record · 49 dòng</small>"]
-    DungeonSavedData["DungeonSavedData<br/><small>class · 72 dòng</small>"]
+    DungeonSavedData["DungeonSavedData<br/><small>class · 80 dòng</small>"]
     DungeonService["DungeonService<br/><small>class · 47 dòng</small>"]
     RoomPreset["RoomPreset<br/><small>enum · 40 dòng</small>"]
+    RoomState["RoomState<br/><small>enum · 4 dòng</small>"]
   end
   subgraph pkg_init["init"]
     ModBlockEntitiesRegistry["ModBlockEntitiesRegistry<br/><small>class · 16 dòng</small>"]
@@ -80,9 +81,12 @@ flowchart LR
   ClientboundVisitedRoomsPacket --> Susu609Mod
   DungeonAutoBuild --> ClientboundDungeonSeedPacket
   DungeonAutoBuild --> ClientboundVisitedRoomsPacket
+  DungeonAutoBuild --> DungeonBuilder
   DungeonAutoBuild --> DungeonLayout
   DungeonAutoBuild --> DungeonSavedData
   DungeonAutoBuild --> DungeonService
+  DungeonAutoBuild --> RoomPreset
+  DungeonAutoBuild --> RoomState
   DungeonAutoBuild --> Susu609Mod
   DungeonBuilder --> DungeonLayout
   DungeonBuilder --> DungeonParams
@@ -110,6 +114,7 @@ flowchart LR
   DungeonLayout --> WorldRandom
   DungeonParams --> DungeonLayout
   DungeonParams --> RoomPreset
+  DungeonSavedData --> RoomState
   DungeonService --> DungeonBuilder
   DungeonService --> DungeonLayout
   DungeonService --> DungeonParams
@@ -210,16 +215,17 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `DungeonAutoBuild` | class | 77 | ClientboundDungeonSeedPacket, ClientboundVisitedRoomsPacket, DungeonLayout, DungeonSavedData, DungeonService, Susu609Mod | PlayerEvent, PlayerEvent.PlayerLoggedInEvent, ServerStartedEvent, TickEvent, TickEvent.Phase, TickEvent.PlayerTickEvent |
-| `DungeonBuilder` | class | 202 | DungeonLayout, DungeonParams, GateEntity, ModBlocksRegistry, ModEntitiesRegistry, PropEntity, RoomPreset, TorchBurn, WorldRandom | - |
+| `DungeonAutoBuild` | class | 80 | ClientboundDungeonSeedPacket, ClientboundVisitedRoomsPacket, DungeonBuilder, DungeonLayout, DungeonSavedData, DungeonService, RoomPreset, RoomState, Susu609Mod | PlayerEvent, PlayerEvent.PlayerLoggedInEvent, ServerStartedEvent, TickEvent, TickEvent.Phase, TickEvent.PlayerTickEvent |
+| `DungeonBuilder` | class | 222 | DungeonLayout, DungeonParams, GateEntity, ModBlocksRegistry, ModEntitiesRegistry, PropEntity, RoomPreset, TorchBurn, WorldRandom | - |
 | `DungeonClientState` | class | 38 | DungeonLayout, DungeonParams, WorldRandom | - |
 | `DungeonCommand` | class | 60 | ClientboundDungeonSeedPacket, DungeonLayout, DungeonService, Susu609Mod | RegisterCommandsEvent |
 | `DungeonInspector` | class | 159 | DungeonBuilder, DungeonClientState, DungeonLayout, RoomPreset, Susu609Mod | RegisterGuiOverlaysEvent, RenderLevelStageEvent, RenderLevelStageEvent.Stage |
 | `DungeonLayout` | class | 399 | DungeonParams, RoomPreset, WorldRandom | - |
 | `DungeonParams` | record | 49 | DungeonLayout, RoomPreset | - |
-| `DungeonSavedData` | class | 72 | - | - |
+| `DungeonSavedData` | class | 80 | RoomState | - |
 | `DungeonService` | class | 47 | DungeonBuilder, DungeonLayout, DungeonParams, DungeonSavedData, RoomPreset, WorldRandom | - |
 | `RoomPreset` | enum | 40 | - | - |
+| `RoomState` | enum | 4 | - | - |
 
 ### init
 
