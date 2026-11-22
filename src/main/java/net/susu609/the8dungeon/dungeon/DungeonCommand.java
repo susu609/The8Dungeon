@@ -8,6 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -48,7 +49,7 @@ public final class DungeonCommand {
         DungeonLayout layout;
         try {
             WorldRandom world = new WorldRandom(seed);
-            layout = DungeonLayout.generate(world, params);
+            layout = DungeonService.build(source.getLevel(), seed);
             DungeonBuilder.build(source.getLevel(), layout, origin, world);
         } catch (IllegalStateException | IllegalArgumentException e) {
             source.sendFailure(Component.literal("Không dựng được dungeon: " + e.getMessage()));
@@ -56,14 +57,11 @@ public final class DungeonCommand {
         }
 
         // Lưu seed vào world và báo cho mọi client để inspector vẽ được.
-        DungeonSavedData.get(source.getLevel()).set(seed);
         Susu609Mod.PACKET_HANDLER.send(PacketDistributor.ALL.noArg(), new ClientboundDungeonSeedPacket(true, seed));
 
         // Đưa người chơi vào giữa phòng vào, đứng trên sàn.
-        DungeonLayout.Room start = layout.start();
-        double cx = origin.getX() + (start.cx() + start.cellsX() / 2.0) * RoomPreset.CELL;
-        double cz = origin.getZ() + (start.cz() + start.cellsZ() / 2.0) * RoomPreset.CELL;
-        player.teleportTo(cx, origin.getY() + 1, cz);
+        Vec3 p = DungeonService.startPos(layout);
+        player.teleportTo(p.x, p.y, p.z);
 
         source.sendSuccess(() -> Component.literal("Dungeon seed " + seed + ": " + layout.rooms().size() + " phòng, " + layout.deadEndCount() + " phòng cụt"), true);
         return 1;
