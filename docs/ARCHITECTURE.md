@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 38 class/kiểu Java, 2703 dòng, 80 phụ thuộc nội bộ
+- 38 class/kiểu Java, 2772 dòng, 81 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -25,7 +25,7 @@ flowchart LR
     TitleScreenInterface["TitleScreenInterface<br/><small>interface · 13 dòng</small>"]
   end
   subgraph pkg_client_model["client.model"]
-    GateModel["GateModel<br/><small>class · 70 dòng</small>"]
+    GateModel["GateModel<br/><small>class · 71 dòng</small>"]
     PedestalModel["PedestalModel<br/><small>class · 47 dòng</small>"]
   end
   subgraph pkg_client_renderer_entity["client.renderer.entity"]
@@ -35,7 +35,7 @@ flowchart LR
   end
   subgraph pkg_dungeon["dungeon"]
     DungeonAutoBuild["DungeonAutoBuild<br/><small>class · 44 dòng</small>"]
-    DungeonBuilder["DungeonBuilder<br/><small>class · 198 dòng</small>"]
+    DungeonBuilder["DungeonBuilder<br/><small>class · 202 dòng</small>"]
     DungeonClientState["DungeonClientState<br/><small>class · 27 dòng</small>"]
     DungeonCommand["DungeonCommand<br/><small>class · 60 dòng</small>"]
     DungeonInspector["DungeonInspector<br/><small>class · 159 dòng</small>"]
@@ -64,7 +64,7 @@ flowchart LR
     WorldRandom["WorldRandom<br/><small>class · 68 dòng</small>"]
   end
   subgraph pkg_world_level_block_entity["world.level.block.entity"]
-    GateEntity["GateEntity<br/><small>class · 26 dòng</small>"]
+    GateEntity["GateEntity<br/><small>class · 90 dòng</small>"]
     PedestalEntity["PedestalEntity<br/><small>class · 11 dòng</small>"]
     PropEntity["PropEntity<br/><small>class · 94 dòng</small>"]
   end
@@ -113,6 +113,7 @@ flowchart LR
   DungeonService --> RoomPreset
   DungeonService --> WorldRandom
   GateEntity --> PropEntity
+  GateModel --> GateAnimation
   GateModel --> GateEntity
   GateRenderer --> GateEntity
   GateRenderer --> GateModel
@@ -188,7 +189,7 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `GateModel` | class | 70 | GateEntity | - |
+| `GateModel` | class | 71 | GateAnimation, GateEntity | - |
 | `PedestalModel` | class | 47 | PedestalEntity, Susu609Mod | - |
 
 ### client.renderer.entity
@@ -204,7 +205,7 @@ flowchart LR
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
 | `DungeonAutoBuild` | class | 44 | ClientboundDungeonSeedPacket, DungeonLayout, DungeonSavedData, DungeonService, Susu609Mod | PlayerEvent, PlayerEvent.PlayerLoggedInEvent |
-| `DungeonBuilder` | class | 198 | DungeonLayout, DungeonParams, GateEntity, ModBlocksRegistry, ModEntitiesRegistry, PropEntity, RoomPreset, TorchBurn, WorldRandom | - |
+| `DungeonBuilder` | class | 202 | DungeonLayout, DungeonParams, GateEntity, ModBlocksRegistry, ModEntitiesRegistry, PropEntity, RoomPreset, TorchBurn, WorldRandom | - |
 | `DungeonClientState` | class | 27 | DungeonLayout, DungeonParams, WorldRandom | - |
 | `DungeonCommand` | class | 60 | ClientboundDungeonSeedPacket, DungeonLayout, DungeonService, Susu609Mod | RegisterCommandsEvent |
 | `DungeonInspector` | class | 159 | DungeonBuilder, DungeonClientState, DungeonLayout, RoomPreset, Susu609Mod | RegisterGuiOverlaysEvent, RenderLevelStageEvent, RenderLevelStageEvent.Stage |
@@ -248,7 +249,7 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `GateEntity` | class | 26 | PropEntity | - |
+| `GateEntity` | class | 90 | PropEntity | - |
 | `PedestalEntity` | class | 11 | PropEntity | - |
 | `PropEntity` | class | 94 | - | - |
 
