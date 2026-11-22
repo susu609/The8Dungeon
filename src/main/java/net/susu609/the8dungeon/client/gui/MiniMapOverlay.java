@@ -62,10 +62,9 @@ public final class MiniMapOverlay {
         g.fill(x, y, x + SIZE, y + SIZE, 0xFF454545);
 
         // Lưới thử nghiệm, mỗi ô 10 pixel
-        for (int i = 0; i < SIZE; i += 10) {
-            g.fill(x + i, y, x + i + 1, y + SIZE, 0xFF606060);
-
-            g.fill(x, y + i, x + SIZE, y + i + 1, 0xFF606060);
+        for (int i = 0; i < SIZE; i += CELL_PX) {
+            g.fill(i, 0, i + 1, SIZE, 0xFF606060);
+            g.fill(0, i, SIZE, i + 1, 0xFF606060);
         }
         DungeonLayout layout = DungeonClientState.layout();
         if (layout != null) {
@@ -77,9 +76,14 @@ public final class MiniMapOverlay {
                 }
             }
 
+            g.fill(-2, -2, SIZE + 2, SIZE + 2, 0xDD000000);
+            g.fill(0, 0, SIZE, SIZE, 0xFF454545);
+
             for (DungeonLayout.Room room : layout.rooms()) {
-                g.fill(-2, -2, SIZE + 2, SIZE + 2, 0xDD000000);
-                g.fill(0, 0, SIZE, SIZE, 0xFF454545);
+                boolean seenRoom = seen.contains(room.id());
+                if (!seenRoom && !near.contains(room.id())) continue;   // vô hình
+                int u1 = seenRoom ? 0 : 16;     // phòng 1x1
+                int u2 = seenRoom ? 32 : 48;    // phòng 1x2 (dọc và ngang)
                 int sx = room.cx() * CELL_PX;
                 int sy = room.cz() * CELL_PX;
                 int w = room.cellsX(), h = room.cellsZ();

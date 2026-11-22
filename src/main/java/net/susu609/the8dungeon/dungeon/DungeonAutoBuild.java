@@ -47,7 +47,13 @@ public final class DungeonAutoBuild {
             tag.putBoolean("entered_dungeon", true);
         }
         Susu609Mod.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new ClientboundDungeonSeedPacket(true, data.seed()));
+        Susu609Mod.PACKET_HANDLER.send(PacketDistributor.ALL.noArg(),        // cả nhóm cùng thấy
+                new ClientboundVisitedRoomsPacket(visitedArray(data)));
 
+    }
+
+    private static int[] visitedArray(DungeonSavedData data) {
+        return data.visited().stream().mapToInt(Integer::intValue).toArray();
     }
 
     @SubscribeEvent
@@ -62,10 +68,10 @@ public final class DungeonAutoBuild {
         DungeonLayout.Room here = layout.roomAt(cx, cz);
         if (here != null && data.markVisited(here.id())) {
             // ◄ gửi gói VisitedRooms cho ALL (bạn tự viết, giống dòng gửi seed)
-            Susu609Mod.PACKET_HANDLER.send(
-                    PacketDistributor.PLAYER.with(() -> player),
-                    new ClientboundVisitedRoomsPacket(true, data.seed()));
-
+            Susu609Mod.PACKET_HANDLER.send(PacketDistributor.ALL.noArg(),        // cả nhóm cùng thấy
+                    new ClientboundVisitedRoomsPacket(visitedArray(data)));
         }
     }
+
+
 }
