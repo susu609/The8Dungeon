@@ -3,6 +3,7 @@ package net.susu609.the8dungeon.dungeon;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.WallTorchBlock;
@@ -10,7 +11,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.susu609.the8dungeon.dungeon.DungeonLayout.Door;
 import net.susu609.the8dungeon.dungeon.DungeonLayout.Room;
 import net.susu609.the8dungeon.init.ModBlocksRegistry;
+import net.susu609.the8dungeon.init.ModEntitiesRegistry;
 import net.susu609.the8dungeon.world.WorldRandom;
+import net.susu609.the8dungeon.world.level.block.entity.GateEntity;
+import net.susu609.the8dungeon.world.level.block.entity.PropEntity;
 import net.susu609.the8dungeon.world.torch.TorchBurn;
 
 /**
@@ -74,6 +78,7 @@ public final class DungeonBuilder {
         BlockState air = Blocks.AIR.defaultBlockState();
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
+        level.getEntitiesOfClass(PropEntity.class, area).forEach(Entity::discard);
         for (Room room : layout.rooms()) {
             int x0 = origin.getX() + room.cx() * CELL;
             int z0 = origin.getZ() + room.cz() * CELL;
@@ -100,6 +105,9 @@ public final class DungeonBuilder {
         }
         for (Door door : layout.doors()) {
             placeDoorTorches(level, world, door, origin);
+        }
+        for (Door door : layout.doors()) {
+            placeDoorGate(level, door, origin);
         }
         // TODO: đuốc TƯỜNG (Blocks.WALL_TORCH) đặt bên TRONG mỗi phòng, ở hai bên cạnh cửa, cho MỌI cửa.
         //   Cửa hướng đông (door.east() == true), baseX/baseZ như trong carveDoor, y = origin.getY() + 2:
@@ -166,6 +174,24 @@ public final class DungeonBuilder {
                     level.setBlock(pos.set(x, origin.getY() + dy, z), air, FLAGS);
                 }
             }
+        }
+    }
+
+    private static void placeGate(ServerLevel level, double x, double y, double z, float yaw) {
+        GateEntity gate = ModEntitiesRegistry.GATE.get().create(level);
+        if (gate == null) return;
+        gate.setPos(x, y, z);
+        gate.setYRot(yaw);
+        level.addFreshEntity(gate);
+    }
+
+    private static void placeDoorGate(ServerLevel level, Door door, BlockPos origin) {
+        BlockPos base = doorBase(door, origin);
+        double y = origin.getY() + 1;      // đứng trên sàn
+        if (door.east()) {
+            placeGate(level, base.getX() + 16.0, y, base.getZ() + 8.0, 90F);
+        } else {
+            placeGate(level, base.getX() + 8.0, y, base.getZ() + 16.0, 0F);
         }
     }
 }
