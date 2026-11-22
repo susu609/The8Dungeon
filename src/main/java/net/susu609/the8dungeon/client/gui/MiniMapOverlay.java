@@ -1,6 +1,6 @@
-
 package net.susu609.the8dungeon.client.gui;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -13,25 +13,21 @@ import net.susu609.the8dungeon.Susu609Mod;
 import net.susu609.the8dungeon.dungeon.DungeonClientState;
 import net.susu609.the8dungeon.dungeon.DungeonLayout;
 
-@Mod.EventBusSubscriber(
-        modid = Susu609Mod.MODID,
-        value = Dist.CLIENT
-)
+import java.util.HashSet;
+import java.util.Set;
+
+@Mod.EventBusSubscriber(modid = Susu609Mod.MODID, value = Dist.CLIENT)
 public final class MiniMapOverlay {
 
     // Đường dẫn đến PNG đang có trong repo
-    private static final ResourceLocation ICONS =
-            ResourceLocation.fromNamespaceAndPath(
-                    Susu609Mod.MODID,
-                    "textures/map/minimap_icons.png"
-            );
+    private static final ResourceLocation ICONS = ResourceLocation.fromNamespaceAndPath(Susu609Mod.MODID, "textures/map/minimap_icons.png");
 
     // Kích thước và khoảng cách của minimap
     private static final int GRID = 13;
     private static final int CELL_PX = 8;                 // 1 ô dungeon = 8 px trên màn hình
     private static final int SIZE = GRID * CELL_PX;       // 104, thay cho 100
     private static final int MARGIN = 8;
-
+    private static final Set<Integer> visited = new HashSet<>();
     private MiniMapOverlay() {
     }
 
@@ -41,36 +37,43 @@ public final class MiniMapOverlay {
         Minecraft mc = Minecraft.getInstance();
 
         // Chỉ vẽ khi người chơi đã vào thế giới
-        if (mc.player == null || mc.level == null
-                || mc.options.hideGui) {
+        if (mc.player == null || mc.level == null || mc.options.hideGui) {
             return;
         }
 
         GuiGraphics g = event.getGuiGraphics();
 
         // Góc trên bên phải
-        int x = g.guiWidth() - SIZE - MARGIN;
-        int y = MARGIN;
+        boolean big = mc.options.keyPlayerList.isDown();      // phím Tab
+        float scale = big ? (g.guiHeight() * 0.8F) / SIZE : 1F;
+        int x = big ? (int) ((g.guiWidth() - SIZE * scale) / 2) : g.guiWidth() - SIZE - MARGIN;
+        int y = big ? (int) ((g.guiHeight() - SIZE * scale) / 2) : MARGIN;
 
+        g.setColor(1F, 1F, 1F, 1F);          // ◄ trước popPose(), trả lại màu
+        g.pose().pushPose();
+        RenderSystem.enableBlend();
+        g.setColor(1F, 1F, 1F, big ? 1F : 0.5F);
+
+        g.pose().translate(x, y, 0);
+        g.pose().scale(scale, scale, 1F);    // ◄ thêm ngay sau translate ở bước ①
         // Viền đen
-        g.fill(x - 2, y - 2,
-                x + SIZE + 2, y + SIZE + 2,
-                0xDD000000);
+        g.fill(x - 2, y - 2, x + SIZE + 2, y + SIZE + 2, 0xDD000000);
 
         // Nền màu xám
-        g.fill(x, y, x + SIZE, y + SIZE,
-                0xFF454545);
+        g.fill(x, y, x + SIZE, y + SIZE, 0xFF454545);
 
         // Lưới thử nghiệm, mỗi ô 10 pixel
         for (int i = 0; i < SIZE; i += 10) {
-            g.fill(x + i, y, x + i + 1,
-                    y + SIZE, 0xFF606060);
+            g.fill(x + i, y, x + i + 1, y + SIZE, 0xFF606060);
 
-            g.fill(x, y + i, x + SIZE,
-                    y + i + 1, 0xFF606060);
+            g.fill(x, y + i, x + SIZE, y + i + 1, 0xFF606060);
         }
         DungeonLayout layout = DungeonClientState.layout();
         if (layout != null) {
+            Set<Integer> near = new HashSet<>();
+            if (here != null) {
+                for (DungeonLayout.Exit e : layout.exitsOf(here)) near.add(e.toRoom());
+            }
             for (DungeonLayout.Room room : layout.rooms()) {
                 int sx = x + room.cx() * CELL_PX;
                 int sy = y + room.cz() * CELL_PX;
@@ -99,24 +102,19 @@ public final class MiniMapOverlay {
                     g.blit(ICONS, sx, sy, 8, 8, iconU, 16, 16, 16, 256, 256);
                 }
             }
-            int px = x + (mc.player.getBlockX() + 96) * CELL_PX / 16;
-            int pz = y + (mc.player.getBlockZ() + 96) * CELL_PX / 16;
-            g.blit(ICONS, px - 4, pz - 4, 8, 8, 0, 0, 16, 16, 256, 256);
+            float px = (float) ((mc.player.getX() + 96) * CELL_PX / 16F);
+            float pz = (float) ((mc.player.getZ() + 96) * CELL_PX / 16F);
+            g.pose().pushPose();
+            g.pose().translate(px, pz, 0);                                  // tâm xoay = vị trí người chơi
+            g.pose().mulPose(Axis.ZP.rotationDegrees(mc.player.getYRot() + 180F));
+            g.blit(ICONS, -4, -4, 8, 8, 0, 0, 16, 16, 256, 256);           // vẽ lệch -4 để tâm ảnh trùng tâm xoay
+            g.pose().popPose();
         }
-        // Icon lấy từ PNG 256x256 của dự án
-        g.blit(ICONS,
-                x + SIZE / 2 - 8,
-                y + SIZE / 2 - 8,
-                0, 0,
-                16, 16,
-                256, 256);
 
         // Tọa độ người chơi
-        String pos = "X: " + mc.player.getBlockX()
-                + " Z: " + mc.player.getBlockZ();
+        String pos = "X: " + mc.player.getBlockX() + " Z: " + mc.player.getBlockZ();
 
-        g.drawString(mc.font, pos,
-                x, y + SIZE + 6,
-                0xFFFFFF, true);
+        g.drawString(mc.font, pos, x, y + SIZE + 6, 0xFFFFFF, true);
+        g.pose().popPose();
     }
 }
