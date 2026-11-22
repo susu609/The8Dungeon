@@ -39,6 +39,7 @@ public final class DungeonAutoBuild {
         ServerLevel level = player.serverLevel();
         if (level.dimension() != Level.OVERWORLD) return;
         DungeonSavedData data = DungeonSavedData.get(level);
+        if (!data.present()) return;                       // chưa có dungeon (dựng lỗi): không dịch, không gửi gì
 
         CompoundTag tag = player.getPersistentData();
         if (!tag.getBoolean("entered_dungeon")) {
@@ -47,31 +48,32 @@ public final class DungeonAutoBuild {
             tag.putBoolean("entered_dungeon", true);
         }
         Susu609Mod.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new ClientboundDungeonSeedPacket(true, data.seed()));
-        Susu609Mod.PACKET_HANDLER.send(PacketDistributor.ALL.noArg(),        // cả nhóm cùng thấy
-                new ClientboundVisitedRoomsPacket(visitedArray(data)));
-
-    }
-
-    private static int[] visitedArray(DungeonSavedData data) {
-        return data.visited().stream().mapToInt(Integer::intValue).toArray();
+        // Chỉ người vừa vào cần nhận bản đầy đủ; người khác đã có rồi. Gửi SAU seed: client cần layout trước.
+        Susu609Mod.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player),
+                new ClientboundVisitedRoomsPacket(data.knownRooms()));
     }
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || !(event.player instanceof ServerPlayer player)) return;
         if (player.tickCount % 10 != 0) return;                     // 2 lần/giây là đủ
+        if (player.level().dimension() != Level.OVERWORLD) return;  // dungeon chỉ ở Overworld
         DungeonSavedData data = DungeonSavedData.get(player.serverLevel());
         if (!data.present()) return;
         DungeonLayout layout = DungeonService.layout(data.seed());
-        int cx = Math.floorDiv(player.getBlockX() + 96, 16);
-        int cz = Math.floorDiv(player.getBlockZ() + 96, 16);
+        BlockPos origin = DungeonBuilder.fixedOrigin(layout.params());
+        int rx = player.getBlockX() - origin.getX();                // toạ độ tính từ góc dungeon
+        int rz = player.getBlockZ() - origin.getZ();
+        int lx = Math.floorMod(rx, RoomPreset.CELL);                // vị trí trong ô: 0..15
+        int lz = Math.floorMod(rz, RoomPreset.CELL);
+        if (lx < 1 || lx > 14 || lz < 1 || lz > 14) return;         // đang ở tường / lỗ cửa: chưa tính là vào
+        int cx = Math.floorDiv(rx, RoomPreset.CELL);                // ô lưới
+        int cz = Math.floorDiv(rz, RoomPreset.CELL);
         DungeonLayout.Room here = layout.roomAt(cx, cz);
-        if (here != null && data.markVisited(here.id())) {
-            // ◄ gửi gói VisitedRooms cho ALL (bạn tự viết, giống dòng gửi seed)
+        if (here != null && data.state(here.id()) == RoomState.HIDDEN) {
+            data.setState(here.id(), RoomState.CLEARED);            // tạm; bài 2 tách COMBAT / CLEARED
             Susu609Mod.PACKET_HANDLER.send(PacketDistributor.ALL.noArg(),        // cả nhóm cùng thấy
-                    new ClientboundVisitedRoomsPacket(visitedArray(data)));
+                    new ClientboundVisitedRoomsPacket(data.knownRooms()));
         }
     }
-
-
 }

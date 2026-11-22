@@ -5,8 +5,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Lưu seed của dungeon đã dựng vào world (file data/susu609_dungeon.dat).
@@ -15,7 +16,7 @@ import java.util.Set;
 public final class DungeonSavedData extends SavedData {
 
     private static final String NAME = "susu609_dungeon";
-    private final Set<Integer> visited = new HashSet<>();
+    private final Map<Integer, RoomState> states = new HashMap<>();
     private boolean present;
     private long seed;
 
@@ -31,24 +32,24 @@ public final class DungeonSavedData extends SavedData {
         DungeonSavedData data = new DungeonSavedData();
         data.present = tag.getBoolean("present");
         data.seed = tag.getLong("seed");
-        for (int id : tag.getIntArray("visited")) data.visited.add(id);                       // load
+        int[] ids = tag.getIntArray("room_ids");
+        int[] st = tag.getIntArray("room_states");
+        for (int i = 0; i < ids.length; i++) data.states.put(ids[i], RoomState.values()[st[i]]);
         return data;
     }
 
-    public Set<Integer> visited() {
-        return visited;
+    public RoomState state(int roomId) {
+        return states.getOrDefault(roomId, RoomState.HIDDEN);
     }
 
-    public boolean markVisited(int roomId) {
-        if (!visited.add(roomId)) return false;   // đã có rồi
-        setDirty();
-        return true;                              // phòng mới
+    public void setState(int roomId, RoomState s) {
+        if (states.put(roomId, s) != s) setDirty();   // chỉ ghi khi thật sự đổi
     }
 
     public void set(long seed) {
         this.present = true;
         this.seed = seed;
-        visited.clear();
+
         setDirty();   // báo Minecraft ghi xuống đĩa lần lưu tới
     }
 
@@ -60,11 +61,18 @@ public final class DungeonSavedData extends SavedData {
         return seed;
     }
 
+    public int[] knownRooms() {
+        return states.entrySet().stream().filter(e -> e.getValue() == RoomState.CLEARED || e.getValue() == RoomState.COMBAT).mapToInt(Map.Entry::getKey).toArray();
+    }
+
     @Override
     public @NotNull CompoundTag save(CompoundTag tag) {
         tag.putBoolean("present", present);
         tag.putLong("seed", seed);
-        tag.putIntArray("visited", visited.stream().mapToInt(Integer::intValue).toArray());   // save
+        int[] ids = states.keySet().stream().mapToInt(Integer::intValue).toArray();
+        int[] st = Arrays.stream(ids).map(id -> states.get(id).ordinal()).toArray();
+        tag.putIntArray("room_ids", ids);
+        tag.putIntArray("room_states", st);
         return tag;
     }
 

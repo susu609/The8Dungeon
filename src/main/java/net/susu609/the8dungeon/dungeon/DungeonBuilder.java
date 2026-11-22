@@ -4,6 +4,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.WallTorchBlock;
@@ -22,34 +25,32 @@ import net.susu609.the8dungeon.world.torch.TorchBurn;
  * Biến DungeonLayout (dữ liệu) thành block thật trong world.
  * <p>
  * Cắt dọc một phòng (trục Y, tính từ origin.y):
- *   y = 0                  sàn  : STONE
- *   y = 1 .. 16            rỗng : AIR (tường ngoài rìa là STONE_BRICKS)
- *   y = 17                 trần : STONE_BRICKS
+ * y = 0                  sàn  : STONE
+ * y = 1 .. 16            rỗng : AIR (tường ngoài rìa là STONE_BRICKS)
+ * y = 17                 trần : STONE_BRICKS
  * <p>
  * Mỗi phòng có tường riêng (tường dày 1). Hai phòng kề nhau có 2 lớp tường liền nhau,
  * cửa là lỗ khoét xuyên qua cả hai lớp: rộng 2 block (vị trí 7 và 8 của ô lưới), cao DOOR_HEIGHT.
  */
 public final class DungeonBuilder {
 
+    // Cao độ mặt sàn cố định của mọi dungeon.
+    public static final int FLOOR_Y = 0;
     private static final int CELL = RoomPreset.CELL;
     private static final int HEIGHT = RoomPreset.INTERIOR_HEIGHT;
     private static final int DOOR_HEIGHT = 3;
-
     private static final int WALL_A = 15, WALL_B = 16;     // hai lớp tường của cửa
     private static final int DOOR_LO = 7, DOOR_HI = 8;     // hai block của lỗ cửa
     private static final int TORCH_SIDE_LO = 6, TORCH_SIDE_HI = 9;   // hai bên mép cửa
     private static final int TORCH_IN_A = 14, TORCH_IN_B = 17;       // sát mặt trong tường A và B
-
     private static final double LIT_CHANCE = 0.75;
     private static final double WEAK_SHARE = 0.5;   // tạm: trong 25% còn lại, nửa yếu, nửa tắt; bạn chốt số thật
-
     // 2 = gửi thay đổi cho client, 16 = bỏ qua cập nhật hình dạng block lân cận (nhanh hơn khi đặt hàng loạt).
+    public static final String ROOM_TAG = "room_";   // tag gắn lên quái: "room_<id>"
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
-    private DungeonBuilder() {}
-
-    // Cao độ mặt sàn cố định của mọi dungeon.
-    public static final int FLOOR_Y = 0;
+    private DungeonBuilder() {
+    }
 
     /**
      * Góc cố định của lưới: ô giữa (nơi đặt phòng vào) trùng chunk (0, 0), sàn ở y = FLOOR_Y.
@@ -67,22 +68,23 @@ public final class DungeonBuilder {
     /**
      * @param origin góc (x, y, z) của ô lưới (0, 0); x và z nên chia hết cho 16 để mỗi phòng khớp đúng 1 chunk.
      *               y là cao độ của mặt sàn.
-     * @param world
+     * @param world  nguồn ngẫu nhiên theo seed (đuốc roll theo toạ độ).
      */
     public static void build(ServerLevel level, DungeonLayout layout, BlockPos origin, WorldRandom world) {
-        if (origin.getY() < level.getMinBuildHeight()
-                || origin.getY() + totalHeight() > level.getMaxBuildHeight()) {
+        if (origin.getY() < level.getMinBuildHeight() || origin.getY() + totalHeight() > level.getMaxBuildHeight()) {
             throw new IllegalArgumentException("Dungeon vượt quá giới hạn chiều cao của world.");
         }
         BlockState stone = Blocks.STONE.defaultBlockState();
         BlockState bricks = Blocks.STONE_BRICKS.defaultBlockState();
         BlockState air = Blocks.AIR.defaultBlockState();
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        int span = 13 * CELL;
-        AABB area = new AABB(
-                origin.getX(), origin.getY(), origin.getZ(),
-                origin.getX() + span, origin.getY() + totalHeight(), origin.getZ() + span);
+        // Dựng lại thì xoá entity cũ (gate, bệ, quái của phòng); block thì bị ghi đè, entity thì không.
+        AABB area = new AABB(origin.getX(), origin.getY(), origin.getZ(),
+                origin.getX() + layout.params().gridW() * CELL,
+                origin.getY() + totalHeight(),
+                origin.getZ() + layout.params().gridD() * CELL);
         level.getEntitiesOfClass(PropEntity.class, area).forEach(Entity::discard);
+        level.getEntitiesOfClass(Mob.class, area, DungeonBuilder::isRoomMob).forEach(Entity::discard);
         for (Room room : layout.rooms()) {
             int x0 = origin.getX() + room.cx() * CELL;
             int z0 = origin.getZ() + room.cz() * CELL;
@@ -95,8 +97,7 @@ public final class DungeonBuilder {
 
                     level.setBlock(pos.set(x0 + dx, origin.getY(), z0 + dz), stone, FLAGS);
                     for (int dy = 1; dy <= HEIGHT; dy++) {
-                        level.setBlock(pos.set(x0 + dx, origin.getY() + dy, z0 + dz),
-                                wall ? bricks : air, FLAGS);
+                        level.setBlock(pos.set(x0 + dx, origin.getY() + dy, z0 + dz), wall ? bricks : air, FLAGS);
                     }
                     level.setBlock(pos.set(x0 + dx, origin.getY() + HEIGHT + 1, z0 + dz), bricks, FLAGS);
                 }
@@ -107,25 +108,45 @@ public final class DungeonBuilder {
         for (Door door : layout.doors()) {
             carveDoor(level, door, origin, air, pos);
         }
+        // Đuốc đặt SAU khi khoét: block tường cạnh lỗ (local 6 và 9) vẫn là gạch nên đuốc có chỗ bám.
         for (Door door : layout.doors()) {
             placeDoorTorches(level, world, door, origin);
         }
         for (Door door : layout.doors()) {
             placeDoorGate(level, door, origin);
         }
-        // TODO: đuốc TƯỜNG (Blocks.WALL_TORCH) đặt bên TRONG mỗi phòng, ở hai bên cạnh cửa, cho MỌI cửa.
-        //   Cửa hướng đông (door.east() == true), baseX/baseZ như trong carveDoor, y = origin.getY() + 2:
-        //     phòng phía tây: x = baseX + 14, z = baseZ + 6 và baseZ + 9, FACING = WEST (quay ra xa tường x = 15)
-        //     phòng phía đông: x = baseX + 17, cùng hai z, FACING = EAST (tường ở x = 16)
-        //   Cửa hướng nam (east == false): đổi vai x và z; phía bắc z = baseZ + 14 FACING = NORTH, phía nam z = baseZ + 17 FACING = SOUTH.
-        //   Đặt sau vòng khoét cửa; block tường tại (15|16, 6|9) vẫn còn là STONE_BRICKS nên đuốc có chỗ bám.
-        // TODO: mỗi đuốc roll RIÊNG: world.fork("torch").at(x, z).chance(0.75) (x, z là toạ độ block đuốc, nên kết quả không phụ thuộc thứ tự lặp).
-        // TODO: 25% còn lại là tắt (wall_torch_off) hoặc YẾU. Đuốc yếu = Blocks.WALL_TORCH nhưng thời gian cháy chỉ còn 25% (TorchBurn.WEAK_TICKS).
-        //       Không cần block mới. Cần chốt tỉ lệ chia tắt / yếu trong 25%; nếu chia thì roll thứ hai cho cùng đuốc.
-        // TODO: đuốc sáng và yếu đều do mixin ModBlockBehaviour lên lịch tắt khi onPlace; đặt đuốc yếu phải ghi đè thời gian (xem TODO trong TorchBurn).
-        // TODO: build() chưa nhận seed/WorldRandom; thêm tham số thì phải sửa cả DungeonCommand (gọi build).
+        for (Room room : layout.rooms()) {
+            spawnRoomMobs(level, layout, room, origin);
+        }
     }
 
+    private static void spawnRoomMobs(ServerLevel level, DungeonLayout layout, Room room, BlockPos origin) {
+        int count = switch (layout.roleOf(room)) {
+            case NORMAL -> 3;
+            case ELITE -> 4;
+            case BOSS -> 1;
+            default -> 0;                       // START, SHOP...: phòng an toàn
+        };
+        double cx = origin.getX() + (room.cx() + room.cellsX() / 2.0) * CELL;
+        double cz = origin.getZ() + (room.cz() + room.cellsZ() / 2.0) * CELL;
+        for (int i = 0; i < count; i++) {
+            Zombie mob = EntityType.ZOMBIE.create(level);
+            if (mob == null) continue;
+            double offset = (i - (count - 1) / 2.0) * 2;                    // -2, 0, 2: hàng ngang cân giữa phòng
+            mob.moveTo(cx + offset, origin.getY() + 1, cz, 0F, 0F);
+            mob.setNoAi(true);                  // đứng im
+            mob.setInvulnerable(true);          // đánh không chết
+            mob.setPersistenceRequired();       // không tự biến mất khi người chơi đi xa
+            mob.addTag(ROOM_TAG + room.id());
+            level.addFreshEntity(mob);
+        }
+    }
+
+    private static boolean isRoomMob(Mob mob) {
+        return mob.getTags().stream().anyMatch(t -> t.startsWith(ROOM_TAG));
+    }
+
+    // Góc của ô lưới chứa cửa; mọi toạ độ của cửa (lỗ, đuốc, gate) đều tính từ đây.
     private static BlockPos doorBase(Door door, BlockPos origin) {
         return new BlockPos(origin.getX() + door.cx() * CELL, origin.getY(), origin.getZ() + door.cz() * CELL);
     }
@@ -151,30 +172,29 @@ public final class DungeonBuilder {
         if (r.chance(LIT_CHANCE)) {
             level.setBlock(pos, lit(facing), FLAGS);                       // sáng, cháy LIT_TICKS
         } else if (r.chance(WEAK_SHARE)) {
-            level.scheduleTick(pos, Blocks.WALL_TORCH, TorchBurn.WEAK_TICKS);   // xem TODO 5
-            level.setBlock(pos, lit(facing), FLAGS);                       // yếu
+            // Yếu: lên lịch WEAK_TICKS TRƯỚC rồi mới đặt đuốc. Cùng (pos, block) chỉ giữ lịch ĐẦU TIÊN,
+            // nên LIT_TICKS mà mixin onPlace lên lịch sau đó bị bỏ qua. Đảo thứ tự hai dòng là hỏng.
+            level.scheduleTick(pos, Blocks.WALL_TORCH, TorchBurn.WEAK_TICKS);
+            level.setBlock(pos, lit(facing), FLAGS);
         } else {
-            level.setBlock(pos, ModBlocksRegistry.WALL_TORCH_OFF.get().defaultBlockState()
-                    .setValue(WallTorchBlock.FACING, facing), FLAGS);      // tắt
+            level.setBlock(pos, ModBlocksRegistry.WALL_TORCH_OFF.get().defaultBlockState().setValue(WallTorchBlock.FACING, facing), FLAGS);      // tắt
         }
     }
 
     private static BlockState lit(Direction facing) {
         return Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, facing);
     }
-    // TODO: toạ độ đuốc dùng chung baseX/baseZ/door.east() với hàm này; cân nhắc tách hàm tính toạ độ chung để hai nơi không lệch nhau.
-    private static void carveDoor(ServerLevel level, Door door, BlockPos origin,
-                                  BlockState air, BlockPos.MutableBlockPos pos) {
-        int baseX = origin.getX() + door.cx() * CELL;
-        int baseZ = origin.getZ() + door.cz() * CELL;
 
-        // Hai lớp tường nằm ở local 15 của ô này và local 0 của ô bên cạnh (tức 15 và 16 tính từ góc ô này).
-        // Hai block rộng của cửa nằm ở local 7 và 8.
-        for (int wall = 15; wall <= 16; wall++) {
-            for (int side = 7; side <= 8; side++) {
+    private static void carveDoor(ServerLevel level, Door door, BlockPos origin, BlockState air, BlockPos.MutableBlockPos pos) {
+        BlockPos base = doorBase(door, origin);
+
+        // Hai lớp tường: local 15 của ô này và local 0 của ô bên cạnh (tức WALL_A, WALL_B tính từ góc ô này).
+        // Lỗ rộng 2 block: DOOR_LO..DOOR_HI. Cửa đông: tường chạy theo x, lỗ theo z; cửa nam thì ngược lại.
+        for (int wall = WALL_A; wall <= WALL_B; wall++) {
+            for (int side = DOOR_LO; side <= DOOR_HI; side++) {
                 for (int dy = 1; dy <= DOOR_HEIGHT; dy++) {
-                    int x = door.east() ? baseX + wall : baseX + side;
-                    int z = door.east() ? baseZ + side : baseZ + wall;
+                    int x = base.getX() + (door.east() ? wall : side);
+                    int z = base.getZ() + (door.east() ? side : wall);
                     level.setBlock(pos.set(x, origin.getY() + dy, z), air, FLAGS);
                 }
             }
@@ -193,9 +213,9 @@ public final class DungeonBuilder {
         BlockPos base = doorBase(door, origin);
         double y = origin.getY() + 1;      // đứng trên sàn
         if (door.east()) {
-            placeGate(level, base.getX() + 16.0, y, base.getZ() + 8.0, 90F);
+            placeGate(level, base.getX() + WALL_B, y, base.getZ() + DOOR_HI, 90F);   // giữa lỗ: x = 16.0, z = 8.0
         } else {
-            placeGate(level, base.getX() + 8.0, y, base.getZ() + 16.0, 0F);
+            placeGate(level, base.getX() + DOOR_HI, y, base.getZ() + WALL_B, 0F);
         }
     }
 }
