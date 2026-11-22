@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 36 class/kiểu Java, 2609 dòng, 70 phụ thuộc nội bộ
+- 38 class/kiểu Java, 2674 dòng, 78 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -34,6 +34,7 @@ flowchart LR
     PropRenderer["PropRenderer<br/><small>class · 40 dòng</small>"]
   end
   subgraph pkg_dungeon["dungeon"]
+    DungeonAutoBuild["DungeonAutoBuild<br/><small>class · 36 dòng</small>"]
     DungeonBuilder["DungeonBuilder<br/><small>class · 172 dòng</small>"]
     DungeonClientState["DungeonClientState<br/><small>class · 27 dòng</small>"]
     DungeonCommand["DungeonCommand<br/><small>class · 72 dòng</small>"]
@@ -41,6 +42,7 @@ flowchart LR
     DungeonLayout["DungeonLayout<br/><small>class · 399 dòng</small>"]
     DungeonParams["DungeonParams<br/><small>record · 49 dòng</small>"]
     DungeonSavedData["DungeonSavedData<br/><small>class · 55 dòng</small>"]
+    DungeonService["DungeonService<br/><small>class · 29 dòng</small>"]
     RoomPreset["RoomPreset<br/><small>enum · 40 dòng</small>"]
   end
   subgraph pkg_init["init"]
@@ -73,6 +75,10 @@ flowchart LR
   end
   ClientboundDungeonSeedPacket --> DungeonClientState
   ClientboundDungeonSeedPacket --> Susu609Mod
+  DungeonAutoBuild --> DungeonLayout
+  DungeonAutoBuild --> DungeonSavedData
+  DungeonAutoBuild --> DungeonService
+  DungeonAutoBuild --> Susu609Mod
   DungeonBuilder --> DungeonLayout
   DungeonBuilder --> DungeonParams
   DungeonBuilder --> ModBlocksRegistry
@@ -100,6 +106,10 @@ flowchart LR
   DungeonLayout --> WorldRandom
   DungeonParams --> DungeonLayout
   DungeonParams --> RoomPreset
+  DungeonService --> DungeonBuilder
+  DungeonService --> DungeonLayout
+  DungeonService --> DungeonParams
+  DungeonService --> WorldRandom
   GateEntity --> PropEntity
   GateModel --> GateEntity
   GateRenderer --> GateEntity
@@ -191,6 +201,7 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
+| `DungeonAutoBuild` | class | 36 | DungeonLayout, DungeonSavedData, DungeonService, Susu609Mod | PlayerEvent, PlayerEvent.PlayerLoggedInEvent |
 | `DungeonBuilder` | class | 172 | DungeonLayout, DungeonParams, ModBlocksRegistry, RoomPreset, TorchBurn, WorldRandom | - |
 | `DungeonClientState` | class | 27 | DungeonLayout, DungeonParams, WorldRandom | - |
 | `DungeonCommand` | class | 72 | ClientboundDungeonSeedPacket, DungeonBuilder, DungeonLayout, DungeonParams, DungeonSavedData, RoomPreset, Susu609Mod, WorldRandom | RegisterCommandsEvent |
@@ -198,6 +209,7 @@ flowchart LR
 | `DungeonLayout` | class | 399 | DungeonParams, RoomPreset, WorldRandom | - |
 | `DungeonParams` | record | 49 | DungeonLayout, RoomPreset | - |
 | `DungeonSavedData` | class | 55 | - | - |
+| `DungeonService` | class | 29 | DungeonBuilder, DungeonLayout, DungeonParams, WorldRandom | - |
 | `RoomPreset` | enum | 40 | - | - |
 
 ### init
