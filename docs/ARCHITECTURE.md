@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 38 class/kiểu Java, 2674 dòng, 78 phụ thuộc nội bộ
+- 38 class/kiểu Java, 2681 dòng, 80 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -42,7 +42,7 @@ flowchart LR
     DungeonLayout["DungeonLayout<br/><small>class · 399 dòng</small>"]
     DungeonParams["DungeonParams<br/><small>record · 49 dòng</small>"]
     DungeonSavedData["DungeonSavedData<br/><small>class · 55 dòng</small>"]
-    DungeonService["DungeonService<br/><small>class · 29 dòng</small>"]
+    DungeonService["DungeonService<br/><small>class · 36 dòng</small>"]
     RoomPreset["RoomPreset<br/><small>enum · 40 dòng</small>"]
   end
   subgraph pkg_init["init"]
@@ -109,6 +109,8 @@ flowchart LR
   DungeonService --> DungeonBuilder
   DungeonService --> DungeonLayout
   DungeonService --> DungeonParams
+  DungeonService --> DungeonSavedData
+  DungeonService --> RoomPreset
   DungeonService --> WorldRandom
   GateEntity --> PropEntity
   GateModel --> GateEntity
@@ -209,7 +211,7 @@ flowchart LR
 | `DungeonLayout` | class | 399 | DungeonParams, RoomPreset, WorldRandom | - |
 | `DungeonParams` | record | 49 | DungeonLayout, RoomPreset | - |
 | `DungeonSavedData` | class | 55 | - | - |
-| `DungeonService` | class | 29 | DungeonBuilder, DungeonLayout, DungeonParams, WorldRandom | - |
+| `DungeonService` | class | 36 | DungeonBuilder, DungeonLayout, DungeonParams, DungeonSavedData, RoomPreset, WorldRandom | - |
 | `RoomPreset` | enum | 40 | - | - |
 
 ### init
