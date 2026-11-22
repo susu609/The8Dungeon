@@ -7,7 +7,6 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -30,11 +29,11 @@ public class PropEntity extends Entity {
         this.entityData.define(DATA_STATE, Blocks.STONE_BRICKS.defaultBlockState());
     }
 
-    public BlockState getBlockState() { /* TODO: entityData.get(...) */
+    public BlockState getBlockState() {
         return this.entityData.get(DATA_STATE);
     }
 
-    public void setBlockState(BlockState state) { /* TODO: entityData.set(...) */
+    public void setBlockState(BlockState state) {
         this.entityData.set(DATA_STATE, state);
     }
 
@@ -62,13 +61,13 @@ public class PropEntity extends Entity {
     @Override
     protected @NotNull AABB makeBoundingBox() {
         Vec3 s = size();
-        // TODO (1): làm tròn yaw về 0/90/180/270 rồi lấy "phần tư" 0..3
-        //   gợi ý: int quarter = Math.floorMod(Math.round(this.getYRot() / 90F), 4);
-        // TODO (2): nếu quarter lẻ (90 hoặc 270) thì đổi chỗ rộng và sâu
-        //   gợi ý: double w = quarter % 2 == 0 ? s.x : s.z;   double d = quarter % 2 == 0 ? s.z : s.x;
+        // yaw làm tròn về 0/90/180/270 -> "phần tư" 0..3 (floorMod để yaw âm vẫn đúng)
+        int quarter = Math.floorMod(Math.round(this.getYRot() / 90F), 4);
+        // quay 90 hoặc 270 độ: chiều rộng chuyển sang trục Z
+        double w = quarter % 2 == 0 ? s.x : s.z;
+        double d = quarter % 2 == 0 ? s.z : s.x;
         Vec3 p = this.position();   // tâm đáy entity
-        // TODO (3): hộp quanh tâm đáy: x ± w/2, y đến y + cao, z ± d/2
-        //   gợi ý: return new AABB(p.x - w / 2, p.y, p.z - d / 2, p.x + w / 2, p.y + s.y, p.z + d / 2);
+        return new AABB(p.x - w / 2, p.y, p.z - d / 2, p.x + w / 2, p.y + s.y, p.z + d / 2);
     }
 
     @Override
@@ -79,17 +78,17 @@ public class PropEntity extends Entity {
 
     // Cư xử như khối
     @Override
-    public boolean canBeCollidedWith() { /* TODO: không đi xuyên, đứng lên được */
+    public boolean canBeCollidedWith() {   // không đi xuyên, đứng lên được
         return true;
     }
 
     @Override
-    public boolean isPickable() { /* TODO: nhắm chuột trúng, tương tác được */
+    public boolean isPickable() {   // nhắm chuột trúng, tương tác được
         return true;
     }
 
     @Override
-    public boolean isPushable() { /* TODO: không bị đẩy */
+    public boolean isPushable() {   // không bị đẩy
         return false;
     }
 }
