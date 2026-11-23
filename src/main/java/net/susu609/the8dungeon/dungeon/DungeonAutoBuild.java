@@ -20,6 +20,10 @@ public final class DungeonAutoBuild {
     private DungeonAutoBuild() {
     }
 
+    private static void sendRooms(DungeonSavedData data) {
+        Susu609Mod.PACKET_HANDLER.send(PacketDistributor.ALL.noArg(), new ClientboundVisitedRoomsPacket(data.knownRooms()));
+    }
+
     @SubscribeEvent
     public static void onServerStarted(ServerStartedEvent event) {
         ServerLevel level = event.getServer().overworld();
@@ -49,8 +53,7 @@ public final class DungeonAutoBuild {
         }
         Susu609Mod.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new ClientboundDungeonSeedPacket(true, data.seed()));
         // Chỉ người vừa vào cần nhận bản đầy đủ; người khác đã có rồi. Gửi SAU seed: client cần layout trước.
-        Susu609Mod.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player),
-                new ClientboundVisitedRoomsPacket(data.knownRooms()));
+        Susu609Mod.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), new ClientboundVisitedRoomsPacket(data.knownRooms()));
     }
 
     @SubscribeEvent
@@ -70,10 +73,23 @@ public final class DungeonAutoBuild {
         int cx = Math.floorDiv(rx, RoomPreset.CELL);                // ô lưới
         int cz = Math.floorDiv(rz, RoomPreset.CELL);
         DungeonLayout.Room here = layout.roomAt(cx, cz);
-        if (here != null && data.state(here.id()) == RoomState.HIDDEN) {
-            data.setState(here.id(), RoomState.CLEARED);            // tạm; bài 2 tách COMBAT / CLEARED
-            Susu609Mod.PACKET_HANDLER.send(PacketDistributor.ALL.noArg(),        // cả nhóm cùng thấy
-                    new ClientboundVisitedRoomsPacket(data.knownRooms()));
+
+        if (here == null) return;
+        ServerLevel level = player.serverLevel();
+        RoomState st = data.state(here.id());
+
+        if (st == RoomState.HIDDEN) {
+            boolean hasMobs = !RoomCombat.cleared(level, origin, here);
+            data.setState(here.id(), hasMobs ? RoomState.COMBAT : RoomState.CLEARED);
+            if (hasMobs) RoomCombat.start(level, origin, here, player);
+            sendRooms(data);
+        } else if (st == RoomState.COMBAT) {
+            RoomCombat.scan(level, DungeonBuilder.roomBox(origin, here), here, player);
+            if (RoomCombat.cleared(level, origin, here)) {
+                data.setState(here.id(), RoomState.CLEARED);
+                RoomCombat.finish(level, origin, here);
+                sendRooms(data);
+            }
         }
     }
 }

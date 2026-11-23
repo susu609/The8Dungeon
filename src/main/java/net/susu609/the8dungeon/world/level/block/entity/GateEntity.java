@@ -22,6 +22,7 @@ public class GateEntity extends PropEntity {
     // Sửa model thì xuất lại và dán đè đoạn này.
     private static final Vec3 SIZE = new Vec3(2.0, 3.0, 1.0);   // rộng X, cao Y, sâu Z (block) khi yaw = 0
     private static final EntityDataAccessor<Boolean> DATA_OPEN = SynchedEntityData.defineId(GateEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> DATA_LOCKED = SynchedEntityData.defineId(GateEntity.class, EntityDataSerializers.BOOLEAN);
     public final AnimationState openState = new AnimationState();
     public final AnimationState closeState = new AnimationState();
     public final AnimationState activeState = new AnimationState();
@@ -39,6 +40,15 @@ public class GateEntity extends PropEntity {
         this.entityData.set(DATA_OPEN, open);
     }
 
+    public boolean isLocked() {
+        return this.entityData.get(DATA_LOCKED);
+    }
+
+    public void setLocked(boolean locked) {
+        this.entityData.set(DATA_LOCKED, locked);
+        if (locked) setOpen(false);                      // khoá là sập cửa
+    }
+
     @Override
     protected Vec3 size() {
         return SIZE;
@@ -46,7 +56,7 @@ public class GateEntity extends PropEntity {
 
     @Override
     public @NotNull InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand) {
-        if (!level().isClientSide) setOpen(!isOpen());
+        if (!level().isClientSide && !isLocked()) setOpen(!isOpen());
         return InteractionResult.sidedSuccess(level().isClientSide);
     }
 
@@ -79,6 +89,7 @@ public class GateEntity extends PropEntity {
     protected void defineSynchedData() {
         super.defineSynchedData();          // giữ DATA_STATE của PropEntity
         this.entityData.define(DATA_OPEN, false);
+        this.entityData.define(DATA_LOCKED, false);
     }
 
     @Override

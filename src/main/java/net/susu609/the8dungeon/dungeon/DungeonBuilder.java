@@ -4,9 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.WallTorchBlock;
@@ -20,6 +18,9 @@ import net.susu609.the8dungeon.world.WorldRandom;
 import net.susu609.the8dungeon.world.level.block.entity.GateEntity;
 import net.susu609.the8dungeon.world.level.block.entity.PropEntity;
 import net.susu609.the8dungeon.world.torch.TorchBurn;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Biến DungeonLayout (dữ liệu) thành block thật trong world.
@@ -36,6 +37,8 @@ public final class DungeonBuilder {
 
     // Cao độ mặt sàn cố định của mọi dungeon.
     public static final int FLOOR_Y = 0;
+    // 2 = gửi thay đổi cho client, 16 = bỏ qua cập nhật hình dạng block lân cận (nhanh hơn khi đặt hàng loạt).
+    public static final String ROOM_TAG = "room_";   // tag gắn lên quái: "room_<id>"
     private static final int CELL = RoomPreset.CELL;
     private static final int HEIGHT = RoomPreset.INTERIOR_HEIGHT;
     private static final int DOOR_HEIGHT = 3;
@@ -45,8 +48,6 @@ public final class DungeonBuilder {
     private static final int TORCH_IN_A = 14, TORCH_IN_B = 17;       // sát mặt trong tường A và B
     private static final double LIT_CHANCE = 0.75;
     private static final double WEAK_SHARE = 0.5;   // tạm: trong 25% còn lại, nửa yếu, nửa tắt; bạn chốt số thật
-    // 2 = gửi thay đổi cho client, 16 = bỏ qua cập nhật hình dạng block lân cận (nhanh hơn khi đặt hàng loạt).
-    public static final String ROOM_TAG = "room_";   // tag gắn lên quái: "room_<id>"
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
     private DungeonBuilder() {
@@ -65,6 +66,27 @@ public final class DungeonBuilder {
         return HEIGHT + 2;
     }
 
+    public static AABB roomBox(BlockPos origin, DungeonLayout.Room room) {
+        int x0 = origin.getX() + room.cx() * CELL, z0 = origin.getZ() + room.cz() * CELL;
+        return new AABB(x0, origin.getY(), z0, x0 + room.cellsX() * CELL, origin.getY() + totalHeight(), z0 + room.cellsZ() * CELL);
+    }
+
+    public static List<MobSpot> planMobs(WorldRandom world, DungeonLayout.Room room, int minBudget, int maxBudget) {
+        WorldRandom r = world.fork("mobs").at(room.cx(), room.cz());   // mỗi phòng 1 dãy riêng
+        int budget = r.nextRange(minBudget, maxBudget);
+        List<MobSpot> out = new ArrayList<>();
+        RoomMob[] all = RoomMob.values();
+        while (budget > 0) {
+            RoomMob m = all[r.nextInt(all.length)];
+            if (m.cost > budget) m = RoomMob.ZOMBIE;                   // hết tiền thì lấy loại rẻ nhất
+            budget -= m.cost;
+            int lx = r.nextRange(3, room.cellsX() * 16 - 4);           // cách tường ≥ 3 block
+            int lz = r.nextRange(3, room.cellsZ() * 16 - 4);
+            out.add(new MobSpot(m, lx, lz));
+        }
+        return out;
+    }
+
     /**
      * @param origin góc (x, y, z) của ô lưới (0, 0); x và z nên chia hết cho 16 để mỗi phòng khớp đúng 1 chunk.
      *               y là cao độ của mặt sàn.
@@ -79,10 +101,7 @@ public final class DungeonBuilder {
         BlockState air = Blocks.AIR.defaultBlockState();
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         // Dựng lại thì xoá entity cũ (gate, bệ, quái của phòng); block thì bị ghi đè, entity thì không.
-        AABB area = new AABB(origin.getX(), origin.getY(), origin.getZ(),
-                origin.getX() + layout.params().gridW() * CELL,
-                origin.getY() + totalHeight(),
-                origin.getZ() + layout.params().gridD() * CELL);
+        AABB area = new AABB(origin.getX(), origin.getY(), origin.getZ(), origin.getX() + layout.params().gridW() * CELL, origin.getY() + totalHeight(), origin.getZ() + layout.params().gridD() * CELL);
         level.getEntitiesOfClass(PropEntity.class, area).forEach(Entity::discard);
         level.getEntitiesOfClass(Mob.class, area, DungeonBuilder::isRoomMob).forEach(Entity::discard);
         for (Room room : layout.rooms()) {
@@ -116,24 +135,28 @@ public final class DungeonBuilder {
             placeDoorGate(level, door, origin);
         }
         for (Room room : layout.rooms()) {
-            spawnRoomMobs(level, layout, room, origin);
+            spawnRoomMobs(level, layout, room, origin, world);
         }
     }
 
-    private static void spawnRoomMobs(ServerLevel level, DungeonLayout layout, Room room, BlockPos origin) {
+    private static void spawnRoomMobs(ServerLevel level, DungeonLayout layout, Room room, BlockPos origin, WorldRandom world) {
         int count = switch (layout.roleOf(room)) {
             case NORMAL -> 3;
             case ELITE -> 4;
             case BOSS -> 1;
             default -> 0;                       // START, SHOP...: phòng an toàn
         };
-        double cx = origin.getX() + (room.cx() + room.cellsX() / 2.0) * CELL;
-        double cz = origin.getZ() + (room.cz() + room.cellsZ() / 2.0) * CELL;
-        for (int i = 0; i < count; i++) {
-            Zombie mob = EntityType.ZOMBIE.create(level);
+        int[] budget = switch (layout.roleOf(room)) {
+            case NORMAL -> new int[]{1, 3};
+            case ELITE -> new int[]{4, 5};
+            default -> null;                                      // phòng an toàn
+        };
+        if (budget == null) return;
+        int x0 = origin.getX() + room.cx() * CELL, z0 = origin.getZ() + room.cz() * CELL;
+        for (MobSpot s : planMobs(world, room, budget[0], budget[1])) {
+            Mob mob = s.mob().type.create(level);
             if (mob == null) continue;
-            double offset = (i - (count - 1) / 2.0) * 2;                    // -2, 0, 2: hàng ngang cân giữa phòng
-            mob.moveTo(cx + offset, origin.getY() + 1, cz, 0F, 0F);
+            mob.moveTo(x0 + s.lx() + 0.5, origin.getY() + 1, z0 + s.lz() + 0.5, 0F, 0F);
             mob.setNoAi(true);                  // đứng im
             mob.setInvulnerable(true);          // đánh không chết
             mob.setPersistenceRequired();       // không tự biến mất khi người chơi đi xa
@@ -217,5 +240,9 @@ public final class DungeonBuilder {
         } else {
             placeGate(level, base.getX() + DOOR_HI, y, base.getZ() + WALL_B, 0F);
         }
+    }
+
+    // Kết quả: loại quái + vị trí local trong phòng
+    public record MobSpot(RoomMob mob, int lx, int lz) {
     }
 }
