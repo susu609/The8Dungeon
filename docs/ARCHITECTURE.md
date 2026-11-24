@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 48 class/kiểu Java, 3388 dòng, 106 phụ thuộc nội bộ
+- 52 class/kiểu Java, 3517 dòng, 123 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -45,7 +45,7 @@ flowchart LR
     CombatEvent["CombatEvent<br/><small>class · 17 dòng</small>"]
   end
   subgraph pkg_dungeon["dungeon"]
-    DungeonAutoBuild["DungeonAutoBuild<br/><small>class · 95 dòng</small>"]
+    DungeonAutoBuild["DungeonAutoBuild<br/><small>class · 33 dòng</small>"]
     DungeonBuilder["DungeonBuilder<br/><small>class · 290 dòng</small>"]
     DungeonClientState["DungeonClientState<br/><small>class · 38 dòng</small>"]
     DungeonCommand["DungeonCommand<br/><small>class · 60 dòng</small>"]
@@ -54,7 +54,11 @@ flowchart LR
     DungeonParams["DungeonParams<br/><small>record · 49 dòng</small>"]
     DungeonSavedData["DungeonSavedData<br/><small>class · 80 dòng</small>"]
     DungeonService["DungeonService<br/><small>class · 47 dòng</small>"]
-    RoomCombat["RoomCombat<br/><small>class · 46 dòng</small>"]
+    DungeonSync["DungeonSync<br/><small>class · 48 dòng</small>"]
+    DungeonView["DungeonView<br/><small>record · 34 dòng</small>"]
+    RoomClear["RoomClear<br/><small>class · 45 dòng</small>"]
+    RoomCombat["RoomCombat<br/><small>class · 67 dòng</small>"]
+    RoomEntry["RoomEntry<br/><small>class · 43 dòng</small>"]
     RoomMob["RoomMob<br/><small>enum · 18 dòng</small>"]
     RoomPreset["RoomPreset<br/><small>enum · 40 dòng</small>"]
     RoomState["RoomState<br/><small>enum · 4 dòng</small>"]
@@ -96,15 +100,9 @@ flowchart LR
   ClientboundDungeonSeedPacket --> Susu609Mod
   ClientboundVisitedRoomsPacket --> DungeonClientState
   ClientboundVisitedRoomsPacket --> Susu609Mod
-  DungeonAutoBuild --> ClientboundDungeonSeedPacket
-  DungeonAutoBuild --> ClientboundVisitedRoomsPacket
-  DungeonAutoBuild --> DungeonBuilder
   DungeonAutoBuild --> DungeonLayout
   DungeonAutoBuild --> DungeonSavedData
   DungeonAutoBuild --> DungeonService
-  DungeonAutoBuild --> RoomCombat
-  DungeonAutoBuild --> RoomPreset
-  DungeonAutoBuild --> RoomState
   DungeonAutoBuild --> Susu609Mod
   DungeonBuilder --> DungeonLayout
   DungeonBuilder --> DungeonParams
@@ -141,6 +139,15 @@ flowchart LR
   DungeonService --> DungeonSavedData
   DungeonService --> RoomPreset
   DungeonService --> WorldRandom
+  DungeonSync --> ClientboundDungeonSeedPacket
+  DungeonSync --> ClientboundVisitedRoomsPacket
+  DungeonSync --> DungeonSavedData
+  DungeonSync --> DungeonView
+  DungeonSync --> Susu609Mod
+  DungeonView --> DungeonBuilder
+  DungeonView --> DungeonLayout
+  DungeonView --> DungeonSavedData
+  DungeonView --> DungeonService
   GateEntity --> PropEntity
   GateModel --> GateAnimation
   GateModel --> GateEntity
@@ -181,9 +188,23 @@ flowchart LR
   PendingCharacter --> ServerboundCharacterPacket
   PendingCharacter --> Susu609Mod
   PropRenderer --> PropEntity
+  RoomClear --> DungeonBuilder
+  RoomClear --> DungeonLayout
+  RoomClear --> DungeonView
+  RoomClear --> RoomCombat
+  RoomClear --> RoomState
+  RoomClear --> Susu609Mod
   RoomCombat --> DungeonBuilder
   RoomCombat --> DungeonLayout
+  RoomCombat --> DungeonSync
+  RoomCombat --> DungeonView
   RoomCombat --> GateEntity
+  RoomCombat --> RoomState
+  RoomEntry --> DungeonLayout
+  RoomEntry --> DungeonView
+  RoomEntry --> RoomCombat
+  RoomEntry --> RoomState
+  RoomEntry --> Susu609Mod
   ServerboundCharacterPacket --> CharacterApply
   ServerboundCharacterPacket --> Susu609Mod
   Susu609Mod --> ModBlockEntitiesRegistry
@@ -265,7 +286,7 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `DungeonAutoBuild` | class | 95 | ClientboundDungeonSeedPacket, ClientboundVisitedRoomsPacket, DungeonBuilder, DungeonLayout, DungeonSavedData, DungeonService, RoomCombat, RoomPreset, RoomState, Susu609Mod | PlayerEvent, PlayerEvent.PlayerLoggedInEvent, ServerStartedEvent, TickEvent, TickEvent.Phase, TickEvent.PlayerTickEvent |
+| `DungeonAutoBuild` | class | 33 | DungeonLayout, DungeonSavedData, DungeonService, Susu609Mod | ServerStartedEvent |
 | `DungeonBuilder` | class | 290 | DungeonLayout, DungeonParams, GateEntity, ModBlocksRegistry, ModEntitiesRegistry, PedestalEntity, PropEntity, RoomMob, RoomPreset, TorchBurn, WorldRandom | - |
 | `DungeonClientState` | class | 38 | DungeonLayout, DungeonParams, WorldRandom | - |
 | `DungeonCommand` | class | 60 | ClientboundDungeonSeedPacket, DungeonLayout, DungeonService, Susu609Mod | RegisterCommandsEvent |
@@ -274,7 +295,11 @@ flowchart LR
 | `DungeonParams` | record | 49 | DungeonLayout, RoomPreset | - |
 | `DungeonSavedData` | class | 80 | RoomState | - |
 | `DungeonService` | class | 47 | DungeonBuilder, DungeonLayout, DungeonParams, DungeonSavedData, RoomPreset, WorldRandom | - |
-| `RoomCombat` | class | 46 | DungeonBuilder, DungeonLayout, GateEntity | - |
+| `DungeonSync` | class | 48 | ClientboundDungeonSeedPacket, ClientboundVisitedRoomsPacket, DungeonSavedData, DungeonView, Susu609Mod | PlayerEvent, PlayerEvent.PlayerLoggedInEvent |
+| `DungeonView` | record | 34 | DungeonBuilder, DungeonLayout, DungeonSavedData, DungeonService | - |
+| `RoomClear` | class | 45 | DungeonBuilder, DungeonLayout, DungeonView, RoomCombat, RoomState, Susu609Mod | LivingDeathEvent |
+| `RoomCombat` | class | 67 | DungeonBuilder, DungeonLayout, DungeonSync, DungeonView, GateEntity, RoomState | - |
+| `RoomEntry` | class | 43 | DungeonLayout, DungeonView, RoomCombat, RoomState, Susu609Mod | EntityEvent, EntityEvent.EnteringSection |
 | `RoomMob` | enum | 18 | - | - |
 | `RoomPreset` | enum | 40 | - | - |
 | `RoomState` | enum | 4 | - | - |
