@@ -17,34 +17,10 @@ public final class RoomCombat {
         AABB box = DungeonBuilder.roomBox(origin, room);
         for (Mob mob : mobsOf(level, box, room)) {
             mob.setNoAi(false);
-            mob.setInvulnerable(false);      // đánh được rồi, nhưng chưa tỉnh
-            mob.addTag(SCANNING);            // đang dò
+            mob.setInvulnerable(false);
+            mob.setTarget(player);
         }
         gates(level, box).forEach(g -> g.setLocked(true));
-    }
-
-    public static void scan(ServerLevel level, AABB box, DungeonLayout.Room room, ServerPlayer player) {
-        for (Mob mob : mobsOf(level, box, room)) {
-            if (!mob.getTags().contains(SCANNING)) continue;
-
-            boolean hurt = mob.getLastHurtByMob() != null;                  // bị đánh lén → tỉnh luôn
-            if (hurt || sees(mob, player)) {
-                mob.removeTag(SCANNING);
-                mob.setNoAi(false);
-                mob.setTarget(player);
-                continue;
-            }
-            float yaw = mob.getYRot() + 6F;                                  // xoay chậm
-            mob.setYRot(yaw);
-            mob.setYHeadRot(yaw);
-        }
-    }
-
-    private static boolean sees(Mob mob, ServerPlayer player) {
-        Vec3 look = mob.getViewVector(1F);
-        Vec3 to = player.getEyePosition().subtract(mob.getEyePosition()).normalize();
-        boolean inCone = look.dot(to) > Math.cos(Math.toRadians(30));        // nửa nón 30° = nón 60°
-        return inCone && mob.hasLineOfSight(player);
     }
 
     public static boolean cleared(ServerLevel level, BlockPos origin, DungeonLayout.Room room) {
@@ -66,4 +42,5 @@ public final class RoomCombat {
     private static List<GateEntity> gates(ServerLevel level, AABB box) {
         return level.getEntitiesOfClass(GateEntity.class, box.inflate(1));   // gate nằm trên mép
     }
+
 }

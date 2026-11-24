@@ -16,6 +16,7 @@ import net.susu609.the8dungeon.init.ModBlocksRegistry;
 import net.susu609.the8dungeon.init.ModEntitiesRegistry;
 import net.susu609.the8dungeon.world.WorldRandom;
 import net.susu609.the8dungeon.world.level.block.entity.GateEntity;
+import net.susu609.the8dungeon.world.level.block.entity.PedestalEntity;
 import net.susu609.the8dungeon.world.level.block.entity.PropEntity;
 import net.susu609.the8dungeon.world.torch.TorchBurn;
 
@@ -53,6 +54,17 @@ public final class DungeonBuilder {
     private DungeonBuilder() {
     }
 
+    static List<int[]> doorPoints(DungeonLayout layout, Room room) {
+        List<int[]> out = new ArrayList<>();
+        for (Door d : layout.doors()) {
+            if (d.a() != room.id() && d.b() != room.id()) continue;     // cửa của phòng khác
+            int dx = (d.cx() - room.cx()) * CELL + (d.east() ? WALL_B : DOOR_HI);
+            int dz = (d.cz() - room.cz()) * CELL + (d.east() ? DOOR_HI : WALL_B);
+            out.add(new int[]{dx, dz});
+        }
+        return out;
+    }
+
     /**
      * Góc cố định của lưới: ô giữa (nơi đặt phòng vào) trùng chunk (0, 0), sàn ở y = FLOOR_Y.
      * Lưới 13x13: ô giữa là 6, nên góc là (-96, 0, -96) và phòng vào phủ block x, z từ 0 đến 15.
@@ -71,7 +83,7 @@ public final class DungeonBuilder {
         return new AABB(x0, origin.getY(), z0, x0 + room.cellsX() * CELL, origin.getY() + totalHeight(), z0 + room.cellsZ() * CELL);
     }
 
-    public static List<MobSpot> planMobs(WorldRandom world, DungeonLayout.Room room, int minBudget, int maxBudget) {
+    public static List<MobSpot> planMobs(WorldRandom world, DungeonLayout.Room room, int minBudget, int maxBudget, List<int[]> doors) {
         WorldRandom r = world.fork("mobs").at(room.cx(), room.cz());   // mỗi phòng 1 dãy riêng
         int budget = r.nextRange(minBudget, maxBudget);
         List<MobSpot> out = new ArrayList<>();
@@ -80,11 +92,39 @@ public final class DungeonBuilder {
             RoomMob m = all[r.nextInt(all.length)];
             if (m.cost > budget) m = RoomMob.ZOMBIE;                   // hết tiền thì lấy loại rẻ nhất
             budget -= m.cost;
-            int lx = r.nextRange(3, room.cellsX() * 16 - 4);           // cách tường ≥ 3 block
-            int lz = r.nextRange(3, room.cellsZ() * 16 - 4);
+            int lx, lz, tries = 0;
+            do {
+                lx = r.nextRange(3, room.cellsX() * 16 - 4);
+                lz = r.nextRange(3, room.cellsZ() * 16 - 4);
+            } while (nearDoor(lx, lz, doors) && ++tries < 10);       // tối đa 10 lần, tránh vòng lặp vô tận
             out.add(new MobSpot(m, lx, lz));
         }
         return out;
+    }
+
+    private static void decorateRoom(ServerLevel level, DungeonLayout layout, Room room, BlockPos origin) {
+        switch (layout.roleOf(room)) {
+            case TREASURE -> placeTreasure(level, room, origin);
+            default -> {
+            }                                    // các loại khác: làm sau
+        }
+    }
+
+    private static void placeTreasure(ServerLevel level, Room room, BlockPos origin) {
+        PedestalEntity p = ModEntitiesRegistry.PEDESTAL.get().create(level);
+        if (p == null) return;
+        double cx = origin.getX() + (room.cx() + room.cellsX() / 2.0) * CELL;   // tâm phòng
+        double cz = origin.getZ() + (room.cz() + room.cellsZ() / 2.0) * CELL;
+        p.setPos(cx, origin.getY() + 1, cz);
+        level.addFreshEntity(p);
+    }
+
+    private static boolean nearDoor(int lx, int lz, List<int[]> doors) {
+        for (int[] d : doors) {
+            int dx = lx - d[0], dz = lz - d[1];
+            if (dx * dx + dz * dz < 6 * 6) return true;      // so bình phương, khỏi phải tính căn
+        }
+        return false;
     }
 
     /**
@@ -136,6 +176,7 @@ public final class DungeonBuilder {
         }
         for (Room room : layout.rooms()) {
             spawnRoomMobs(level, layout, room, origin, world);
+            decorateRoom(level, layout, room, origin);
         }
     }
 
@@ -153,7 +194,7 @@ public final class DungeonBuilder {
         };
         if (budget == null) return;
         int x0 = origin.getX() + room.cx() * CELL, z0 = origin.getZ() + room.cz() * CELL;
-        for (MobSpot s : planMobs(world, room, budget[0], budget[1])) {
+        for (MobSpot s : planMobs(world, room, budget[0], budget[1], doorPoints(layout, room))) {
             Mob mob = s.mob().type.create(level);
             if (mob == null) continue;
             mob.moveTo(x0 + s.lx() + 0.5, origin.getY() + 1, z0 + s.lz() + 0.5, 0F, 0F);

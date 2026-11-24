@@ -84,7 +84,6 @@ public final class DungeonAutoBuild {
             if (hasMobs) RoomCombat.start(level, origin, here, player);
             sendRooms(data);
         } else if (st == RoomState.COMBAT) {
-            RoomCombat.scan(level, DungeonBuilder.roomBox(origin, here), here, player);
             if (RoomCombat.cleared(level, origin, here)) {
                 data.setState(here.id(), RoomState.CLEARED);
                 RoomCombat.finish(level, origin, here);
