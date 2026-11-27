@@ -4,7 +4,9 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/CKIRUser.IdeaProjects.The8Dungeon.main.iml" filepath="$PROJECT_DIR$/.idea/modules/CKIRUser.IdeaProjects.The8Dungeon.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/IdeaProjects.The8Dungeon.main.iml" filepath="$PROJECT_DIR$/.idea/modules/IdeaProjects.The8Dungeon.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/The8Dungeon.iml" filepath="$PROJECT_DIR$/.idea/modules/The8Dungeon.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/The8Dungeon.main.iml" filepath="$PROJECT_DIR$/.idea/modules/The8Dungeon.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Users.CKIRUser.IdeaProjects.The8Dungeon.main.iml" filepath="$PROJECT_DIR$/.idea/modules/Users.CKIRUser.IdeaProjects.The8Dungeon.main.iml" />
     </modules>
   </component>
 </project>

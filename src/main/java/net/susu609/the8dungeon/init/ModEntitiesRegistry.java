@@ -2,12 +2,14 @@ package net.susu609.the8dungeon.init;
 
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityType.Builder;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import net.susu609.the8dungeon.Susu609Mod;
+import net.susu609.the8dungeon.world.entity.GraveKnight;
 import net.susu609.the8dungeon.world.level.block.entity.GateEntity;
 import net.susu609.the8dungeon.world.level.block.entity.PedestalEntity;
 
@@ -33,7 +35,10 @@ public final class ModEntitiesRegistry {
                     .sized(2.0F, 3.0F)
                     .build("gate"));
 
-
+    public static final RegistryObject<EntityType<GraveKnight>> GRAVE_KNIGHT = ENTITIES.register("grave_knight",
+            () -> Builder.of(GraveKnight::new, MobCategory.MONSTER)
+                    .sized(0.6F * GraveKnight.SCALE, 1.95F * GraveKnight.SCALE)   // hitbox zombie × 1.1
+                    .build("grave_knight"));
     private ModEntitiesRegistry() {
     }
 
@@ -46,5 +51,6 @@ public final class ModEntitiesRegistry {
     }
 
     private static void onAttributes(EntityAttributeCreationEvent event) {
+        event.put(GRAVE_KNIGHT.get(), GraveKnight.createAttributes().build());
     }
 }
