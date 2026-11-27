@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 52 class/kiểu Java, 3517 dòng, 123 phụ thuộc nội bộ
+- 58 class/kiểu Java, 3840 dòng, 133 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -34,10 +34,12 @@ flowchart LR
   end
   subgraph pkg_client_model["client.model"]
     GateModel["GateModel<br/><small>class · 71 dòng</small>"]
+    GraveKnightModel["GraveKnightModel<br/><small>class · 24 dòng</small>"]
     PedestalModel["PedestalModel<br/><small>class · 47 dòng</small>"]
   end
   subgraph pkg_client_renderer_entity["client.renderer.entity"]
     GateRenderer["GateRenderer<br/><small>class · 45 dòng</small>"]
+    GraveKnightRenderer["GraveKnightRenderer<br/><small>class · 27 dòng</small>"]
     PedestalRenderer["PedestalRenderer<br/><small>class · 42 dòng</small>"]
     PropRenderer["PropRenderer<br/><small>class · 40 dòng</small>"]
   end
@@ -67,8 +69,8 @@ flowchart LR
     ModBlockEntitiesRegistry["ModBlockEntitiesRegistry<br/><small>class · 16 dòng</small>"]
     ModBlocksRegistry["ModBlocksRegistry<br/><small>class · 49 dòng</small>"]
     ModCreativeTabsRegistry["ModCreativeTabsRegistry<br/><small>class · 31 dòng</small>"]
-    ModEntitiesRegistry["ModEntitiesRegistry<br/><small>class · 50 dòng</small>"]
-    ModEntityRenderersRegistry["ModEntityRenderersRegistry<br/><small>class · 39 dòng</small>"]
+    ModEntitiesRegistry["ModEntitiesRegistry<br/><small>class · 56 dòng</small>"]
+    ModEntityRenderersRegistry["ModEntityRenderersRegistry<br/><small>class · 40 dòng</small>"]
     ModItemsRegistry["ModItemsRegistry<br/><small>class · 42 dòng</small>"]
   end
   subgraph pkg_mixin["mixin"]
@@ -82,6 +84,14 @@ flowchart LR
   subgraph pkg_world["world"]
     VoidSpawn["VoidSpawn<br/><small>class · 38 dòng</small>"]
     WorldRandom["WorldRandom<br/><small>class · 68 dòng</small>"]
+  end
+  subgraph pkg_world_entity["world.entity"]
+    GraveKnight["GraveKnight<br/><small>class · 75 dòng</small>"]
+  end
+  subgraph pkg_world_entity_ai["world.entity.ai"]
+    Charger["Charger<br/><small>interface · 9 dòng</small>"]
+    DashGoal["DashGoal<br/><small>class · 167 dòng</small>"]
+    DashSettings["DashSettings<br/><small>record · 14 dòng</small>"]
   end
   subgraph pkg_world_level_block_entity["world.level.block.entity"]
     GateEntity["GateEntity<br/><small>class · 101 dòng</small>"]
@@ -100,6 +110,8 @@ flowchart LR
   ClientboundDungeonSeedPacket --> Susu609Mod
   ClientboundVisitedRoomsPacket --> DungeonClientState
   ClientboundVisitedRoomsPacket --> Susu609Mod
+  DashGoal --> Charger
+  DashGoal --> DashSettings
   DungeonAutoBuild --> DungeonLayout
   DungeonAutoBuild --> DungeonSavedData
   DungeonAutoBuild --> DungeonService
@@ -153,6 +165,12 @@ flowchart LR
   GateModel --> GateEntity
   GateRenderer --> GateEntity
   GateRenderer --> GateModel
+  GraveKnight --> Charger
+  GraveKnight --> DashGoal
+  GraveKnight --> DashSettings
+  GraveKnightModel --> GraveKnight
+  GraveKnightRenderer --> GraveKnight
+  GraveKnightRenderer --> GraveKnightModel
   MiniMapOverlay --> DungeonClientState
   MiniMapOverlay --> DungeonLayout
   MiniMapOverlay --> Susu609Mod
@@ -165,10 +183,12 @@ flowchart LR
   ModCreativeTabsRegistry --> ModItemsRegistry
   ModCreativeTabsRegistry --> Susu609Mod
   ModEntitiesRegistry --> GateEntity
+  ModEntitiesRegistry --> GraveKnight
   ModEntitiesRegistry --> PedestalEntity
   ModEntitiesRegistry --> Susu609Mod
   ModEntityRenderersRegistry --> GateModel
   ModEntityRenderersRegistry --> GateRenderer
+  ModEntityRenderersRegistry --> GraveKnightRenderer
   ModEntityRenderersRegistry --> ModEntitiesRegistry
   ModEntityRenderersRegistry --> PedestalModel
   ModEntityRenderersRegistry --> PedestalRenderer
@@ -266,6 +286,7 @@ flowchart LR
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
 | `GateModel` | class | 71 | GateAnimation, GateEntity | - |
+| `GraveKnightModel` | class | 24 | GraveKnight | - |
 | `PedestalModel` | class | 47 | PedestalEntity, Susu609Mod | - |
 
 ### client.renderer.entity
@@ -273,6 +294,7 @@ flowchart LR
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
 | `GateRenderer` | class | 45 | GateEntity, GateModel | - |
+| `GraveKnightRenderer` | class | 27 | GraveKnight, GraveKnightModel | - |
 | `PedestalRenderer` | class | 42 | PedestalEntity, PedestalModel | - |
 | `PropRenderer` | class | 40 | PropEntity | - |
 
@@ -311,8 +333,8 @@ flowchart LR
 | `ModBlockEntitiesRegistry` | class | 16 | Susu609Mod | - |
 | `ModBlocksRegistry` | class | 49 | ModUnlitTorchBlock, ModUnlitWallTorchBlock, Susu609Mod | - |
 | `ModCreativeTabsRegistry` | class | 31 | ModItemsRegistry, Susu609Mod | - |
-| `ModEntitiesRegistry` | class | 50 | GateEntity, PedestalEntity, Susu609Mod | EntityAttributeCreationEvent |
-| `ModEntityRenderersRegistry` | class | 39 | GateModel, GateRenderer, ModEntitiesRegistry, PedestalModel, PedestalRenderer | EntityRenderersEvent, EntityRenderersEvent.RegisterLayerDefinitions, EntityRenderersEvent.RegisterRenderers |
+| `ModEntitiesRegistry` | class | 56 | GateEntity, GraveKnight, PedestalEntity, Susu609Mod | EntityAttributeCreationEvent |
+| `ModEntityRenderersRegistry` | class | 40 | GateModel, GateRenderer, GraveKnightRenderer, ModEntitiesRegistry, PedestalModel, PedestalRenderer | EntityRenderersEvent, EntityRenderersEvent.RegisterLayerDefinitions, EntityRenderersEvent.RegisterRenderers |
 | `ModItemsRegistry` | class | 42 | ModBlocksRegistry, Susu609Mod | BuildCreativeModeTabContentsEvent |
 
 ### mixin
@@ -335,6 +357,20 @@ flowchart LR
 |---|---|---|---|---|
 | `VoidSpawn` | class | 38 | Susu609Mod | LevelEvent, LevelEvent.CreateSpawnPosition |
 | `WorldRandom` | class | 68 | - | - |
+
+### world.entity
+
+| Class | Loại | Dòng | Dùng tới | Event Forge |
+|---|---|---|---|---|
+| `GraveKnight` | class | 75 | Charger, DashGoal, DashSettings | - |
+
+### world.entity.ai
+
+| Class | Loại | Dòng | Dùng tới | Event Forge |
+|---|---|---|---|---|
+| `Charger` | interface | 9 | - | - |
+| `DashGoal` | class | 167 | Charger, DashSettings | - |
+| `DashSettings` | record | 14 | - | SoundEvent |
 
 ### world.level.block.entity
 
