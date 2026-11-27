@@ -54,6 +54,12 @@ public final class DungeonBuilder {
     private DungeonBuilder() {
     }
 
+    private static int tierOf(DungeonLayout layout, Room room) {
+        int max = 1;
+        for (Room r : layout.rooms()) max = Math.max(max, layout.distanceFromStart(r));
+        return Math.min(2, (layout.distanceFromStart(room) - 1) * 3 / max);
+    }
+
     static List<int[]> doorPoints(DungeonLayout layout, Room room) {
         List<int[]> out = new ArrayList<>();
         for (Door d : layout.doors()) {
@@ -83,20 +89,17 @@ public final class DungeonBuilder {
         return new AABB(x0, origin.getY(), z0, x0 + room.cellsX() * CELL, origin.getY() + totalHeight(), z0 + room.cellsZ() * CELL);
     }
 
-    public static List<MobSpot> planMobs(WorldRandom world, DungeonLayout.Room room, int minBudget, int maxBudget, List<int[]> doors) {
-        WorldRandom r = world.fork("mobs").at(room.cx(), room.cz());   // mỗi phòng 1 dãy riêng
-        int budget = r.nextRange(minBudget, maxBudget);
+    public static List<MobSpot> planMobs(WorldRandom world, Room room, int tier, List<int[]> doors) {
+        WorldRandom r = world.fork("mobs").at(room.cx(), room.cz());
+        List<MobPool> options = MobPool.ofTier(tier);
+        MobPool pool = options.get(r.nextInt(options.size()));            // bốc 1 kiểu đội hình
         List<MobSpot> out = new ArrayList<>();
-        RoomMob[] all = RoomMob.values();
-        while (budget > 0) {
-            RoomMob m = all[r.nextInt(all.length)];
-            if (m.cost > budget) m = RoomMob.ZOMBIE;                   // hết tiền thì lấy loại rẻ nhất
-            budget -= m.cost;
+        for (RoomMob m : pool.mobs) {
             int lx, lz, tries = 0;
             do {
                 lx = r.nextRange(3, room.cellsX() * 16 - 4);
                 lz = r.nextRange(3, room.cellsZ() * 16 - 4);
-            } while (nearDoor(lx, lz, doors) && ++tries < 10);       // tối đa 10 lần, tránh vòng lặp vô tận
+            } while (nearDoor(lx, lz, doors) && ++tries < 10);            // né cửa, như đã làm
             out.add(new MobSpot(m, lx, lz));
         }
         return out;
@@ -194,7 +197,7 @@ public final class DungeonBuilder {
         };
         if (budget == null) return;
         int x0 = origin.getX() + room.cx() * CELL, z0 = origin.getZ() + room.cz() * CELL;
-        for (MobSpot s : planMobs(world, room, budget[0], budget[1], doorPoints(layout, room))) {
+        for (MobSpot s : planMobs(world, room, tierOf(layout, room), doorPoints(layout, room))) {
             Mob mob = s.mob().type.create(level);
             if (mob == null) continue;
             mob.moveTo(x0 + s.lx() + 0.5, origin.getY() + 1, z0 + s.lz() + 0.5, 0F, 0F);

@@ -7,42 +7,20 @@ import java.util.*;
 /**
  * Sơ đồ MỘT lớp dungeon: phòng nào ở ô lưới nào, cửa nối phòng nào với phòng nào.
  * Lớp này chỉ là dữ liệu thuần (không import gì của Minecraft) nên test được bằng main().
- *
+ * <p>
  * Quy trình (cùng seed thì cùng kết quả):
- *   Pha 1: mọc cây phòng từ phòng vào, cho đến khi đủ số phòng.
- *   Pha 2: ensureDeadEnds, thêm phòng cụt (có thể kèm phòng cầu nối) cho đủ số tối thiểu.
- *   Pha 3: gán vai trò (phòng vào, phòng boss).
+ * Pha 1: mọc cây phòng từ phòng vào, cho đến khi đủ số phòng.
+ * Pha 2: ensureDeadEnds, thêm phòng cụt (có thể kèm phòng cầu nối) cho đủ số tối thiểu.
+ * Pha 3: gán vai trò (phòng vào, phòng boss).
  * Nếu một bước không làm được thì bỏ cả lần thử và sinh lại với "attempt" kế tiếp.
  */
 public final class DungeonLayout {
-
-    // id trùng với vị trí trong danh sách rooms (chỉ xóa ở cuối nên không bị lệch).
-    public record Room(int id, RoomPreset preset, boolean rotated, int cx, int cz) {
-        public int cellsX() { return preset.cellsX(rotated); }
-        public int cellsZ() { return preset.cellsZ(rotated); }
-    }
-
-    /**
-     * Cửa nằm trên ranh giới giữa hai ô lưới.
-     * east = true : giữa ô (cx, cz) và ô (cx + 1, cz)
-     * east = false: giữa ô (cx, cz) và ô (cx, cz + 1)
-     */
-    public record Door(int a, int b, int cx, int cz, boolean east) {}
-
-    // Đúng 6 phòng đặc biệt (không tính phòng vào):
-    //   4 phòng ở phòng cụt: BOSS, TREASURE, SHOP, LIBRARY
-    //   2 phòng thay cho phòng thường: MYSTERY (tối đa 2) và ELITE (tối đa 1)
-    public enum Role { START, NORMAL, BOSS, TREASURE, SHOP, LIBRARY, MYSTERY, ELITE }
 
     public static final int DEAD_END_SPECIALS = 4;
     public static final int TOTAL_SPECIALS = 6;
     private static final int MAX_MYSTERY = 2;
     private static final int MAX_ELITE = 1;
-
-    private enum Side { EAST, WEST, SOUTH, NORTH }
-
     private static final int MAX_ATTEMPTS = 200;
-
     private final DungeonParams params;
     private final List<Room> rooms = new ArrayList<>();
     private final List<Door> doors = new ArrayList<>();
@@ -58,23 +36,70 @@ public final class DungeonLayout {
         for (int[] row : grid) Arrays.fill(row, -1);
     }
 
-    // ---------- API công khai ----------
-
     public static DungeonLayout generate(WorldRandom world, DungeonParams params) {
         WorldRandom base = world.fork("dungeon-layout");
         for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
             DungeonLayout layout = attemptGenerate(base.at(attempt, 0), params);
             if (layout != null) return layout;
         }
-        throw new IllegalStateException("Không sinh được dungeon sau " + MAX_ATTEMPTS
-                + " lần thử, thử tăng kích thước lưới hoặc giảm minRooms/minDeadEnds.");
+        throw new IllegalStateException("Không sinh được dungeon sau " + MAX_ATTEMPTS + " lần thử, thử tăng kích thước lưới hoặc giảm minRooms/minDeadEnds.");
     }
 
-    public DungeonParams params() { return params; }
-    public List<Room> rooms() { return Collections.unmodifiableList(rooms); }
-    public List<Door> doors() { return Collections.unmodifiableList(doors); }
+    private static DungeonLayout attemptGenerate(WorldRandom r, DungeonParams p) {
+        DungeonLayout l = new DungeonLayout(p);
+        l.addRoom(RoomPreset.R16X16, false, p.gridW() / 2, p.gridD() / 2);   // phòng vào ở giữa
+
+        // Pha 1: số phòng đích nằm trong [minRooms, maxRooms]. Chọn một phòng bất kỳ, một hướng bất kỳ,
+        // thử gắn phòng mới; lượt nào không vừa thì bỏ và thử lượt khác.
+        int target = r.nextRange(p.minRooms(), p.maxRooms());
+        for (int guard = 0; l.rooms.size() < target && guard < 3000; guard++) {
+            Room parent = l.rooms.get(r.nextInt(l.rooms.size()));
+            Side side = Side.values()[r.nextInt(4)];
+            RoomPreset preset = l.pickPreset(r);
+            boolean rotated = preset.canRotate() && r.chance(0.5);
+            l.tryAttach(r, parent, side, preset, rotated);
+        }
+        if (l.rooms.size() < p.minRooms()) return null;   // không đủ phòng tối thiểu thì bỏ lần thử này
+
+        // TODO (boss 1x2, bước 4): gọi hàm tạo phòng boss TRƯỚC ensureDeadEnds để phòng cụt boss được tính vào minDeadEnds.
+        //       Hàm trả false (không chỗ nào vừa) thì `return null` để generate() thử lại với attempt kế tiếp.
+        if (!l.ensureDeadEnds(r)) return null;
+        l.assignRoles(r);
+        return l;
+    }
+
+    // Chọn ngẫu nhiên một ô trong đoạn giao nhau của [aStart, aStart+aLen) và [bStart, bStart+bLen).
+    private static int overlapPick(WorldRandom r, int aStart, int aLen, int bStart, int bLen) {
+        int from = Math.max(aStart, bStart);
+        int to = Math.min(aStart + aLen, bStart + bLen);   // loại trừ
+        return from + r.nextInt(to - from);
+    }
+
+    // Trộn ngẫu nhiên theo WorldRandom (Fisher-Yates), để kết quả vẫn quyết định theo seed.
+    private static <T> void shuffle(WorldRandom r, List<T> list) {
+        for (int i = list.size() - 1; i > 0; i--) {
+            Collections.swap(list, i, r.nextInt(i + 1));
+        }
+    }
+
+    // ---------- API công khai ----------
+
+    public DungeonParams params() {
+        return params;
+    }
+
+    public List<Room> rooms() {
+        return Collections.unmodifiableList(rooms);
+    }
+
+    public List<Door> doors() {
+        return Collections.unmodifiableList(doors);
+    }
+
     // TODO: thêm hàm lấy cửa vào của phòng start() (Door có a() hoặc b() bằng start().id()) để DungeonBuilder dùng chọn lối vào.
-    public Room start() { return rooms.get(0); }
+    public Room start() {
+        return rooms.get(0);
+    }
 
     public Role roleOf(Room room) {
         return roles[room.id()];
@@ -147,24 +172,24 @@ public final class DungeonLayout {
         deadEnds.remove(boss);
 
         shuffle(r, deadEnds);
-        Role[] deadEndRoles = {Role.TREASURE, Role.SHOP, Role.LIBRARY};
+
+        Role[] deadEndRoles = params.deadEndRoles();
         for (int i = 0; i < deadEndRoles.length; i++) {
             roles[deadEnds.get(i).id()] = deadEndRoles[i];
         }
 
-        // Túi vai trò có giới hạn: tối đa 2 MYSTERY và 1 ELITE. Trộn rồi bốc từ đầu túi.
+        // Túi vai trò: số MYSTERY và ELITE lấy từ params. Trộn rồi bốc từ đầu túi.
         List<Role> pool = new ArrayList<>();
-        for (int i = 0; i < MAX_MYSTERY; i++) pool.add(Role.MYSTERY);
-        for (int i = 0; i < MAX_ELITE; i++) pool.add(Role.ELITE);
+        for (int i = 0; i < params.maxMystery(); i++) pool.add(Role.MYSTERY);
+        for (int i = 0; i < params.maxElite(); i++) pool.add(Role.ELITE);
         shuffle(r, pool);
-
         List<Room> normals = new ArrayList<>();
         for (Room room : rooms) {
             if (roles[room.id()] == Role.NORMAL) normals.add(room);
         }
         shuffle(r, normals);
 
-        int extra = Math.min(TOTAL_SPECIALS - DEAD_END_SPECIALS, pool.size());
+        int extra = pool.size();
         for (int i = 0; i < extra; i++) {
             roles[normals.get(i).id()] = pool.get(i);
         }
@@ -182,31 +207,6 @@ public final class DungeonLayout {
         int n = 0;
         for (Room r : rooms) if (r.id() != 0 && degree(r.id()) == 1) n++;
         return n;
-    }
-
-    // ---------- Sinh ----------
-
-    private static DungeonLayout attemptGenerate(WorldRandom r, DungeonParams p) {
-        DungeonLayout l = new DungeonLayout(p);
-        l.addRoom(RoomPreset.R16X16, false, p.gridW() / 2, p.gridD() / 2);   // phòng vào ở giữa
-
-        // Pha 1: số phòng đích nằm trong [minRooms, maxRooms]. Chọn một phòng bất kỳ, một hướng bất kỳ,
-        // thử gắn phòng mới; lượt nào không vừa thì bỏ và thử lượt khác.
-        int target = r.nextRange(p.minRooms(), p.maxRooms());
-        for (int guard = 0; l.rooms.size() < target && guard < 3000; guard++) {
-            Room parent = l.rooms.get(r.nextInt(l.rooms.size()));
-            Side side = Side.values()[r.nextInt(4)];
-            RoomPreset preset = l.pickPreset(r);
-            boolean rotated = preset.canRotate() && r.chance(0.5);
-            l.tryAttach(r, parent, side, preset, rotated);
-        }
-        if (l.rooms.size() < p.minRooms()) return null;   // không đủ phòng tối thiểu thì bỏ lần thử này
-
-        // TODO (boss 1x2, bước 4): gọi hàm tạo phòng boss TRƯỚC ensureDeadEnds để phòng cụt boss được tính vào minDeadEnds.
-        //       Hàm trả false (không chỗ nào vừa) thì `return null` để generate() thử lại với attempt kế tiếp.
-        if (!l.ensureDeadEnds(r)) return null;
-        l.assignRoles(r);
-        return l;
     }
 
     // TODO (boss 1x2, bước 3): viết hàm tạo phòng boss (ví dụ ensureBossRoom(WorldRandom r), trả boolean), mô phỏng ensureDeadEnds/tryBranch:
@@ -228,12 +228,17 @@ public final class DungeonLayout {
 
             boolean ok = false;
             for (Room c : candidates) {
-                if (tryBranch(r, c)) { ok = true; break; }
+                if (tryBranch(r, c)) {
+                    ok = true;
+                    break;
+                }
             }
             if (!ok) return false;   // hết chỗ, sinh lại
         }
         return true;
     }
+
+    // ---------- Sinh ----------
 
     // Thử gắn từ phòng cha một nhánh: [cầu nối 16x16] + phòng cụt. Thất bại thì hoàn tác sạch.
     private boolean tryBranch(WorldRandom r, Room parent) {
@@ -305,25 +310,18 @@ public final class DungeonLayout {
             Room child = addRoom(preset, rotated, cx, cz);
             // Cửa đặt ở một ô ngẫu nhiên trên đoạn ranh giới chung giữa hai phòng.
             switch (side) {
-                case EAST -> doors.add(new Door(parent.id(), child.id(),
-                        parent.cx() + parent.cellsX() - 1, overlapPick(r, parent.cz(), parent.cellsZ(), cz, d), true));
-                case WEST -> doors.add(new Door(parent.id(), child.id(),
-                        cx + w - 1, overlapPick(r, parent.cz(), parent.cellsZ(), cz, d), true));
-                case SOUTH -> doors.add(new Door(parent.id(), child.id(),
-                        overlapPick(r, parent.cx(), parent.cellsX(), cx, w), parent.cz() + parent.cellsZ() - 1, false));
-                default -> doors.add(new Door(parent.id(), child.id(),
-                        overlapPick(r, parent.cx(), parent.cellsX(), cx, w), cz + d - 1, false));
+                case EAST ->
+                        doors.add(new Door(parent.id(), child.id(), parent.cx() + parent.cellsX() - 1, overlapPick(r, parent.cz(), parent.cellsZ(), cz, d), true));
+                case WEST ->
+                        doors.add(new Door(parent.id(), child.id(), cx + w - 1, overlapPick(r, parent.cz(), parent.cellsZ(), cz, d), true));
+                case SOUTH ->
+                        doors.add(new Door(parent.id(), child.id(), overlapPick(r, parent.cx(), parent.cellsX(), cx, w), parent.cz() + parent.cellsZ() - 1, false));
+                default ->
+                        doors.add(new Door(parent.id(), child.id(), overlapPick(r, parent.cx(), parent.cellsX(), cx, w), cz + d - 1, false));
             }
             return child;
         }
         return null;
-    }
-
-    // Chọn ngẫu nhiên một ô trong đoạn giao nhau của [aStart, aStart+aLen) và [bStart, bStart+bLen).
-    private static int overlapPick(WorldRandom r, int aStart, int aLen, int bStart, int bLen) {
-        int from = Math.max(aStart, bStart);
-        int to = Math.min(aStart + aLen, bStart + bLen);   // loại trừ
-        return from + r.nextInt(to - from);
     }
 
     // Hình chữ nhật (cx, cz, w, d) có đặt được không?
@@ -370,10 +368,6 @@ public final class DungeonLayout {
         }
     }
 
-    // Một lối ra của phòng: nhìn từ phòng này, cửa ở phía side (E, W, S, N) và dẫn tới phòng toRoom.
-    public record Exit(char side, int toRoom) {
-    }
-
     // TODO: nếu giảm số phòng 1x2 ở tầng 1 thì sửa tại đây hoặc ở presetWeights (xem TODO trong DungeonParams).
     // TODO (boss 1x2, bước 1): tầng 1 dùng presetWeights {1,0,0} (xem TODO trong DungeonParams) để phòng thường không bao giờ là 1x2;
     //       phòng 1x2 chỉ đến từ hàm tạo boss, không đến từ pickPreset.
@@ -389,10 +383,33 @@ public final class DungeonLayout {
         return RoomPreset.R16X16;   // không bao giờ tới đây, chỉ để compiler yên tâm
     }
 
-    // Trộn ngẫu nhiên theo WorldRandom (Fisher-Yates), để kết quả vẫn quyết định theo seed.
-    private static <T> void shuffle(WorldRandom r, List<T> list) {
-        for (int i = list.size() - 1; i > 0; i--) {
-            Collections.swap(list, i, r.nextInt(i + 1));
+    // Đúng 6 phòng đặc biệt (không tính phòng vào):
+    //   4 phòng ở phòng cụt: BOSS, TREASURE, SHOP, LIBRARY
+    //   2 phòng thay cho phòng thường: MYSTERY (tối đa 2) và ELITE (tối đa 1)
+    public enum Role {START, NORMAL, BOSS, TREASURE, SHOP, LIBRARY, MYSTERY, ELITE}
+
+    private enum Side {EAST, WEST, SOUTH, NORTH}
+
+    // id trùng với vị trí trong danh sách rooms (chỉ xóa ở cuối nên không bị lệch).
+    public record Room(int id, RoomPreset preset, boolean rotated, int cx, int cz) {
+        public int cellsX() {
+            return preset.cellsX(rotated);
         }
+
+        public int cellsZ() {
+            return preset.cellsZ(rotated);
+        }
+    }
+
+    /**
+     * Cửa nằm trên ranh giới giữa hai ô lưới.
+     * east = true : giữa ô (cx, cz) và ô (cx + 1, cz)
+     * east = false: giữa ô (cx, cz) và ô (cx, cz + 1)
+     */
+    public record Door(int a, int b, int cx, int cz, boolean east) {
+    }
+
+    // Một lối ra của phòng: nhìn từ phòng này, cửa ở phía side (E, W, S, N) và dẫn tới phòng toRoom.
+    public record Exit(char side, int toRoom) {
     }
 }
