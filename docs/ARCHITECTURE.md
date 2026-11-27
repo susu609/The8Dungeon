@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 58 class/kiểu Java, 3840 dòng, 133 phụ thuộc nội bộ
+- 59 class/kiểu Java, 3897 dòng, 135 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -48,16 +48,17 @@ flowchart LR
   end
   subgraph pkg_dungeon["dungeon"]
     DungeonAutoBuild["DungeonAutoBuild<br/><small>class · 33 dòng</small>"]
-    DungeonBuilder["DungeonBuilder<br/><small>class · 290 dòng</small>"]
+    DungeonBuilder["DungeonBuilder<br/><small>class · 293 dòng</small>"]
     DungeonClientState["DungeonClientState<br/><small>class · 38 dòng</small>"]
     DungeonCommand["DungeonCommand<br/><small>class · 60 dòng</small>"]
     DungeonInspector["DungeonInspector<br/><small>class · 159 dòng</small>"]
-    DungeonLayout["DungeonLayout<br/><small>class · 399 dòng</small>"]
-    DungeonParams["DungeonParams<br/><small>record · 49 dòng</small>"]
+    DungeonLayout["DungeonLayout<br/><small>class · 416 dòng</small>"]
+    DungeonParams["DungeonParams<br/><small>record · 52 dòng</small>"]
     DungeonSavedData["DungeonSavedData<br/><small>class · 80 dòng</small>"]
     DungeonService["DungeonService<br/><small>class · 47 dòng</small>"]
     DungeonSync["DungeonSync<br/><small>class · 48 dòng</small>"]
     DungeonView["DungeonView<br/><small>record · 34 dòng</small>"]
+    MobPool["MobPool<br/><small>enum · 34 dòng</small>"]
     RoomClear["RoomClear<br/><small>class · 45 dòng</small>"]
     RoomCombat["RoomCombat<br/><small>class · 67 dòng</small>"]
     RoomEntry["RoomEntry<br/><small>class · 43 dòng</small>"]
@@ -119,6 +120,7 @@ flowchart LR
   DungeonBuilder --> DungeonLayout
   DungeonBuilder --> DungeonParams
   DungeonBuilder --> GateEntity
+  DungeonBuilder --> MobPool
   DungeonBuilder --> ModBlocksRegistry
   DungeonBuilder --> ModEntitiesRegistry
   DungeonBuilder --> PedestalEntity
@@ -174,6 +176,7 @@ flowchart LR
   MiniMapOverlay --> DungeonClientState
   MiniMapOverlay --> DungeonLayout
   MiniMapOverlay --> Susu609Mod
+  MobPool --> RoomMob
   ModBlockBehaviour --> ModBlocksRegistry
   ModBlockBehaviour --> TorchBurn
   ModBlockEntitiesRegistry --> Susu609Mod
@@ -309,16 +312,17 @@ flowchart LR
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
 | `DungeonAutoBuild` | class | 33 | DungeonLayout, DungeonSavedData, DungeonService, Susu609Mod | ServerStartedEvent |
-| `DungeonBuilder` | class | 290 | DungeonLayout, DungeonParams, GateEntity, ModBlocksRegistry, ModEntitiesRegistry, PedestalEntity, PropEntity, RoomMob, RoomPreset, TorchBurn, WorldRandom | - |
+| `DungeonBuilder` | class | 293 | DungeonLayout, DungeonParams, GateEntity, MobPool, ModBlocksRegistry, ModEntitiesRegistry, PedestalEntity, PropEntity, RoomMob, RoomPreset, TorchBurn, WorldRandom | - |
 | `DungeonClientState` | class | 38 | DungeonLayout, DungeonParams, WorldRandom | - |
 | `DungeonCommand` | class | 60 | ClientboundDungeonSeedPacket, DungeonLayout, DungeonService, Susu609Mod | RegisterCommandsEvent |
 | `DungeonInspector` | class | 159 | DungeonBuilder, DungeonClientState, DungeonLayout, RoomPreset, Susu609Mod | RegisterGuiOverlaysEvent, RenderLevelStageEvent, RenderLevelStageEvent.Stage |
-| `DungeonLayout` | class | 399 | DungeonParams, RoomPreset, WorldRandom | - |
-| `DungeonParams` | record | 49 | DungeonLayout, RoomPreset | - |
+| `DungeonLayout` | class | 416 | DungeonParams, RoomPreset, WorldRandom | - |
+| `DungeonParams` | record | 52 | DungeonLayout, RoomPreset | - |
 | `DungeonSavedData` | class | 80 | RoomState | - |
 | `DungeonService` | class | 47 | DungeonBuilder, DungeonLayout, DungeonParams, DungeonSavedData, RoomPreset, WorldRandom | - |
 | `DungeonSync` | class | 48 | ClientboundDungeonSeedPacket, ClientboundVisitedRoomsPacket, DungeonSavedData, DungeonView, Susu609Mod | PlayerEvent, PlayerEvent.PlayerLoggedInEvent |
 | `DungeonView` | record | 34 | DungeonBuilder, DungeonLayout, DungeonSavedData, DungeonService | - |
+| `MobPool` | enum | 34 | RoomMob | - |
 | `RoomClear` | class | 45 | DungeonBuilder, DungeonLayout, DungeonView, RoomCombat, RoomState, Susu609Mod | LivingDeathEvent |
 | `RoomCombat` | class | 67 | DungeonBuilder, DungeonLayout, DungeonSync, DungeonView, GateEntity, RoomState | - |
 | `RoomEntry` | class | 43 | DungeonLayout, DungeonView, RoomCombat, RoomState, Susu609Mod | EntityEvent, EntityEvent.EnteringSection |
