@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 59 class/kiểu Java, 3930 dòng, 137 phụ thuộc nội bộ
+- 60 class/kiểu Java, 4061 dòng, 141 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -17,6 +17,7 @@ flowchart LR
     CharacterClass["CharacterClass<br/><small>enum · 18 dòng</small>"]
   end
   subgraph pkg_client["client"]
+    DoorAutoWalk["DoorAutoWalk<br/><small>class · 96 dòng</small>"]
     PendingCharacter["PendingCharacter<br/><small>class · 30 dòng</small>"]
   end
   subgraph pkg_client_animation_definitions["client.animation.definitions"]
@@ -61,7 +62,7 @@ flowchart LR
     MobPool["MobPool<br/><small>enum · 34 dòng</small>"]
     RoomClear["RoomClear<br/><small>class · 45 dòng</small>"]
     RoomCombat["RoomCombat<br/><small>class · 83 dòng</small>"]
-    RoomEntry["RoomEntry<br/><small>class · 43 dòng</small>"]
+    RoomEntry["RoomEntry<br/><small>class · 78 dòng</small>"]
     RoomMob["RoomMob<br/><small>enum · 18 dòng</small>"]
     RoomPreset["RoomPreset<br/><small>enum · 40 dòng</small>"]
     RoomState["RoomState<br/><small>enum · 4 dòng</small>"]
@@ -113,6 +114,9 @@ flowchart LR
   ClientboundVisitedRoomsPacket --> Susu609Mod
   DashGoal --> Charger
   DashGoal --> DashSettings
+  DoorAutoWalk --> DungeonBuilder
+  DoorAutoWalk --> DungeonClientState
+  DoorAutoWalk --> DungeonLayout
   DungeonAutoBuild --> DungeonLayout
   DungeonAutoBuild --> DungeonSavedData
   DungeonAutoBuild --> DungeonService
@@ -225,6 +229,7 @@ flowchart LR
   RoomCombat --> DungeonView
   RoomCombat --> GateEntity
   RoomCombat --> RoomState
+  RoomEntry --> DungeonBuilder
   RoomEntry --> DungeonLayout
   RoomEntry --> DungeonView
   RoomEntry --> RoomCombat
@@ -262,6 +267,7 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
+| `DoorAutoWalk` | class | 96 | DungeonBuilder, DungeonClientState, DungeonLayout | MovementInputUpdateEvent, TickEvent, TickEvent.Phase, TickEvent.RenderTickEvent |
 | `PendingCharacter` | class | 30 | CharacterClass, ServerboundCharacterPacket, Susu609Mod | ClientPlayerNetworkEvent, ClientPlayerNetworkEvent.LoggingIn |
 
 ### client.animation.definitions
@@ -327,7 +333,7 @@ flowchart LR
 | `MobPool` | enum | 34 | RoomMob | - |
 | `RoomClear` | class | 45 | DungeonBuilder, DungeonLayout, DungeonView, RoomCombat, RoomState, Susu609Mod | LivingDeathEvent |
 | `RoomCombat` | class | 83 | DungeonBuilder, DungeonLayout, DungeonSync, DungeonView, GateEntity, RoomState | - |
-| `RoomEntry` | class | 43 | DungeonLayout, DungeonView, RoomCombat, RoomState, Susu609Mod | EntityEvent, EntityEvent.EnteringSection |
+| `RoomEntry` | class | 78 | DungeonBuilder, DungeonLayout, DungeonView, RoomCombat, RoomState, Susu609Mod | EntityEvent, EntityEvent.EnteringSection, PlayerEvent, PlayerEvent.PlayerLoggedOutEvent, TickEvent, TickEvent.Phase, TickEvent.PlayerTickEvent |
 | `RoomMob` | enum | 18 | - | - |
 | `RoomPreset` | enum | 40 | - | - |
 | `RoomState` | enum | 4 | - | - |
