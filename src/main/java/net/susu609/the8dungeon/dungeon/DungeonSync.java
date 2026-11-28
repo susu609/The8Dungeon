@@ -32,7 +32,7 @@ public final class DungeonSync {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         DungeonView view = DungeonView.of(player.serverLevel());
         if (view == null) return;                          // chưa có dungeon: không dịch, không gửi gì
-
+        view.data().setState(view.layout().start().id(), RoomState.CLEARED);   // idempotent, đặt lại nhiều lần cũng được
         CompoundTag tag = player.getPersistentData();
         if (!tag.getBoolean("entered_dungeon")) {
             BlockPos s = player.serverLevel().getSharedSpawnPos();

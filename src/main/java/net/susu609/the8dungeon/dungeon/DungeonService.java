@@ -20,7 +20,9 @@ public final class DungeonService {
         WorldRandom world = new WorldRandom(seed);
         DungeonLayout layout = DungeonLayout.generate(world, params);
         DungeonBuilder.build(level, layout, DungeonBuilder.fixedOrigin(params), world);
-        DungeonSavedData.get(level).set(seed);
+        DungeonSavedData data = DungeonSavedData.get(level);
+        data.set(seed);
+        data.setState(layout.start().id(), RoomState.CLEARED);   // phòng vào: coi như đã khám phá
         return layout;
     }
 

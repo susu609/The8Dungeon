@@ -49,7 +49,7 @@ public final class DungeonSavedData extends SavedData {
     public void set(long seed) {
         this.present = true;
         this.seed = seed;
-
+        states.clear();
         setDirty();   // báo Minecraft ghi xuống đĩa lần lưu tới
     }
 
