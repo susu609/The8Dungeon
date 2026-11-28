@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 59 class/kiểu Java, 3897 dòng, 135 phụ thuộc nội bộ
+- 59 class/kiểu Java, 3899 dòng, 137 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -55,7 +55,7 @@ flowchart LR
     DungeonLayout["DungeonLayout<br/><small>class · 416 dòng</small>"]
     DungeonParams["DungeonParams<br/><small>record · 52 dòng</small>"]
     DungeonSavedData["DungeonSavedData<br/><small>class · 80 dòng</small>"]
-    DungeonService["DungeonService<br/><small>class · 47 dòng</small>"]
+    DungeonService["DungeonService<br/><small>class · 49 dòng</small>"]
     DungeonSync["DungeonSync<br/><small>class · 48 dòng</small>"]
     DungeonView["DungeonView<br/><small>record · 34 dòng</small>"]
     MobPool["MobPool<br/><small>enum · 34 dòng</small>"]
@@ -152,11 +152,13 @@ flowchart LR
   DungeonService --> DungeonParams
   DungeonService --> DungeonSavedData
   DungeonService --> RoomPreset
+  DungeonService --> RoomState
   DungeonService --> WorldRandom
   DungeonSync --> ClientboundDungeonSeedPacket
   DungeonSync --> ClientboundVisitedRoomsPacket
   DungeonSync --> DungeonSavedData
   DungeonSync --> DungeonView
+  DungeonSync --> RoomState
   DungeonSync --> Susu609Mod
   DungeonView --> DungeonBuilder
   DungeonView --> DungeonLayout
@@ -319,8 +321,8 @@ flowchart LR
 | `DungeonLayout` | class | 416 | DungeonParams, RoomPreset, WorldRandom | - |
 | `DungeonParams` | record | 52 | DungeonLayout, RoomPreset | - |
 | `DungeonSavedData` | class | 80 | RoomState | - |
-| `DungeonService` | class | 47 | DungeonBuilder, DungeonLayout, DungeonParams, DungeonSavedData, RoomPreset, WorldRandom | - |
-| `DungeonSync` | class | 48 | ClientboundDungeonSeedPacket, ClientboundVisitedRoomsPacket, DungeonSavedData, DungeonView, Susu609Mod | PlayerEvent, PlayerEvent.PlayerLoggedInEvent |
+| `DungeonService` | class | 49 | DungeonBuilder, DungeonLayout, DungeonParams, DungeonSavedData, RoomPreset, RoomState, WorldRandom | - |
+| `DungeonSync` | class | 48 | ClientboundDungeonSeedPacket, ClientboundVisitedRoomsPacket, DungeonSavedData, DungeonView, RoomState, Susu609Mod | PlayerEvent, PlayerEvent.PlayerLoggedInEvent |
 | `DungeonView` | record | 34 | DungeonBuilder, DungeonLayout, DungeonSavedData, DungeonService | - |
 | `MobPool` | enum | 34 | RoomMob | - |
 | `RoomClear` | class | 45 | DungeonBuilder, DungeonLayout, DungeonView, RoomCombat, RoomState, Susu609Mod | LivingDeathEvent |
