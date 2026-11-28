@@ -1,5 +1,6 @@
 package net.susu609.the8dungeon.world.level.block.entity;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -83,6 +84,20 @@ public class GateEntity extends PropEntity {
         if (level().isClientSide && activeState.isStarted() && tickCount >= activeUntil) {
             activeState.stop();
         }
+    }
+
+    @Override
+    protected void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);          // giữ phần DATA_STATE của PropEntity
+        tag.putBoolean("open", isOpen());
+        tag.putBoolean("locked", isLocked());
+    }
+
+    @Override
+    protected void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        entityData.set(DATA_OPEN, tag.getBoolean("open"));
+        entityData.set(DATA_LOCKED, tag.getBoolean("locked"));
     }
 
     @Override

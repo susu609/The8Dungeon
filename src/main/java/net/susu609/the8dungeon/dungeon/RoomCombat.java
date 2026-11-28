@@ -1,8 +1,8 @@
 package net.susu609.the8dungeon.dungeon;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.AABB;
 import net.susu609.the8dungeon.world.level.block.entity.GateEntity;
@@ -42,13 +42,29 @@ public final class RoomCombat {
     /** Hết quái: CLEARED, mở khoá và mở cửa. */
     public static void clear(ServerLevel level, DungeonView view, DungeonLayout.Room room) {
         view.data().setState(room.id(), RoomState.CLEARED);
-        gates(level, DungeonBuilder.roomBox(view.origin(), room)).forEach(g -> {
-            g.setLocked(false);
-            g.setOpen(true);
-        });
+        for (GateEntity g : gates(level, DungeonBuilder.roomBox(view.origin(), room))) {
+            g.setLocked(false);                                    // ai cũng được bấm mở lại
+            if (leadsToCleared(view, room, g)) g.setOpen(true);    // chỉ cửa sang phòng đã khám phá tự mở
+        }
         DungeonSync.sendRooms(view.data());
     }
 
+    /**
+     * Cửa này dẫn sang một phòng đã CLEARED (khác phòng đang xét)?
+     */
+    private static boolean leadsToCleared(DungeonView view, DungeonLayout.Room room, GateEntity g) {
+        boolean east = Math.floorMod(Math.round(g.getYRot() / 90F), 2) == 1;   // yaw 90/270 = cửa đông
+        double dx = east ? 0.5 : 0, dz = east ? 0 : 0.5;
+        DungeonLayout.Room a = roomAtBlock(view, g.getX() - dx, g.getZ() - dz);
+        DungeonLayout.Room b = roomAtBlock(view, g.getX() + dx, g.getZ() + dz);
+        DungeonLayout.Room other = (a != null && a.id() == room.id()) ? b : a;
+        return other != null && other.id() != room.id()
+                && view.data().state(other.id()) == RoomState.CLEARED;
+    }
+
+    private static DungeonLayout.Room roomAtBlock(DungeonView view, double x, double z) {
+        return view.roomAtChunk(Mth.floor(x) >> 4, Mth.floor(z) >> 4);   // 16 block = 1 chunk = 1 ô
+    }
     /** Số quái còn sống của phòng, không tính 'except' (con đang chết). */
     public static int aliveExcept(ServerLevel level, DungeonView view, DungeonLayout.Room room, Mob except) {
         AABB box = DungeonBuilder.roomBox(view.origin(), room);
