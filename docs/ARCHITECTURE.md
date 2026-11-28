@@ -3,7 +3,7 @@
 > File này được sinh tự động bởi `tools/gen_architecture.py`. Đừng sửa tay.
 
 - Package gốc: `net.susu609.the8dungeon`
-- 59 class/kiểu Java, 3899 dòng, 137 phụ thuộc nội bộ
+- 59 class/kiểu Java, 3930 dòng, 137 phụ thuộc nội bộ
 
 Mũi tên `A --> B` nghĩa là A có dùng tới B. Khối bo tròn là entry point `@Mod`.
 
@@ -60,7 +60,7 @@ flowchart LR
     DungeonView["DungeonView<br/><small>record · 34 dòng</small>"]
     MobPool["MobPool<br/><small>enum · 34 dòng</small>"]
     RoomClear["RoomClear<br/><small>class · 45 dòng</small>"]
-    RoomCombat["RoomCombat<br/><small>class · 67 dòng</small>"]
+    RoomCombat["RoomCombat<br/><small>class · 83 dòng</small>"]
     RoomEntry["RoomEntry<br/><small>class · 43 dòng</small>"]
     RoomMob["RoomMob<br/><small>enum · 18 dòng</small>"]
     RoomPreset["RoomPreset<br/><small>enum · 40 dòng</small>"]
@@ -95,7 +95,7 @@ flowchart LR
     DashSettings["DashSettings<br/><small>record · 14 dòng</small>"]
   end
   subgraph pkg_world_level_block_entity["world.level.block.entity"]
-    GateEntity["GateEntity<br/><small>class · 101 dòng</small>"]
+    GateEntity["GateEntity<br/><small>class · 116 dòng</small>"]
     PedestalEntity["PedestalEntity<br/><small>class · 11 dòng</small>"]
     PropEntity["PropEntity<br/><small>class · 94 dòng</small>"]
   end
@@ -326,7 +326,7 @@ flowchart LR
 | `DungeonView` | record | 34 | DungeonBuilder, DungeonLayout, DungeonSavedData, DungeonService | - |
 | `MobPool` | enum | 34 | RoomMob | - |
 | `RoomClear` | class | 45 | DungeonBuilder, DungeonLayout, DungeonView, RoomCombat, RoomState, Susu609Mod | LivingDeathEvent |
-| `RoomCombat` | class | 67 | DungeonBuilder, DungeonLayout, DungeonSync, DungeonView, GateEntity, RoomState | - |
+| `RoomCombat` | class | 83 | DungeonBuilder, DungeonLayout, DungeonSync, DungeonView, GateEntity, RoomState | - |
 | `RoomEntry` | class | 43 | DungeonLayout, DungeonView, RoomCombat, RoomState, Susu609Mod | EntityEvent, EntityEvent.EnteringSection |
 | `RoomMob` | enum | 18 | - | - |
 | `RoomPreset` | enum | 40 | - | - |
@@ -382,7 +382,7 @@ flowchart LR
 
 | Class | Loại | Dòng | Dùng tới | Event Forge |
 |---|---|---|---|---|
-| `GateEntity` | class | 101 | PropEntity | - |
+| `GateEntity` | class | 116 | PropEntity | - |
 | `PedestalEntity` | class | 11 | PropEntity | - |
 | `PropEntity` | class | 94 | - | - |
 
